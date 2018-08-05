@@ -69,10 +69,10 @@ func NewExporter(uri URI) (*Exporter, error) {
 			Help:      "Total number of scrapes.",
 		}),
 
-		nodesStatus:            newGaugeVec("node_status", "Status of couchbase node.", []string{"hostname"}),
-		nodesClusterMembership: newGaugeVec("node_cluster_membership", "Status of node cluster membership.", []string{"hostname"}),
-		nodeCPUUtilizationRate: newGaugeVec("node_cpu_utilization_rate", "CPU utilization rate.", []string{"hostname"}),
-		nodeRAMUsed:            newGaugeVec("node_ram_usage_bytes", "RAM used per node in bytes.", []string{"hostname"}),
+		nodesStatus:            newGaugeVec("node_status", "Status of couchbase node.", nil),
+		nodesClusterMembership: newGaugeVec("node_cluster_membership", "Status of node cluster membership.", nil),
+		nodeCPUUtilizationRate: newGaugeVec("node_cpu_utilization_rate", "CPU utilization rate.", nil),
+		nodeRAMUsed:            newGaugeVec("node_ram_usage_bytes", "RAM used per node in bytes.", nil),
 
 		clusterRAMTotal:             newGaugeVec("cluster_ram_total_bytes", "Total RAM in the cluster.", nil),
 		clusterRAMUsed:              newGaugeVec("cluster_ram_used_bytes", "Used RAM in the cluster.", nil),
@@ -262,10 +262,10 @@ func getNodeData(e *Exporter, data *ClusterData) {
 		if n.ClusterMembership == "active" {
 			membership = 1
 		}
-		e.nodesStatus.With(p.Labels{"hostname": n.Hostname}).Set(float64(status))
-		e.nodesClusterMembership.With(p.Labels{"hostname": n.Hostname}).Set(float64(membership))
-		e.nodeCPUUtilizationRate.With(p.Labels{"hostname": n.Hostname}).Set(n.SystemStats.CPUUtilizationRate)
-		e.nodeRAMUsed.With(p.Labels{"hostname": n.Hostname}).Set(float64(n.InterestingStats.MemUsed))
+		e.nodesStatus.With(nil).Set(float64(status))
+		e.nodesClusterMembership.With(nil).Set(float64(membership))
+		e.nodeCPUUtilizationRate.With(nil).Set(n.SystemStats.CPUUtilizationRate)
+		e.nodeRAMUsed.With(nil).Set(float64(n.InterestingStats.MemUsed))
 	}
 }
 
