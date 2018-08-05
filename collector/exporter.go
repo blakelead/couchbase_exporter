@@ -34,6 +34,10 @@ type URI struct {
 	Password string
 }
 
+func newGaugeVec(name string, help string, labels []string) *p.GaugeVec {
+	return p.NewGaugeVec(p.GaugeOpts{Namespace: "cb", Name: name, Help: help}, labels)
+}
+
 // NewExporter instantiates the Exporter with the URI and metrics.
 func NewExporter(uri URI) (*Exporter, error) {
 	return &Exporter{
@@ -48,31 +52,11 @@ func NewExporter(uri URI) (*Exporter, error) {
 			Name:      "total_scrapes",
 			Help:      "Total number of scrapes.",
 		}),
-		nodesStatus: p.NewGaugeVec(p.GaugeOpts{
-			Namespace: "cb",
-			Name:      "node_status",
-			Help:      "Status of couchbase node.",
-		}, []string{"hostname"}),
-		nodesClusterMembership: p.NewGaugeVec(p.GaugeOpts{
-			Namespace: "cb",
-			Name:      "node_cluster_membership",
-			Help:      "Status of node cluster membership.",
-		}, []string{"hostname"}),
-		cpuUtilizationRate: p.NewGaugeVec(p.GaugeOpts{
-			Namespace: "cb",
-			Name:      "node_cpu_utilization_rate",
-			Help:      "CPU utilization rate.",
-		}, []string{"hostname"}),
-		ramUsage: p.NewGaugeVec(p.GaugeOpts{
-			Namespace: "cb",
-			Name:      "node_ram_usage_bytes",
-			Help:      "RAM used per node in bytes.",
-		}, []string{"hostname"}),
-		clusterRAMTotal: p.NewGaugeVec(p.GaugeOpts{
-			Namespace: "cb",
-			Name:      "cluster_ram_total_bytes",
-			Help:      "Total RAM in the cluster.",
-		}, nil),
+		nodesStatus:            newGaugeVec("node_status", "Status of couchbase node.", []string{"hostname"}),
+		nodesClusterMembership: newGaugeVec("node_cluster_membership", "Status of node cluster membership.", []string{"hostname"}),
+		cpuUtilizationRate:     newGaugeVec("node_cpu_utilization_rate", "CPU utilization rate.", []string{"hostname"}),
+		ramUsage:               newGaugeVec("node_ram_usage_bytes", "RAM used per node in bytes.", []string{"hostname"}),
+		clusterRAMTotal:        newGaugeVec("cluster_ram_total_bytes", "Total RAM in the cluster.", nil),
 	}, nil
 }
 
