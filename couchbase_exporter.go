@@ -57,21 +57,7 @@ func main() {
 			</html>`))
 	})
 
-	// Systemd settings
-	d.SdNotify(false, "READY=1")
-	go func() {
-		interval, err := d.SdWatchdogEnabled(false)
-		if err != nil || interval == 0 {
-			return
-		}
-		for {
-			_, err := http.Get(*dbURL)
-			if err == nil {
-				d.SdNotify(false, "WATCHDOG=1")
-			}
-			time.Sleep(interval / 3)
-		}
-	}()
+	systemdSettings()
 
 	log.Info("Listening at ", *listenAddr)
 	log.Fatal(http.ListenAndServe(*listenAddr, nil))
@@ -93,4 +79,21 @@ func lookupEnv() {
 	if val, ok := os.LookupEnv("CB_ADMIN_PASSWORD"); ok {
 		*dbPwd = val
 	}
+}
+
+func systemdSettings() {
+	d.SdNotify(false, "READY=1")
+	go func() {
+		interval, err := d.SdWatchdogEnabled(false)
+		if err != nil || interval == 0 {
+			return
+		}
+		for {
+			_, err := http.Get(*dbURL)
+			if err == nil {
+				d.SdNotify(false, "WATCHDOG=1")
+			}
+			time.Sleep(interval / 3)
+		}
+	}()
 }
