@@ -8,31 +8,31 @@ package collector
 type ClusterData struct {
 	StorageTotals struct {
 		RAM struct {
-			Total             int `json:"total"`
-			QuotaTotal        int `json:"quotaTotal"`
-			QuotaUsed         int `json:"quotaUsed"`
-			Used              int `json:"used"`
-			UsedByData        int `json:"usedByData"`
-			QuotaUsedPerNode  int `json:"quotaUsedPerNode"`
-			QuotaTotalPerNode int `json:"quotaTotalPerNode"`
+			Total             int `json:"total"`             // done
+			QuotaTotal        int `json:"quotaTotal"`        // done
+			QuotaUsed         int `json:"quotaUsed"`         // done
+			Used              int `json:"used"`              // done
+			UsedByData        int `json:"usedByData"`        // done
+			QuotaUsedPerNode  int `json:"quotaUsedPerNode"`  // done
+			QuotaTotalPerNode int `json:"quotaTotalPerNode"` // done
 		} `json:"ram"`
 		Hdd struct {
-			Total      int64 `json:"total"`
-			QuotaTotal int64 `json:"quotaTotal"`
-			Used       int64 `json:"used"`
-			UsedByData int   `json:"usedByData"`
-			Free       int64 `json:"free"`
+			Total      int64 `json:"total"`      // done
+			QuotaTotal int64 `json:"quotaTotal"` // done
+			Used       int64 `json:"used"`       // done
+			UsedByData int   `json:"usedByData"` // done
+			Free       int64 `json:"free"`       // done
 		} `json:"hdd"`
 	} `json:"storageTotals"`
-	FtsMemoryQuota   int           `json:"ftsMemoryQuota"`
-	IndexMemoryQuota int           `json:"indexMemoryQuota"`
-	MemoryQuota      int           `json:"memoryQuota"`
+	FtsMemoryQuota   int           `json:"ftsMemoryQuota"`   // done
+	IndexMemoryQuota int           `json:"indexMemoryQuota"` // done
+	MemoryQuota      int           `json:"memoryQuota"`      // done
 	Name             string        `json:"name"`
 	Alerts           []interface{} `json:"alerts"`
 	AlertsSilenceURL string        `json:"alertsSilenceURL"`
 	Nodes            []struct {
 		SystemStats struct {
-			CPUUtilizationRate float64 `json:"cpu_utilization_rate"`
+			CPUUtilizationRate float64 `json:"cpu_utilization_rate"` // done
 			SwapTotal          int     `json:"swap_total"`
 			SwapUsed           int     `json:"swap_used"`
 			MemTotal           int     `json:"mem_total"`
@@ -50,7 +50,7 @@ type ClusterData struct {
 			CurrItemsTot             int `json:"curr_items_tot"`
 			EpBgFetched              int `json:"ep_bg_fetched"`
 			GetHits                  int `json:"get_hits"`
-			MemUsed                  int `json:"mem_used"`
+			MemUsed                  int `json:"mem_used"` // done
 			Ops                      int `json:"ops"`
 			VbReplicaCurrItems       int `json:"vb_replica_curr_items"`
 		} `json:"interestingStats"`
@@ -62,9 +62,9 @@ type ClusterData struct {
 		CouchAPIBase         string `json:"couchApiBase"`
 		CouchAPIBaseHTTPS    string `json:"couchApiBaseHTTPS"`
 		OtpCookie            string `json:"otpCookie"`
-		ClusterMembership    string `json:"clusterMembership"`
+		ClusterMembership    string `json:"clusterMembership"` // done
 		RecoveryType         string `json:"recoveryType"`
-		Status               string `json:"status"`
+		Status               string `json:"status"` // done
 		OtpNode              string `json:"otpNode"`
 		ThisNode             bool   `json:"thisNode"`
 		Hostname             string `json:"hostname"`

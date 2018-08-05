@@ -28,14 +28,28 @@ Available flags:
 Metrics
 -------
 
-| name                         | description                                |
-|------------------------------|--------------------------------------------|
-| cb_up                        | State of last cluster scrape               |
-| cb_node_status               | Status of couchbase node                   |
-| cb_node_cluster_membership   | Status of node cluster membership          |
-| cb_node_cpu_utilization_rate | CPU utilization rate                       |
-| cb_node_ram_usage_bytes      | RAM used per node in bytes                 |
-| cb_cluster_ram_total_bytes   | Total RAM in the cluster                   |
+| name                                      | description                             |
+|-------------------------------------------|-----------------------------------------|
+| cb_up                                     | State of last cluster scrape            |
+| cb_node_status                            | Status of couchbase node                |
+| cb_node_cluster_membership                | Status of node cluster membership       |
+| cb_node_cpu_utilization_rate              | CPU utilization rate                    |
+| cb_node_ram_usage_bytes                   | RAM used per node in bytes              |
+| cb_cluster_ram_total_bytes                | Total RAM in the cluster                |
+| cb_cluster_ram_used_bytes                 | Used RAM in the cluster                 |
+| cb_cluster_ram_used_by_data_bytes         | Used RAM by data in the cluster         |
+| cb_cluster_ram_quota_total_bytes          | Total quota RAM in the cluster          |
+| cb_cluster_ram_quota_total_per_node_bytes | Total quota RAM per node in the cluster |
+| cb_cluster_ram_quota_used_bytes           | Used quota RAM in the cluster           |
+| cb_cluster_ram_quota_used_per_node_bytes  | Used quota RAM per node in the cluster  |
+| cb_cluster_disk_total_bytes               | Total disk in the cluster               |
+| cb_cluster_disk_quota_total_bytes         | Disk quota in the cluster               |
+| cb_cluster_disk_used_bytes                | Used disk in the cluster                |
+| cb_cluster_disk_used_by_data_bytes        | Disk used by data in the cluster        |
+| cb_cluster_disk_free_bytes                | Free disk in the cluster                |
+| cb_cluster_fts_ram_quota_bytes            | RAM quota for Full text search bucket   |
+| cb_cluster_index_ram_quota_bytes          | RAM quota for Index bucket              |
+| cb_cluster_data_ram_quota_bytes           | RAM quota for Data bucket               |
 
 Author Information
 ------------------
