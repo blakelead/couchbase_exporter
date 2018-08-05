@@ -1,6 +1,8 @@
 Couchbase Exporter
 ==================
 
+[![Build Status](https://travis-ci.org/blakelead/couchbase_exporter.svg?branch=master)](https://travis-ci.org/blakelead/couchbase_exporter) [![Coverage Status](https://coveralls.io/repos/github/blakelead/couchbase_exporter/badge.svg?branch=master)](https://coveralls.io/github/blakelead/couchbase_exporter?branch=master) [![Release](https://img.shields.io/badge/release-0.1.0-blue.svg)](https://github.com/blakelead/couchbase_exporter/releases/latest) [![Software License](https://img.shields.io/badge/license-MIT-green.svg)](/LICENSE.md)
+
 Expose metrics from *Couchbase Community 4.5.1* cluster for consumption by Prometheus.
 
 > WIP: each release will introduce new metrics and probably lots of breaking changes.

@@ -1,0 +1,16 @@
+builds:
+- main: main.go
+  binary: couchbase_exporter
+  goos:
+    - windows
+    - darwin
+    - linux
+  goarch:
+    - amd64
+    - arm64
+
+archive:
+  format: tar.gz
+  name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+  files:
+    - LICENSE.txt

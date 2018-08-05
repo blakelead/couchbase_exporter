@@ -14,4 +14,4 @@ WORKDIR /app
 RUN go get -d -v
 RUN go build -o main && ls 
 
-CMD "/app/main -web.listen-address=$LISTEN_ADDR -db.url=$CB_URI -db.user=$CB_ADMIN_USER -db.pwd=$CB_ADMIN_PASSWORD"
+CMD "/app/main -web.listen-address=$LISTEN_ADDR -web.telemetry-path=$TELEMETRY_PATH -db.url=$CB_URI -db.user=$CB_ADMIN_USER -db.pwd=$CB_ADMIN_PASSWORD"
