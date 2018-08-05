@@ -161,6 +161,10 @@ type ClusterData struct {
 		URI string `json:"uri"`
 	} `json:"tasks"`
 	Counters struct {
+		FailoverNode     int `json:"failover_node"`
+		RebalanceSuccess int `json:"rebalance_success"`
+		RebalanceStart   int `json:"rebalance_start"`
+		RebalanceFail    int `json:"rebalance_fail"`
 	} `json:"counters"`
 	IndexStatusURI      string `json:"indexStatusURI"`
 	CheckPermissionsURI string `json:"checkPermissionsURI"`
