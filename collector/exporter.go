@@ -21,21 +21,27 @@ type Exporter struct {
 	up           p.Gauge
 	totalScrapes p.Counter
 
-	clusterRAMTotal             *p.GaugeVec
-	clusterRAMUsed              *p.GaugeVec
-	clusterRAMUsedByData        *p.GaugeVec
-	clusterRAMQuotaTotal        *p.GaugeVec
-	clusterRAMQuotaTotalPerNode *p.GaugeVec
-	clusterRAMQuotaUsed         *p.GaugeVec
-	clusterRAMQuotaUsedPerNode  *p.GaugeVec
-	clusterDiskTotal            *p.GaugeVec
-	clusterDiskQuotaTotal       *p.GaugeVec
-	clusterDiskUsed             *p.GaugeVec
-	clusterDiskUsedByData       *p.GaugeVec
-	clusterDiskFree             *p.GaugeVec
-	clusterFtsRAMQuota          *p.GaugeVec
-	clusterIndexRAMQuota        *p.GaugeVec
-	clusterRAMQuota             *p.GaugeVec
+	clusterRAMTotal              *p.GaugeVec
+	clusterRAMUsed               *p.GaugeVec
+	clusterRAMUsedByData         *p.GaugeVec
+	clusterRAMQuotaTotal         *p.GaugeVec
+	clusterRAMQuotaTotalPerNode  *p.GaugeVec
+	clusterRAMQuotaUsed          *p.GaugeVec
+	clusterRAMQuotaUsedPerNode   *p.GaugeVec
+	clusterDiskTotal             *p.GaugeVec
+	clusterDiskQuotaTotal        *p.GaugeVec
+	clusterDiskUsed              *p.GaugeVec
+	clusterDiskUsedByData        *p.GaugeVec
+	clusterDiskFree              *p.GaugeVec
+	clusterFtsRAMQuota           *p.GaugeVec
+	clusterIndexRAMQuota         *p.GaugeVec
+	clusterRAMQuota              *p.GaugeVec
+	clusterRebalanceStatus       *p.GaugeVec
+	clusterMaxBucketCount        *p.GaugeVec
+	clusterFailoverNodeCount     *p.GaugeVec
+	clusterRebalanceSuccessCount *p.GaugeVec
+	clusterRebalanceStartCount   *p.GaugeVec
+	clusterRebalanceFailCount    *p.GaugeVec
 
 	nodesStatus            *p.GaugeVec
 	nodesClusterMembership *p.GaugeVec
@@ -74,21 +80,27 @@ func NewExporter(uri URI) (*Exporter, error) {
 		nodeCPUUtilizationRate: newGaugeVec("node_cpu_utilization_rate", "CPU utilization rate.", nil),
 		nodeRAMUsed:            newGaugeVec("node_ram_usage_bytes", "RAM used per node in bytes.", nil),
 
-		clusterRAMTotal:             newGaugeVec("cluster_ram_total_bytes", "Total RAM in the cluster.", nil),
-		clusterRAMUsed:              newGaugeVec("cluster_ram_used_bytes", "Used RAM in the cluster.", nil),
-		clusterRAMUsedByData:        newGaugeVec("cluster_ram_used_by_data_bytes", "Used RAM by data in the cluster.", nil),
-		clusterRAMQuotaTotal:        newGaugeVec("cluster_ram_quota_total_bytes", "Total quota RAM in the cluster.", nil),
-		clusterRAMQuotaTotalPerNode: newGaugeVec("cluster_ram_quota_total_per_node_bytes", "Total quota RAM per node in the cluster.", nil),
-		clusterRAMQuotaUsed:         newGaugeVec("cluster_ram_quota_used_bytes", "Used quota RAM in the cluster.", nil),
-		clusterRAMQuotaUsedPerNode:  newGaugeVec("cluster_ram_quota_used_per_node_bytes", "Used quota RAM per node in the cluster.", nil),
-		clusterDiskTotal:            newGaugeVec("cluster_disk_total_bytes", "Total disk in the cluster.", nil),
-		clusterDiskQuotaTotal:       newGaugeVec("cluster_disk_quota_total_bytes", "Disk quota in the cluster.", nil),
-		clusterDiskUsed:             newGaugeVec("cluster_disk_used_bytes", "Used disk in the cluster.", nil),
-		clusterDiskUsedByData:       newGaugeVec("cluster_disk_used_by_data_bytes", "Disk used by data in the cluster.", nil),
-		clusterDiskFree:             newGaugeVec("cluster_disk_free_bytes", "Free disk in the cluster", nil),
-		clusterFtsRAMQuota:          newGaugeVec("cluster_fts_ram_quota_bytes", "RAM quota for Full text search bucket.", nil),
-		clusterIndexRAMQuota:        newGaugeVec("cluster_index_ram_quota_bytes", "RAM quota for Index bucket.", nil),
-		clusterRAMQuota:             newGaugeVec("cluster_data_ram_quota_bytes", "RAM quota for Data bucket.", nil),
+		clusterRAMTotal:              newGaugeVec("cluster_ram_total_bytes", "Total RAM in the cluster.", nil),
+		clusterRAMUsed:               newGaugeVec("cluster_ram_used_bytes", "Used RAM in the cluster.", nil),
+		clusterRAMUsedByData:         newGaugeVec("cluster_ram_used_by_data_bytes", "Used RAM by data in the cluster.", nil),
+		clusterRAMQuotaTotal:         newGaugeVec("cluster_ram_quota_total_bytes", "Total quota RAM in the cluster.", nil),
+		clusterRAMQuotaTotalPerNode:  newGaugeVec("cluster_ram_quota_total_per_node_bytes", "Total quota RAM per node in the cluster.", nil),
+		clusterRAMQuotaUsed:          newGaugeVec("cluster_ram_quota_used_bytes", "Used quota RAM in the cluster.", nil),
+		clusterRAMQuotaUsedPerNode:   newGaugeVec("cluster_ram_quota_used_per_node_bytes", "Used quota RAM per node in the cluster.", nil),
+		clusterDiskTotal:             newGaugeVec("cluster_disk_total_bytes", "Total disk in the cluster.", nil),
+		clusterDiskQuotaTotal:        newGaugeVec("cluster_disk_quota_total_bytes", "Disk quota in the cluster.", nil),
+		clusterDiskUsed:              newGaugeVec("cluster_disk_used_bytes", "Used disk in the cluster.", nil),
+		clusterDiskUsedByData:        newGaugeVec("cluster_disk_used_by_data_bytes", "Disk used by data in the cluster.", nil),
+		clusterDiskFree:              newGaugeVec("cluster_disk_free_bytes", "Free disk in the cluster", nil),
+		clusterFtsRAMQuota:           newGaugeVec("cluster_fts_ram_quota_bytes", "RAM quota for Full text search bucket.", nil),
+		clusterIndexRAMQuota:         newGaugeVec("cluster_index_ram_quota_bytes", "RAM quota for Index bucket.", nil),
+		clusterRAMQuota:              newGaugeVec("cluster_data_ram_quota_bytes", "RAM quota for Data bucket.", nil),
+		clusterRebalanceStatus:       newGaugeVec("cluster_rebalance_status", "Occurrence of rebalancing in the cluster.", nil),
+		clusterMaxBucketCount:        newGaugeVec("cluster_max_bucket_count", "Maximum number of buckets.", nil),
+		clusterFailoverNodeCount:     newGaugeVec("cluster_failover_node_count", "Number of failovers since cluster is up.", nil),
+		clusterRebalanceSuccessCount: newGaugeVec("cluster_rebalance_success_count", "Number of rebalance success since cluster is up.", nil),
+		clusterRebalanceStartCount:   newGaugeVec("cluster_rebalance_start_count", "Number of rebalance start since cluster is up.", nil),
+		clusterRebalanceFailCount:    newGaugeVec("cluster_rebalance_fail_count", "Number of rebalance failure since cluster is up.", nil),
 	}, nil
 }
 
@@ -112,6 +124,12 @@ func (e *Exporter) Describe(ch chan<- *p.Desc) {
 	e.clusterFtsRAMQuota.Describe(ch)
 	e.clusterIndexRAMQuota.Describe(ch)
 	e.clusterRAMQuota.Describe(ch)
+	e.clusterRebalanceStatus.Describe(ch)
+	e.clusterMaxBucketCount.Describe(ch)
+	e.clusterFailoverNodeCount.Describe(ch)
+	e.clusterRebalanceSuccessCount.Describe(ch)
+	e.clusterRebalanceStartCount.Describe(ch)
+	e.clusterRebalanceFailCount.Describe(ch)
 
 	e.nodesStatus.Describe(ch)
 	e.nodesClusterMembership.Describe(ch)
@@ -145,6 +163,12 @@ func (e *Exporter) Collect(ch chan<- p.Metric) {
 	e.clusterFtsRAMQuota.Collect(ch)
 	e.clusterIndexRAMQuota.Collect(ch)
 	e.clusterRAMQuota.Collect(ch)
+	e.clusterRebalanceStatus.Collect(ch)
+	e.clusterMaxBucketCount.Collect(ch)
+	e.clusterFailoverNodeCount.Collect(ch)
+	e.clusterRebalanceSuccessCount.Collect(ch)
+	e.clusterRebalanceStartCount.Collect(ch)
+	e.clusterRebalanceFailCount.Collect(ch)
 
 	e.nodesStatus.Collect(ch)
 	e.nodesClusterMembership.Collect(ch)
@@ -194,6 +218,12 @@ func reset(e *Exporter) {
 	e.clusterFtsRAMQuota.Reset()
 	e.clusterIndexRAMQuota.Reset()
 	e.clusterRAMQuota.Reset()
+	e.clusterRebalanceStatus.Reset()
+	e.clusterMaxBucketCount.Reset()
+	e.clusterFailoverNodeCount.Reset()
+	e.clusterRebalanceSuccessCount.Reset()
+	e.clusterRebalanceStartCount.Reset()
+	e.clusterRebalanceFailCount.Reset()
 }
 
 func (e *Exporter) scrapeNodes() {
@@ -235,6 +265,10 @@ func (e *Exporter) scrapeNodes() {
 }
 
 func getClusterData(e *Exporter, data *ClusterData) {
+	var rebalance int
+	if data.RebalanceStatus == "running" {
+		rebalance = 1
+	}
 	e.clusterRAMTotal.With(nil).Set(float64(data.StorageTotals.RAM.Total))
 	e.clusterRAMUsed.With(nil).Set(float64(data.StorageTotals.RAM.Used))
 	e.clusterRAMUsedByData.With(nil).Set(float64(data.StorageTotals.RAM.UsedByData))
@@ -250,6 +284,12 @@ func getClusterData(e *Exporter, data *ClusterData) {
 	e.clusterFtsRAMQuota.With(nil).Set(float64(data.FtsMemoryQuota * 1024 * 1024))
 	e.clusterIndexRAMQuota.With(nil).Set(float64(data.IndexMemoryQuota * 1024 * 1024))
 	e.clusterRAMQuota.With(nil).Set(float64(data.MemoryQuota * 1024 * 1024))
+	e.clusterRebalanceStatus.With(nil).Set(float64(rebalance))
+	e.clusterMaxBucketCount.With(nil).Set(float64(data.MaxBucketCount))
+	e.clusterFailoverNodeCount.With(nil).Set(float64(data.Counters.FailoverNode))
+	e.clusterRebalanceSuccessCount.With(nil).Set(float64(data.Counters.RebalanceSuccess))
+	e.clusterRebalanceStartCount.With(nil).Set(float64(data.Counters.RebalanceStart))
+	e.clusterRebalanceFailCount.With(nil).Set(float64(data.Counters.RebalanceFail))
 }
 
 func getNodeData(e *Exporter, data *ClusterData) {
