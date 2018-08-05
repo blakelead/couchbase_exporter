@@ -1,0 +1,18 @@
+[Unit]
+Description=Couchbase Exporter
+After=local-fs.target network-online.target network.target
+Wants=local-fs.target network-online.target network.target
+
+[Service]
+Type=notify
+ExecStart=$CB_EXPORTER_DIR/couchbase_exporter \
+        -web.listen-address $LISTEN_ADDR      \
+        -web.telemetry-path $TELEMETRY_PATH   \
+        -db.url $CB_URI                       \
+        -db.user $CB_ADMIN_USER               \
+        -db.pwd $CB_ADMIN_PASSWORD
+WatchdogSec=30s
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
