@@ -23,6 +23,8 @@ var (
 	dbURL       = flag.String("db.url", "http://localhost:8091", "The address of Couchbase cluster.")
 	dbUser      = flag.String("db.user", "admin", "The administrator username.")
 	dbPwd       = flag.String("db.pwd", "password", "The administrator password.")
+	logLevel    = flag.String("log.level", "info", "Log level: info, debug, warn, error, fatal.")
+	logFormat   = flag.String("log.format", "text", "Log format: text or json.")
 )
 
 func main() {
@@ -30,9 +32,9 @@ func main() {
 
 	lookupEnv()
 
-	log.SetFormatter(&log.TextFormatter{})
+	log.SetFormatter(setLogFormat())
 	log.SetOutput(os.Stdout)
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(setLogLevel())
 
 	CouchbaseExporter, err := collector.NewExporter(collector.URI{URL: *dbURL, Username: *dbUser, Password: *dbPwd})
 	if err != nil {
@@ -79,6 +81,40 @@ func lookupEnv() {
 	if val, ok := os.LookupEnv("CB_ADMIN_PASSWORD"); ok {
 		*dbPwd = val
 	}
+	if val, ok := os.LookupEnv("LOG_LEVEL"); ok {
+		*logLevel = val
+	}
+	if val, ok := os.LookupEnv("LOG_FORMAT"); ok {
+		*logFormat = val
+	}
+}
+
+func setLogLevel() log.Level {
+	var level log.Level
+	switch *logLevel {
+	case "debug":
+		level = log.DebugLevel
+	case "warn":
+		level = log.WarnLevel
+	case "error":
+		level = log.ErrorLevel
+	case "fatal":
+		level = log.FatalLevel
+	default:
+		level = log.InfoLevel
+	}
+	return level
+}
+
+func setLogFormat() log.Formatter {
+	var format log.Formatter
+	switch *logFormat {
+	case "json":
+		format = &log.JSONFormatter{}
+	default:
+		format = &log.TextFormatter{}
+	}
+	return format
 }
 
 func systemdSettings() {

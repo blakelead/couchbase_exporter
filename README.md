@@ -27,6 +27,8 @@ Available flags:
 | -db.url             | The address of Couchbase cluster           | http://localhost:8091 |
 | -db.user            | The administrator username                 | admin                 |
 | -db.pwd             | The administrator password                 | password              |
+| -log.level          | Log level: info, debug, warn, error, fatal | info                  |
+| -log.format         | Log format: text, json                     | text                  |
 | -help               | Command line help                          |                       |
 
 Metrics
