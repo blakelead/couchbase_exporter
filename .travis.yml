@@ -12,3 +12,15 @@ script:
 
 after_success:
   - test -n "$TRAVIS_TAG" && curl -sL https://git.io/goreleaser | bash
+
+services:
+  - docker
+after_success:
+  - mkdir -p dist
+  - CGO_ENABLED="0" GOARCH="amd64" GOOS="linux" go build -a -installsuffix cgo -o ./dist/couchbase_exporter
+  - docker login -u "$DOCKER_HUB_ID" -p "$DOCKER_HUB_PASSWORD"
+  - export REPO=$DOCKER_HUB_ID/couchbase_exporter
+  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_TAG ; fi`
+  - echo $REPO:$TAG
+  - docker build -f Dockerfile -t $REPO:$TAG .
+  - docker push $REPO

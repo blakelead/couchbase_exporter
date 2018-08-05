@@ -1,17 +1,8 @@
-FROM golang:1.10-alpine
+FROM alpine
 LABEL maintainer="Adel Abdelhak"
 
-ENV LISTEN_ADDR=:9191
-ENV TELEMETRY_PATH=/metrics
-ENV CB_URI=http://localhost:8091
-ENV CB_ADMIN_USER=
-ENV CB_ADMIN_PASSWORD=
+ENV LISTEN_ADDR=:9191 TELEMETRY_PATH=/metrics CB_URI=http://localhost:8091 CB_ADMIN_USER=admin CB_ADMIN_PASSWORD=password
 
-RUN apk add --update git && mkdir /app 
-ADD . /app/ 
-WORKDIR /app 
+ADD ./dist/couchbase_exporter /bin/couchbase_exporter
 
-RUN go get -d -v
-RUN go build -o main && ls 
-
-CMD "/app/main -web.listen-address=$LISTEN_ADDR -web.telemetry-path=$TELEMETRY_PATH -db.url=$CB_URI -db.user=$CB_ADMIN_USER -db.pwd=$CB_ADMIN_PASSWORD"
+CMD /bin/couchbase_exporter
