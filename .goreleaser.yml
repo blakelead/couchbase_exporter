@@ -1,5 +1,5 @@
 builds:
-- main: main.go
+- main: couchbase_exporter.go
   binary: couchbase_exporter
   goos:
     - windows

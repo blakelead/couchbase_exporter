@@ -27,6 +27,9 @@ var (
 
 func main() {
 	flag.Parse()
+
+	lookupEnv()
+
 	log.SetFormatter(&log.TextFormatter{})
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.DebugLevel)
@@ -72,4 +75,22 @@ func main() {
 
 	log.Info("Listening at ", *listenAddr)
 	log.Fatal(http.ListenAndServe(*listenAddr, nil))
+}
+
+func lookupEnv() {
+	if val, ok := os.LookupEnv("LISTEN_ADDR"); ok {
+		*listenAddr = val
+	}
+	if val, ok := os.LookupEnv("TELEMETRY_PATH"); ok {
+		*metricsPath = val
+	}
+	if val, ok := os.LookupEnv("CB_URI"); ok {
+		*dbURL = val
+	}
+	if val, ok := os.LookupEnv("CB_ADMIN_USER"); ok {
+		*dbUser = val
+	}
+	if val, ok := os.LookupEnv("CB_ADMIN_PASSWORD"); ok {
+		*dbPwd = val
+	}
 }

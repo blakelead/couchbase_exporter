@@ -4,6 +4,9 @@ sudo: false
 go:
 - 1.10.x
 
+services:
+  - docker
+
 before_install:
   - go get github.com/mattn/goveralls
 
@@ -12,10 +15,6 @@ script:
 
 after_success:
   - test -n "$TRAVIS_TAG" && curl -sL https://git.io/goreleaser | bash
-
-services:
-  - docker
-after_success:
   - mkdir -p dist
   - CGO_ENABLED="0" GOARCH="amd64" GOOS="linux" go build -a -installsuffix cgo -o ./dist/couchbase_exporter
   - docker login -u "$DOCKER_HUB_ID" -p "$DOCKER_HUB_PASSWORD"
