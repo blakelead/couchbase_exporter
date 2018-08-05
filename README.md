@@ -12,10 +12,10 @@ Expose metrics from *Couchbase Community 4.5.1* cluster for consumption by Prome
 Getting Started
 ---------------
 
-Run from terminal:
+Run from command line:
 
 ```bash
-./couchbase_exporter [flags]
+$ ./couchbase_exporter [flags]
 ```
 
 Available flags:
@@ -54,6 +54,26 @@ Metrics
 | cb_cluster_fts_ram_quota_bytes            | RAM quota for Full text search bucket   |
 | cb_cluster_index_ram_quota_bytes          | RAM quota for Index bucket              |
 | cb_cluster_data_ram_quota_bytes           | RAM quota for Data bucket               |
+
+Docker
+------
+
+Get the latest image from Docker Hub:
+
+```bash
+$ docker pull blakelead/couchbase-exporter:latest
+```
+
+Systemd
+-------
+
+You can use `exporter.service` to execute **couchbase_exporter** with systemd.
+
+```bash
+$ sudo mv exporter.service /etc/systemd/system/couchbase-exporter.service
+$ sudo systemctl enable couchbase-exporter.service
+$ sudo systemctl start couchbase-exporter.service
+```
 
 Author Information
 ------------------
