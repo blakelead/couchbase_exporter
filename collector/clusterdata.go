@@ -1,4 +1,4 @@
-// Copyright 2018 Blake Lead.
+// Copyright 2018 Adel Abdelhak.
 // Use of this source code is governed by the MIT
 // license that can be found in the LICENSE.txt file.
 

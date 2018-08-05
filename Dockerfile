@@ -1,5 +1,5 @@
 FROM golang:1.10-alpine
-LABEL maintainer="Blake Lead"
+LABEL maintainer="Adel Abdelhak"
 
 ENV LISTEN_ADDR=:9191
 ENV TELEMETRY_PATH=/metrics

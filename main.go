@@ -1,4 +1,4 @@
-// Copyright 2018 Blake Lead.
+// Copyright 2018 Adel Abdelhak.
 // Use of this source code is governed by the MIT
 // license that can be found in the LICENSE.txt file.
 
@@ -48,7 +48,7 @@ func main() {
 			<head><title>Couchbase Exporter</title></head>
 			<body>
 			<h1>Node Exporter</h1>
-			<p><i>by Blake Lead</i></p><br>
+			<p><i>by Adel Abdelhak</i></p><br>
 			<p>See <a href="` + *metricsPath + `">Metrics</a></p>
 			</body>
 			</html>`))
