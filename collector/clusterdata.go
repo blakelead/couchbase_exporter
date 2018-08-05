@@ -29,7 +29,6 @@ type ClusterData struct {
 	MemoryQuota      int           `json:"memoryQuota"`      // done
 	Name             string        `json:"name"`
 	Alerts           []interface{} `json:"alerts"`
-	AlertsSilenceURL string        `json:"alertsSilenceURL"`
 	Nodes            []struct {
 		SystemStats struct {
 			CPUUtilizationRate float64 `json:"cpu_utilization_rate"` // done
@@ -80,58 +79,8 @@ type ClusterData struct {
 		} `json:"ports"`
 		Services []string `json:"services"`
 	} `json:"nodes"`
-	Buckets struct {
-		URI                       string `json:"uri"`
-		TerseBucketsBase          string `json:"terseBucketsBase"`
-		TerseStreamingBucketsBase string `json:"terseStreamingBucketsBase"`
-	} `json:"buckets"`
-	RemoteClusters struct {
-		URI         string `json:"uri"`
-		ValidateURI string `json:"validateURI"`
-	} `json:"remoteClusters"`
-	Controllers struct {
-		AddNode struct {
-			URI string `json:"uri"`
-		} `json:"addNode"`
-		Rebalance struct {
-			URI string `json:"uri"`
-		} `json:"rebalance"`
-		FailOver struct {
-			URI string `json:"uri"`
-		} `json:"failOver"`
-		StartGracefulFailover struct {
-			URI string `json:"uri"`
-		} `json:"startGracefulFailover"`
-		ReAddNode struct {
-			URI string `json:"uri"`
-		} `json:"reAddNode"`
-		ReFailOver struct {
-			URI string `json:"uri"`
-		} `json:"reFailOver"`
-		EjectNode struct {
-			URI string `json:"uri"`
-		} `json:"ejectNode"`
-		SetRecoveryType struct {
-			URI string `json:"uri"`
-		} `json:"setRecoveryType"`
-		SetAutoCompaction struct {
-			URI         string `json:"uri"`
-			ValidateURI string `json:"validateURI"`
-		} `json:"setAutoCompaction"`
-		ClusterLogsCollection struct {
-			StartURI  string `json:"startURI"`
-			CancelURI string `json:"cancelURI"`
-		} `json:"clusterLogsCollection"`
-		Replication struct {
-			CreateURI   string `json:"createURI"`
-			ValidateURI string `json:"validateURI"`
-		} `json:"replication"`
-	} `json:"controllers"`
-	RebalanceStatus        string `json:"rebalanceStatus"`
-	RebalanceProgressURI   string `json:"rebalanceProgressUri"`
-	StopRebalanceURI       string `json:"stopRebalanceUri"`
-	NodeStatusesURI        string `json:"nodeStatusesUri"`
-	MaxBucketCount         int    `json:"maxBucketCount"`
+	RebalanceStatus        string `json:"rebalanceStatus"` // done
+	MaxBucketCount         int    `json:"maxBucketCount"`  // done
 	AutoCompactionSettings struct {
 		ParallelDBAndViewCompaction    bool `json:"parallelDBAndViewCompaction"`
 		DatabaseFragmentationThreshold struct {
@@ -157,16 +106,10 @@ type ClusterData struct {
 			Percentage int `json:"percentage"`
 		} `json:"indexFragmentationThreshold"`
 	} `json:"autoCompactionSettings"`
-	Tasks struct {
-		URI string `json:"uri"`
-	} `json:"tasks"`
 	Counters struct {
-		FailoverNode     int `json:"failover_node"`
-		RebalanceSuccess int `json:"rebalance_success"`
-		RebalanceStart   int `json:"rebalance_start"`
-		RebalanceFail    int `json:"rebalance_fail"`
+		FailoverNode     int `json:"failover_node"`     // done
+		RebalanceSuccess int `json:"rebalance_success"` // done
+		RebalanceStart   int `json:"rebalance_start"`   // done
+		RebalanceFail    int `json:"rebalance_fail"`    // done
 	} `json:"counters"`
-	IndexStatusURI      string `json:"indexStatusURI"`
-	CheckPermissionsURI string `json:"checkPermissionsURI"`
-	ServerGroupsURI     string `json:"serverGroupsUri"`
 }
