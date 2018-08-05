@@ -3,6 +3,8 @@ Couchbase Exporter
 
 Expose metrics from *Couchbase Community 4.5.1* cluster for consumption by Prometheus.
 
+> WIP: each release will introduce new metrics and probably lots of breaking changes.
+
 Getting Started
 ---------------
 
@@ -34,12 +36,6 @@ Metrics
 | cb_node_cpu_utilization_rate | CPU utilization rate                       |
 | cb_node_ram_usage_bytes      | RAM used per node in bytes                 |
 | cb_cluster_ram_total_bytes   | Total RAM in the cluster                   |
-
-Diclaimer
----------
-
-This project is intented for me to learn Go. It is therefore not suited for real world use.
-But if you want to help and make it a valuable project, feel free to contribute!
 
 Author Information
 ------------------
