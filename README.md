@@ -63,6 +63,44 @@ Metrics
 | cb_cluster_rebalance_start_count          | Number of rebalance start since cluster is up   |
 | cb_cluster_rebalance_fail_count           | Number of rebalance failure since cluster is up |
 
+### Node metrics
+
+|                   name                    |                   description                   |
+| ----------------------------------------- | ----------------------------------------------- |
+| node_ram_total_bytes                      | Node total RAM                                  |
+| node_ram_usage_bytes                      | Node used RAM                                   |
+| node_ram_used_by_data_bytes               | Node RAM used by data                           |
+| node_ram_quota_total_bytes                | Node RAM quota total                            |
+| node_ram_quota_used_bytes                 | Node RAM quota used                             |
+| node_disk_total_bytes                     | Node Total disk                                 |
+| node_disk_quota_total_bytes               | Node disk quota total                           |
+| node_disk_used_bytes                      | Node used disk                                  |
+| node_disk_quota_used_bytes                | Node disk quota total                           |
+| node_disk_free_bytes                      | Node free disk                                  |
+| node_cpu_utilization_rate                 | CPU utilization rate                            |
+| node_swap_total_bytes                     | Node total swap                                 |
+| node_swap_used_bytes                      | Node used swap                                  |
+| node_stats_cmd_get                        | Node stats: cmd_get                             |
+| node_stats_couch_docs_actual_disk_size    | Node stats: couch_docs_actual_disk_size         |
+| node_stats_couch_docs_data_size           | Node stats: couch_docs_data_size                |
+| node_stats_couch_spatial_data_size        | Node stats: couch_spatial_data_size             |
+| node_stats_couch_spatial_disk_size        | Node stats: couch_spatial_disk_size             |
+| node_stats_couch_views_actual_disk_size   | Node stats: couch_views_actual_disk_siz         |
+| node_stats_couch_views_data_size          | Node stats: couch_views_data_size               |
+| node_stats_curr_items                     | Node stats: curr_items                          |
+| node_stats_curr_items_tot                 | Node stats: curr_items_tot                      |
+| node_stats_ep_bg_fetched                  | Node stats: ep_bg_fetched                       |
+| node_stats_get_hits                       | Node stats: get_hits                            |
+| node_stats_mem_used                       | Node stats: mem_used                            |
+| node_stats_ops                            | Node stats: ops                                 |
+| node_stats_vb_replica_curr_items          | Node stats: vb_replica_curr_items               |
+| node_uptime_seconds                       | Node uptime                                     |
+| node_cluster_membership                   | Status of node cluster membership               |
+| node_status                               | Status of couchbase node                        |
+| node_fts_ram_quota_bytes                  | Node quota for Full text search bucket          |
+| node_index_ram_quota_bytes                | Node quota for Index bucket                     |
+| node_data_ram_quota_bytes                 | Node quota for Data bucket                      |
+
 Docker
 ------
 

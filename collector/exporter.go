@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"sync"
 
 	p "github.com/prometheus/client_golang/prometheus"
@@ -16,37 +17,69 @@ import (
 
 // Exporter describes the exporter object.
 type Exporter struct {
-	mutex        sync.RWMutex
-	uri          URI
-	up           p.Gauge
+	mutex sync.RWMutex
+	uri   URI
+
 	totalScrapes p.Counter
 
-	clusterRAMTotal              *p.GaugeVec
-	clusterRAMUsed               *p.GaugeVec
-	clusterRAMUsedByData         *p.GaugeVec
-	clusterRAMQuotaTotal         *p.GaugeVec
-	clusterRAMQuotaTotalPerNode  *p.GaugeVec
-	clusterRAMQuotaUsed          *p.GaugeVec
-	clusterRAMQuotaUsedPerNode   *p.GaugeVec
-	clusterDiskTotal             *p.GaugeVec
-	clusterDiskQuotaTotal        *p.GaugeVec
-	clusterDiskUsed              *p.GaugeVec
-	clusterDiskUsedByData        *p.GaugeVec
-	clusterDiskFree              *p.GaugeVec
-	clusterFtsRAMQuota           *p.GaugeVec
-	clusterIndexRAMQuota         *p.GaugeVec
-	clusterRAMQuota              *p.GaugeVec
-	clusterRebalanceStatus       *p.GaugeVec
-	clusterMaxBucketCount        *p.GaugeVec
-	clusterFailoverNodeCount     *p.GaugeVec
-	clusterRebalanceSuccessCount *p.GaugeVec
-	clusterRebalanceStartCount   *p.GaugeVec
-	clusterRebalanceFailCount    *p.GaugeVec
+	up                           p.Gauge
+	clusterRAMTotal              p.Gauge
+	clusterRAMUsed               p.Gauge
+	clusterRAMUsedByData         p.Gauge
+	clusterRAMQuotaTotal         p.Gauge
+	clusterRAMQuotaTotalPerNode  p.Gauge
+	clusterRAMQuotaUsed          p.Gauge
+	clusterRAMQuotaUsedPerNode   p.Gauge
+	clusterDiskTotal             p.Gauge
+	clusterDiskQuotaTotal        p.Gauge
+	clusterDiskUsed              p.Gauge
+	clusterDiskUsedByData        p.Gauge
+	clusterDiskFree              p.Gauge
+	clusterFtsRAMQuota           p.Gauge
+	clusterIndexRAMQuota         p.Gauge
+	clusterRAMQuota              p.Gauge
+	clusterRebalanceStatus       p.Gauge
+	clusterMaxBucketCount        p.Gauge
+	clusterFailoverNodeCount     p.Gauge
+	clusterRebalanceSuccessCount p.Gauge
+	clusterRebalanceStartCount   p.Gauge
+	clusterRebalanceFailCount    p.Gauge
 
-	nodesStatus            *p.GaugeVec
-	nodesClusterMembership *p.GaugeVec
-	nodeCPUUtilizationRate *p.GaugeVec
-	nodeRAMUsed            *p.GaugeVec
+	nodeRAMTotal                 p.Gauge
+	nodeRAMUsed                  p.Gauge
+	nodeRAMUsedByData            p.Gauge
+	nodeRAMQuotaTotal            p.Gauge
+	nodeRAMQuotaTotalPerNode     p.Gauge
+	nodeRAMQuotaUsed             p.Gauge
+	nodeRAMQuotaUsedPerNode      p.Gauge
+	nodeDiskTotal                p.Gauge
+	nodeDiskQuotaTotal           p.Gauge
+	nodeDiskUsed                 p.Gauge
+	nodeDiskUsedByData           p.Gauge
+	nodeDiskFree                 p.Gauge
+	nodeCPUUtilizationRate       p.Gauge
+	nodeSwapTotal                p.Gauge
+	nodeSwapUsed                 p.Gauge
+	nodeCmdGet                   p.Gauge
+	nodeCouchDocsActualDiskSize  p.Gauge
+	nodeCouchDocsDataSize        p.Gauge
+	nodeCouchSpatialDataSize     p.Gauge
+	nodeCouchSpatialDiskSize     p.Gauge
+	nodeCouchViewsActualDiskSize p.Gauge
+	nodeCouchViewsDataSize       p.Gauge
+	nodeCurrItems                p.Gauge
+	nodeCurrItemsTot             p.Gauge
+	nodeEpBgFetched              p.Gauge
+	nodeGetHits                  p.Gauge
+	nodeMemUsed                  p.Gauge
+	nodeOps                      p.Gauge
+	nodeVbReplicaCurrItems       p.Gauge
+	nodeUptime                   p.Gauge
+	nodesClusterMembership       p.Gauge
+	nodesStatus                  p.Gauge
+	nodeFtsRAMQuota              p.Gauge
+	nodeIndexRAMQuota            p.Gauge
+	nodeRAMQuota                 p.Gauge
 }
 
 // URI is a custom url wrapper with credentials
@@ -131,10 +164,39 @@ func (e *Exporter) Describe(ch chan<- *p.Desc) {
 	e.clusterRebalanceStartCount.Describe(ch)
 	e.clusterRebalanceFailCount.Describe(ch)
 
-	e.nodesStatus.Describe(ch)
-	e.nodesClusterMembership.Describe(ch)
-	e.nodeCPUUtilizationRate.Describe(ch)
+	e.nodeRAMTotal.Describe(ch)
 	e.nodeRAMUsed.Describe(ch)
+	e.nodeRAMUsedByData.Describe(ch)
+	e.nodeRAMQuotaTotal.Describe(ch)
+	e.nodeRAMQuotaUsed.Describe(ch)
+	e.nodeDiskTotal.Describe(ch)
+	e.nodeDiskQuotaTotal.Describe(ch)
+	e.nodeDiskUsed.Describe(ch)
+	e.nodeDiskUsedByData.Describe(ch)
+	e.nodeDiskFree.Describe(ch)
+	e.nodeCPUUtilizationRate.Describe(ch)
+	e.nodeSwapTotal.Describe(ch)
+	e.nodeSwapUsed.Describe(ch)
+	e.nodeCmdGet.Describe(ch)
+	e.nodeCouchDocsActualDiskSize.Describe(ch)
+	e.nodeCouchDocsDataSize.Describe(ch)
+	e.nodeCouchSpatialDataSize.Describe(ch)
+	e.nodeCouchSpatialDiskSize.Describe(ch)
+	e.nodeCouchViewsActualDiskSize.Describe(ch)
+	e.nodeCouchViewsDataSize.Describe(ch)
+	e.nodeCurrItems.Describe(ch)
+	e.nodeCurrItemsTot.Describe(ch)
+	e.nodeEpBgFetched.Describe(ch)
+	e.nodeGetHits.Describe(ch)
+	e.nodeMemUsed.Describe(ch)
+	e.nodeOps.Describe(ch)
+	e.nodeVbReplicaCurrItems.Describe(ch)
+	e.nodeUptime.Describe(ch)
+	e.nodesClusterMembership.Describe(ch)
+	e.nodesStatus.Describe(ch)
+	e.nodeFtsRAMQuota.Describe(ch)
+	e.nodeIndexRAMQuota.Describe(ch)
+	e.nodeRAMQuota.Describe(ch)
 }
 
 // Collect fetches data for each exported metric.
@@ -246,69 +308,63 @@ func (e *Exporter) scrapeNodes() {
 		return
 	}
 
-	var data ClusterData
+	var node NodeData
 	body, err := ioutil.ReadAll(res.Body)
 	defer res.Body.Close()
 	if err != nil {
 		log.Error(err.Error())
 	}
-	err = json.Unmarshal([]byte(body), &data)
+	err = json.Unmarshal([]byte(body), &node)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
-	log.Debug("GET " + e.uri.URL + "/pools/default" + " - data: " + string(body))
+	log.Debug("GET " + e.uri.URL + "/nodes/self" + " - data: " + string(body))
 
-	getClusterData(e, &data)
-	getNodeData(e, &data)
-	// getBucketData()
-}
-
-func getClusterData(e *Exporter, data *ClusterData) {
-	var rebalance int
-	if data.RebalanceStatus == "running" {
-		rebalance = 1
+	var status int
+	if node.Status == "healthy" {
+		status = 1
 	}
-	e.clusterRAMTotal.With(nil).Set(float64(data.StorageTotals.RAM.Total))
-	e.clusterRAMUsed.With(nil).Set(float64(data.StorageTotals.RAM.Used))
-	e.clusterRAMUsedByData.With(nil).Set(float64(data.StorageTotals.RAM.UsedByData))
-	e.clusterRAMQuotaTotal.With(nil).Set(float64(data.StorageTotals.RAM.QuotaTotal))
-	e.clusterRAMQuotaTotalPerNode.With(nil).Set(float64(data.StorageTotals.RAM.QuotaTotalPerNode))
-	e.clusterRAMQuotaUsed.With(nil).Set(float64(data.StorageTotals.RAM.QuotaUsed))
-	e.clusterRAMQuotaUsedPerNode.With(nil).Set(float64(data.StorageTotals.RAM.QuotaUsedPerNode))
-	e.clusterDiskTotal.With(nil).Set(float64(data.StorageTotals.Hdd.Total))
-	e.clusterDiskQuotaTotal.With(nil).Set(float64(data.StorageTotals.Hdd.QuotaTotal))
-	e.clusterDiskUsed.With(nil).Set(float64(data.StorageTotals.Hdd.Used))
-	e.clusterDiskUsedByData.With(nil).Set(float64(data.StorageTotals.Hdd.UsedByData))
-	e.clusterDiskFree.With(nil).Set(float64(data.StorageTotals.Hdd.Free))
-	e.clusterFtsRAMQuota.With(nil).Set(float64(data.FtsMemoryQuota * 1024 * 1024))
-	e.clusterIndexRAMQuota.With(nil).Set(float64(data.IndexMemoryQuota * 1024 * 1024))
-	e.clusterRAMQuota.With(nil).Set(float64(data.MemoryQuota * 1024 * 1024))
-	e.clusterRebalanceStatus.With(nil).Set(float64(rebalance))
-	e.clusterMaxBucketCount.With(nil).Set(float64(data.MaxBucketCount))
-	e.clusterFailoverNodeCount.With(nil).Set(float64(data.Counters.FailoverNode))
-	e.clusterRebalanceSuccessCount.With(nil).Set(float64(data.Counters.RebalanceSuccess))
-	e.clusterRebalanceStartCount.With(nil).Set(float64(data.Counters.RebalanceStart))
-	e.clusterRebalanceFailCount.With(nil).Set(float64(data.Counters.RebalanceFail))
-}
-
-func getNodeData(e *Exporter, data *ClusterData) {
-	for _, n := range data.Nodes {
-		var status int
-		if n.Status == "healthy" {
-			status = 1
-		}
-		var membership int
-		if n.ClusterMembership == "active" {
-			membership = 1
-		}
-		e.nodesStatus.With(nil).Set(float64(status))
-		e.nodesClusterMembership.With(nil).Set(float64(membership))
-		e.nodeCPUUtilizationRate.With(nil).Set(n.SystemStats.CPUUtilizationRate)
-		e.nodeRAMUsed.With(nil).Set(float64(n.InterestingStats.MemUsed))
+	var membership int
+	if node.ClusterMembership == "active" {
+		membership = 1
 	}
-}
+	uptime, err := strconv.Atoi(node.Uptime)
+	if err != nil {
+		log.Error(err.Error())
+	}
 
-func getBucketData(e *Exporter, data *BucketData) {
-
+	e.nodeRAMTotal.Set(float64(node.StorageTotals.RAM.Total))
+	e.nodeRAMUsed.Set(float64(node.StorageTotals.RAM.Used))
+	e.nodeRAMUsedByData.Set(float64(node.StorageTotals.RAM.UsedByData))
+	e.nodeRAMQuotaTotal.Set(float64(node.StorageTotals.RAM.QuotaTotal))
+	e.nodeRAMQuotaUsed.Set(float64(node.StorageTotals.RAM.QuotaUsed))
+	e.nodeDiskTotal.Set(float64(node.StorageTotals.Hdd.Total))
+	e.nodeDiskQuotaTotal.Set(float64(node.StorageTotals.Hdd.QuotaTotal))
+	e.nodeDiskUsed.Set(float64(node.StorageTotals.Hdd.Used))
+	e.nodeDiskUsedByData.Set(float64(node.StorageTotals.Hdd.UsedByData))
+	e.nodeDiskFree.Set(float64(node.StorageTotals.Hdd.Free))
+	e.nodeCPUUtilizationRate.Set(float64(node.SystemStats.CPUUtilizationRate))
+	e.nodeSwapTotal.Set(float64(node.SystemStats.SwapTotal))
+	e.nodeSwapUsed.Set(float64(node.SystemStats.SwapUsed))
+	e.nodeCmdGet.Set(float64(node.InterestingStats.CmdGet))
+	e.nodeCouchDocsActualDiskSize.Set(float64(node.InterestingStats.CouchDocsActualDiskSize))
+	e.nodeCouchDocsDataSize.Set(float64(node.InterestingStats.CouchDocsDataSize))
+	e.nodeCouchSpatialDataSize.Set(float64(node.InterestingStats.CouchSpatialDataSize))
+	e.nodeCouchSpatialDiskSize.Set(float64(node.InterestingStats.CouchSpatialDiskSize))
+	e.nodeCouchViewsActualDiskSize.Set(float64(node.InterestingStats.CouchViewsActualDiskSize))
+	e.nodeCouchViewsDataSize.Set(float64(node.InterestingStats.CouchViewsDataSize))
+	e.nodeCurrItems.Set(float64(node.InterestingStats.CurrItems))
+	e.nodeCurrItemsTot.Set(float64(node.InterestingStats.CurrItemsTot))
+	e.nodeEpBgFetched.Set(float64(node.InterestingStats.EpBgFetched))
+	e.nodeGetHits.Set(float64(node.InterestingStats.GetHits))
+	e.nodeMemUsed.Set(float64(node.InterestingStats.MemUsed))
+	e.nodeOps.Set(float64(node.InterestingStats.Ops))
+	e.nodeVbReplicaCurrItems.Set(float64(node.InterestingStats.VbReplicaCurrItems))
+	e.nodeUptime.Set(float64(uptime))
+	e.nodesClusterMembership.Set(float64(membership))
+	e.nodesStatus.Set(float64(status))
+	e.nodeFtsRAMQuota.Set(float64(node.FtsMemoryQuota * 1024 * 1024))
+	e.nodeIndexRAMQuota.Set(float64(node.IndexMemoryQuota * 1024 * 1024))
+	e.nodeRAMQuota.Set(float64(node.FtsMemoryQuota * 1024 * 1024))
 }
