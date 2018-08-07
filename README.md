@@ -99,6 +99,24 @@ Metrics
 | node_index_ram_quota_bytes                | Node quota for Index bucket                     |
 | node_data_ram_quota_bytes                 | Node quota for Data bucket                      |
 
+### Bucket metrics
+
+|            name            |         description          |
+| -------------------------- | ---------------------------- |
+| bucket_proxy_port          | Bucket proxy port            |
+| bucket_replica_index       | Bucket replica index         |
+| bucket_replica_number      | Bucket replica number        |
+| bucket_threads_number      | Bucket thread number         |
+| bucket_ram_quota_bytes     | Bucket RAM quota             |
+| bucket_raw_ram_quota_bytes | Bucket raw RAM quota         |
+| bucket_quota_percent_used  | Bucket quota usage           |
+| bucket_ops_per_second      | Bucket operations per second |
+| bucket_disk_fetches        | Bucket disk fetches          |
+| bucket_item_count          | Bucket item count            |
+| bucket_disk_used_bytes     | Bucket disk used             |
+| bucket_data_used_bytes     | Bucket data used             |
+| bucket_ram_used_bytes      | Bucket RAM used              |
+
 Docker
 ------
 
@@ -118,6 +136,13 @@ $ sudo mv exporter.service /etc/systemd/system/couchbase-exporter.service
 $ sudo systemctl enable couchbase-exporter.service
 $ sudo systemctl start couchbase-exporter.service
 ```
+
+To do
+-----
+
+- XDCR metrics
+- Couchbase 5 compatibility
+- Cleaner code
 
 Author Information
 ------------------

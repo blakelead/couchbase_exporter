@@ -80,6 +80,20 @@ type Exporter struct {
 	nodeFtsRAMQuota              p.Gauge
 	nodeIndexRAMQuota            p.Gauge
 	nodeRAMQuota                 p.Gauge
+
+	bucketProxyPort        *p.GaugeVec
+	bucketReplicaIndex     *p.GaugeVec
+	bucketReplicaNumber    *p.GaugeVec
+	bucketThreadsNumber    *p.GaugeVec
+	bucketRAMQuota         *p.GaugeVec
+	bucketRawRAMQuota      *p.GaugeVec
+	bucketQuotaPercentUsed *p.GaugeVec
+	bucketOpsPerSec        *p.GaugeVec
+	bucketDiskFetches      *p.GaugeVec
+	bucketItemCount        *p.GaugeVec
+	bucketDiskUsed         *p.GaugeVec
+	bucketDataUsed         *p.GaugeVec
+	bucketMemUsed          *p.GaugeVec
 }
 
 // URI is a custom url wrapper with credentials
@@ -91,6 +105,10 @@ type URI struct {
 
 func newGauge(name string, help string) p.Gauge {
 	return p.NewGauge(p.GaugeOpts{Namespace: "cb", Name: name, Help: help})
+}
+
+func newGaugeVec(name string, help string, labels []string) *p.GaugeVec {
+	return p.NewGaugeVec(p.GaugeOpts{Namespace: "cb", Name: name, Help: help}, labels)
 }
 
 // NewExporter instantiates the Exporter with the URI and metrics.
@@ -156,6 +174,20 @@ func NewExporter(uri URI) (*Exporter, error) {
 		nodeFtsRAMQuota:              newGauge("node_fts_ram_quota_bytes", "Node quota for Full text search bucket."),
 		nodeIndexRAMQuota:            newGauge("node_index_ram_quota_bytes", "Node quota for Index bucket."),
 		nodeRAMQuota:                 newGauge("node_data_ram_quota_bytes", "Node quota for Data bucket."),
+
+		bucketProxyPort:        newGaugeVec("bucket_proxy_port", "Bucket proxy port.", []string{"bucket"}),
+		bucketReplicaIndex:     newGaugeVec("bucket_replica_index", "Bucket replica index.", []string{"bucket"}),
+		bucketReplicaNumber:    newGaugeVec("bucket_replica_number", "Bucket replica number.", []string{"bucket"}),
+		bucketThreadsNumber:    newGaugeVec("bucket_threads_number", "Bucket thread number.", []string{"bucket"}),
+		bucketRAMQuota:         newGaugeVec("bucket_ram_quota_bytes", "Bucket RAM quota.", []string{"bucket"}),
+		bucketRawRAMQuota:      newGaugeVec("bucket_raw_ram_quota_bytes", "Bucket raw RAM quota.", []string{"bucket"}),
+		bucketQuotaPercentUsed: newGaugeVec("bucket_quota_percent_used", "Bucket quota usage.", []string{"bucket"}),
+		bucketOpsPerSec:        newGaugeVec("bucket_ops_per_second", "Bucket operations per second.", []string{"bucket"}),
+		bucketDiskFetches:      newGaugeVec("bucket_disk_fetches", "Bucket disk fetches.", []string{"bucket"}),
+		bucketItemCount:        newGaugeVec("bucket_item_count", "Bucket item count.", []string{"bucket"}),
+		bucketDiskUsed:         newGaugeVec("bucket_disk_used_bytes", "Bucket disk used.", []string{"bucket"}),
+		bucketDataUsed:         newGaugeVec("bucket_data_used_bytes", "Bucket data used.", []string{"bucket"}),
+		bucketMemUsed:          newGaugeVec("bucket_ram_used_bytes", "Bucket RAM used.", []string{"bucket"}),
 	}, nil
 }
 
@@ -219,6 +251,21 @@ func (e *Exporter) Describe(ch chan<- *p.Desc) {
 	e.nodeFtsRAMQuota.Describe(ch)
 	e.nodeIndexRAMQuota.Describe(ch)
 	e.nodeRAMQuota.Describe(ch)
+
+	e.bucketProxyPort.Describe(ch)
+	e.bucketReplicaIndex.Describe(ch)
+	e.bucketReplicaNumber.Describe(ch)
+	e.bucketThreadsNumber.Describe(ch)
+	e.bucketRAMQuota.Describe(ch)
+	e.bucketRawRAMQuota.Describe(ch)
+	e.bucketQuotaPercentUsed.Describe(ch)
+	e.bucketOpsPerSec.Describe(ch)
+	e.bucketDiskFetches.Describe(ch)
+	e.bucketItemCount.Describe(ch)
+	e.bucketDiskUsed.Describe(ch)
+	e.bucketDataUsed.Describe(ch)
+	e.bucketMemUsed.Describe(ch)
+
 }
 
 // Collect fetches data for each exported metric.
@@ -228,6 +275,7 @@ func (e *Exporter) Collect(ch chan<- p.Metric) {
 	e.totalScrapes.Inc()
 	e.scrapeClusterData()
 	e.scrapeNodeData()
+	e.scrapeBucketData()
 
 	e.totalScrapes.Collect(ch)
 
@@ -287,6 +335,20 @@ func (e *Exporter) Collect(ch chan<- p.Metric) {
 	e.nodeFtsRAMQuota.Collect(ch)
 	e.nodeIndexRAMQuota.Collect(ch)
 	e.nodeRAMQuota.Collect(ch)
+
+	e.bucketProxyPort.Collect(ch)
+	e.bucketReplicaIndex.Collect(ch)
+	e.bucketReplicaNumber.Collect(ch)
+	e.bucketThreadsNumber.Collect(ch)
+	e.bucketRAMQuota.Collect(ch)
+	e.bucketRawRAMQuota.Collect(ch)
+	e.bucketQuotaPercentUsed.Collect(ch)
+	e.bucketOpsPerSec.Collect(ch)
+	e.bucketDiskFetches.Collect(ch)
+	e.bucketItemCount.Collect(ch)
+	e.bucketDiskUsed.Collect(ch)
+	e.bucketDataUsed.Collect(ch)
+	e.bucketMemUsed.Collect(ch)
 
 	e.mutex.Unlock()
 }
@@ -429,4 +491,58 @@ func (e *Exporter) scrapeNodeData() {
 	e.nodeFtsRAMQuota.Set(float64(node.FtsMemoryQuota * 1024 * 1024))
 	e.nodeIndexRAMQuota.Set(float64(node.IndexMemoryQuota * 1024 * 1024))
 	e.nodeRAMQuota.Set(float64(node.FtsMemoryQuota * 1024 * 1024))
+}
+
+func (e *Exporter) scrapeBucketData() {
+	req, err := http.NewRequest("GET", e.uri.URL+"/pools/default/buckets", nil)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+	req.SetBasicAuth(e.uri.Username, e.uri.Password)
+	client := http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+	if res.StatusCode != 200 {
+		log.Error(req.URL.Path + ": " + res.Status)
+		return
+	}
+
+	var buckets []BucketData
+	body, err := ioutil.ReadAll(res.Body)
+	defer res.Body.Close()
+	if err != nil {
+		log.Error(err.Error())
+	}
+	err = json.Unmarshal([]byte(body), &buckets)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	log.Debug("GET " + e.uri.URL + "/pools/default/buckets" + " - data: " + string(body))
+
+	for _, bucket := range buckets {
+		var replicaIndex int
+		if bucket.ReplicaIndex == true {
+			replicaIndex = 1
+		}
+		e.bucketProxyPort.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucket.ProxyPort))
+		e.bucketReplicaIndex.With(p.Labels{"bucket": bucket.Name}).Set(float64(replicaIndex))
+		e.bucketReplicaNumber.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucket.ReplicaNumber))
+		e.bucketThreadsNumber.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucket.ThreadsNumber))
+		e.bucketRAMQuota.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucket.Quota.RAM))
+		e.bucketRawRAMQuota.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucket.Quota.RawRAM))
+		e.bucketQuotaPercentUsed.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucket.BasicStats.QuotaPercentUsed))
+		e.bucketOpsPerSec.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucket.BasicStats.OpsPerSec))
+		e.bucketDiskFetches.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucket.BasicStats.DiskFetches))
+		e.bucketItemCount.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucket.BasicStats.ItemCount))
+		e.bucketDiskUsed.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucket.BasicStats.DiskUsed))
+		e.bucketDataUsed.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucket.BasicStats.DiskUsed))
+		e.bucketMemUsed.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucket.BasicStats.MemUsed))
+
+	}
+
 }
