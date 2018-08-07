@@ -18,104 +18,104 @@ Run from command line:
 $ ./couchbase_exporter [flags]
 ```
 
-Available flags:
+You can either use command-line flags, or environment variables to pass custom parameters. Environment variables take precedence over flags.
 
-| argument            | description                                | default               |
-|---------------------|--------------------------------------------|-----------------------|
-| -web.listen-address | The address to listen on for HTTP requests | :9191                 |
-| -web.telemetry-path | Path under which to expose metrics         | /metrics              |
-| -db.url             | The address of Couchbase cluster           | http://localhost:8091 |
-| -db.user            | The administrator username                 | admin                 |
-| -db.pwd             | The administrator password                 | password              |
-| -log.level          | Log level: info, debug, warn, error, fatal | info                  |
-| -log.format         | Log format: text, json                     | text                  |
-| -help               | Command line help                          |                       |
+Available flags and equivalent environment variable:
+
+|      argument       | environment variable |              description               |        default        |
+| ------------------- | -------------------- | -------------------------------------- | --------------------- |
+| -web.listen-address | LISTEN_ADDR          | Address to listen on for HTTP requests | :9191                 |
+| -web.telemetry-path | TELEMTRY_PATH        | Path under which to expose metrics     | /metrics              |
+| -db.url             | CB_URI               | Address of Couchbase cluster           | http://127.0.0.1:8091 |
+| -db.user            | CB_ADMIN_USER        | Administrator username                 | admin                 |
+| -db.pwd             | CB_ADMIN_PASSWORD    | Administrator password                 | password              |
+| -log.level          | LOG_LEVEL            | Log level: info,debug,warn,error,fatal | info                  |
+| -log.format         | LOG_FORMAT           | Log format: text, json                 | text                  |
+| -help               |                      | Command line help                      |                       |
 
 Metrics
 -------
 
 ### Cluster metrics
 
-|                   name                    |                   description                   |
-| ----------------------------------------- | ----------------------------------------------- |
-| cb_up                                     | State of last cluster scrape                    |
-| cb_cluster_ram_total_bytes                | Total RAM in the cluster                        |
-| cb_cluster_ram_used_bytes                 | Used RAM in the cluster                         |
-| cb_cluster_ram_used_by_data_bytes         | Used RAM by data in the cluster                 |
-| cb_cluster_ram_quota_total_bytes          | Total quota RAM in the cluster                  |
-| cb_cluster_ram_quota_total_per_node_bytes | Total quota RAM per node in the cluster         |
-| cb_cluster_ram_quota_used_bytes           | Used quota RAM in the cluster                   |
-| cb_cluster_ram_quota_used_per_node_bytes  | Used quota RAM per node in the cluster          |
-| cb_cluster_disk_total_bytes               | Total disk in the cluster                       |
-| cb_cluster_disk_quota_total_bytes         | Disk quota in the cluster                       |
-| cb_cluster_disk_used_bytes                | Used disk in the cluster                        |
-| cb_cluster_disk_used_by_data_bytes        | Disk used by data in the cluster                |
-| cb_cluster_disk_free_bytes                | Free disk in the cluster                        |
-| cb_cluster_fts_ram_quota_bytes            | RAM quota for Full text search bucket           |
-| cb_cluster_index_ram_quota_bytes          | RAM quota for Index bucket                      |
-| cb_cluster_data_ram_quota_bytes           | RAM quota for Data bucket                       |
-| cb_cluster_rebalance_status               | Occurrence of rebalancing in the cluster        |
-| cb_cluster_max_bucket_count               | Maximum number of buckets                       |
-| cb_cluster_failover_node_count            | Number of failovers since cluster is up         |
-| cb_cluster_rebalance_success_count        | Number of rebalance success since cluster is up |
-| cb_cluster_rebalance_start_count          | Number of rebalance start since cluster is up   |
-| cb_cluster_rebalance_fail_count           | Number of rebalance failure since cluster is up |
+|                name                |                    description                     |
+| ---------------------------------- | -------------------------------------------------- |
+| cb_up                              | Cluster healthcheck                                |
+| cb_cluster_ram_total_bytes         | Total memory available to the cluster              |
+| cb_cluster_ram_used_bytes          | Memory used by the cluster                         |
+| cb_cluster_ram_used_by_data_bytes  | Memory used by the data in the cluster             |
+| cb_cluster_ram_quota_total_bytes   | Total memory allocated to Couchbase in the cluster |
+| cb_cluster_ram_quota_used_bytes    | Memory quota used by the cluster                   |
+| cb_cluster_disk_total_bytes        | Total disk space available to the cluster          |
+| cb_cluster_disk_used_bytes         | Disk space used by the cluster                     |
+| cb_cluster_disk_quota_total_bytes  | Disk space quota for the cluster                   |
+| cb_cluster_disk_used_by_data_bytes | Disk space used by the data in the cluster         |
+| cb_cluster_disk_free_bytes         | Free disk space in the cluster                     |
+| cb_cluster_fts_ram_quota_bytes     | Memory quota allocated to full text search buckets |
+| cb_cluster_index_ram_quota_bytes   | Memory quota allocated to Index buckets            |
+| cb_cluster_data_ram_quota_bytes    | Memory quota allocated to Data buckets             |
+| cb_cluster_rebalance_status        | Rebalancing status                                 |
+| cb_cluster_max_bucket_count        | Maximum number of buckets allowed                  |
+| cb_cluster_failover_node_count     | Number of failovers since cluster is up            |
+| cb_cluster_rebalance_success_count | Number of rebalance successes since cluster is up  |
+| cb_cluster_rebalance_start_count   | Number of rebalance starts since cluster is up     |
+| cb_cluster_rebalance_fail_count    | Number of rebalance fails since cluster is up      |
 
 ### Node metrics
 
-|                   name                    |                   description                   |
-| ----------------------------------------- | ----------------------------------------------- |
-| node_ram_total_bytes                      | Node total RAM                                  |
-| node_ram_usage_bytes                      | Node used RAM                                   |
-| node_ram_used_by_data_bytes               | Node RAM used by data                           |
-| node_ram_quota_total_bytes                | Node RAM quota total                            |
-| node_ram_quota_used_bytes                 | Node RAM quota used                             |
-| node_disk_total_bytes                     | Node Total disk                                 |
-| node_disk_quota_total_bytes               | Node disk quota total                           |
-| node_disk_used_bytes                      | Node used disk                                  |
-| node_disk_quota_used_bytes                | Node disk quota total                           |
-| node_disk_free_bytes                      | Node free disk                                  |
-| node_cpu_utilization_rate                 | CPU utilization rate                            |
-| node_swap_total_bytes                     | Node total swap                                 |
-| node_swap_used_bytes                      | Node used swap                                  |
-| node_stats_cmd_get                        | Node stats: cmd_get                             |
-| node_stats_couch_docs_actual_disk_size    | Node stats: couch_docs_actual_disk_size         |
-| node_stats_couch_docs_data_size           | Node stats: couch_docs_data_size                |
-| node_stats_couch_spatial_data_size        | Node stats: couch_spatial_data_size             |
-| node_stats_couch_spatial_disk_size        | Node stats: couch_spatial_disk_size             |
-| node_stats_couch_views_actual_disk_size   | Node stats: couch_views_actual_disk_siz         |
-| node_stats_couch_views_data_size          | Node stats: couch_views_data_size               |
-| node_stats_curr_items                     | Node stats: curr_items                          |
-| node_stats_curr_items_tot                 | Node stats: curr_items_tot                      |
-| node_stats_ep_bg_fetched                  | Node stats: ep_bg_fetched                       |
-| node_stats_get_hits                       | Node stats: get_hits                            |
-| node_stats_mem_used                       | Node stats: mem_used                            |
-| node_stats_ops                            | Node stats: ops                                 |
-| node_stats_vb_replica_curr_items          | Node stats: vb_replica_curr_items               |
-| node_uptime_seconds                       | Node uptime                                     |
-| node_cluster_membership                   | Status of node cluster membership               |
-| node_status                               | Status of couchbase node                        |
-| node_fts_ram_quota_bytes                  | Node quota for Full text search bucket          |
-| node_index_ram_quota_bytes                | Node quota for Index bucket                     |
-| node_data_ram_quota_bytes                 | Node quota for Data bucket                      |
+|                    name                    |                    description                     |
+| ------------------------------------------ | -------------------------------------------------- |
+| cb_node_ram_total_bytes                    | Total memory available to the node                 |
+| cb_node_ram_usage_bytes                    | Memory used by the node                            |
+| cb_node_ram_used_by_data_bytes             | Memory used by data in the node                    |
+| cb_node_ram_quota_total_bytes              | Memory quota allocated to the node                 |
+| cb_node_ram_quota_used_bytes               | Memory quota used by the node                      |
+| cb_node_disk_total_bytes                   | Total disk space available to the node             |
+| cb_node_disk_quota_total_bytes             | Disk space quota for the node                      |
+| cb_node_disk_used_bytes                    | Disk space used by the node                        |
+| cb_node_disk_quota_used_bytes              | Disk space quota used by the node                  |
+| cb_node_disk_free_bytes                    | Free disk space in the node                        |
+| cb_node_cpu_utilization_rate               | CPU utilization rate in percent                    |
+| cb_node_swap_total_bytes                   | Total swap space allocated to the node             |
+| cb_node_swap_used_bytes                    | Amount of swap space used by the node              |
+| cb_node_stats_cmd_get                      | Number of get commands                             |
+| cb_node_stats_couch_docs_actual_disk_size  | Disk space used by Couchbase documents             |
+| cb_node_stats_couch_docs_data_size         | Couchbase documents data size in the node          |
+| cb_node_stats_couch_spatial_data_size      | Data size for Couchbase spatial views              |
+| cb_node_stats_couch_spatial_disk_size      | Disk space used by Couchbase spatial views         |
+| cb_node_stats_couch_views_actual_disk_size | Disk space used by Couchbase views                 |
+| cb_node_stats_couch_views_data_size        | Data size for Couchbase views                      |
+| cb_node_stats_curr_items                   | Number of current items                            |
+| cb_node_stats_curr_items_tot               | Total number of items in the node                  |
+| cb_node_stats_ep_bg_fetched                | Number of background disk fetches                  |
+| cb_node_stats_get_hits                     | Number of get hits                                 |
+| cb_node_stats_mem_used                     | Memory used by the node                            |
+| cb_node_stats_ops                          | Number of operations performed in the node         |
+| cb_node_stats_vb_replica_curr_items        | Number of replicas in current items                |
+| cb_node_uptime_seconds                     | Node uptime                                        |
+| cb_node_cluster_membership                 | Cluster membership                                 |
+| cb_node_status                             | Status of couchbase node                           |
+| cb_node_fts_ram_quota_bytes                | Memory quota allocated to full text search buckets |
+| cb_node_index_ram_quota_bytes              | Memory quota allocated to index buckets            |
+| cb_node_data_ram_quota_bytes               | Memory quota allocated to data buckets             |
 
 ### Bucket metrics
 
-|            name            |         description          |
-| -------------------------- | ---------------------------- |
-| bucket_proxy_port          | Bucket proxy port            |
-| bucket_replica_index       | Bucket replica index         |
-| bucket_replica_number      | Bucket replica number        |
-| bucket_threads_number      | Bucket thread number         |
-| bucket_ram_quota_bytes     | Bucket RAM quota             |
-| bucket_raw_ram_quota_bytes | Bucket raw RAM quota         |
-| bucket_quota_percent_used  | Bucket quota usage           |
-| bucket_ops_per_second      | Bucket operations per second |
-| bucket_disk_fetches        | Bucket disk fetches          |
-| bucket_item_count          | Bucket item count            |
-| bucket_disk_used_bytes     | Bucket disk used             |
-| bucket_data_used_bytes     | Bucket data used             |
-| bucket_ram_used_bytes      | Bucket RAM used              |
+|               name               |             description              |
+| -------------------------------- | ------------------------------------ |
+| cb_bucket_proxy_port             | Bucket proxy port                    |
+| cb_bucket_replica_index          | Replica index for the bucket         |
+| cb_bucket_replica_number         | Number of replicas for the bucket    |
+| cb_bucket_threads_number         | Bucket thread number                 |
+| cb_bucket_ram_quota_bytes        | Memory used by the bucket            |
+| cb_bucket_raw_ram_quota_bytes    | Raw memory used by the bucket        |
+| cb_bucket_ram_quota_percent_used | Memory used by the bucket in percent |
+| cb_bucket_ops_per_second         | Number of operations per second      |
+| cb_bucket_disk_fetches           | Disk fetches for the bucket          |
+| cb_bucket_item_count             | Number of items in the bucket        |
+| cb_bucket_disk_used_bytes        | Disk used by the bucket              |
+| cb_bucket_data_used_bytes        | Data loaded in memory                |
+| cb_bucket_ram_used_bytes         | Bucket RAM used                      |
 
 Docker
 ------
@@ -137,11 +137,13 @@ $ sudo systemctl enable couchbase-exporter.service
 $ sudo systemctl start couchbase-exporter.service
 ```
 
-To do
+Todo
 -----
 
 - XDCR metrics
 - Couchbase 5 compatibility
+- Advanced bucket metrics
+- Possibility to chose either remote or local scraping
 - Cleaner code
 
 Author Information

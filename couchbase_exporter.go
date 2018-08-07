@@ -52,7 +52,7 @@ func main() {
 		w.Write([]byte(`<html>
 			<head><title>Couchbase Exporter</title></head>
 			<body>
-			<h1>Node Exporter</h1>
+			<h1>Couchbase Exporter</h1>
 			<p><i>by Adel Abdelhak</i></p><br>
 			<p>See <a href="` + *metricsPath + `">Metrics</a></p>
 			</body>
