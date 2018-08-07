@@ -25,7 +25,7 @@ Available flags and equivalent environment variable:
 |      argument       | environment variable |              description               |        default        |
 | ------------------- | -------------------- | -------------------------------------- | --------------------- |
 | -web.listen-address | LISTEN_ADDR          | Address to listen on for HTTP requests | :9191                 |
-| -web.telemetry-path | TELEMTRY_PATH        | Path under which to expose metrics     | /metrics              |
+| -web.telemetry-path | TELEMETRY_PATH       | Path under which to expose metrics     | /metrics              |
 | -db.url             | CB_URI               | Address of Couchbase cluster           | http://127.0.0.1:8091 |
 | -db.user            | CB_ADMIN_USER        | Administrator username                 | admin                 |
 | -db.pwd             | CB_ADMIN_PASSWORD    | Administrator password                 | password              |
@@ -140,10 +140,12 @@ $ sudo systemctl start couchbase-exporter.service
 Todo
 -----
 
+- Unit tests
 - XDCR metrics
 - Couchbase 5 compatibility
 - Advanced bucket metrics
 - Possibility to chose either remote or local scraping
+- Filter metrics and buckets at the start of the exporter
 - Cleaner code
 
 Author Information
