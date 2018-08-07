@@ -8,13 +8,11 @@ package collector
 type ClusterData struct {
 	StorageTotals struct {
 		RAM struct {
-			Total             int `json:"total"`
-			QuotaTotal        int `json:"quotaTotal"`
-			QuotaUsed         int `json:"quotaUsed"`
-			Used              int `json:"used"`
-			UsedByData        int `json:"usedByData"`
-			QuotaUsedPerNode  int `json:"quotaUsedPerNode"`
-			QuotaTotalPerNode int `json:"quotaTotalPerNode"`
+			Total      int `json:"total"`
+			QuotaTotal int `json:"quotaTotal"`
+			QuotaUsed  int `json:"quotaUsed"`
+			Used       int `json:"used"`
+			UsedByData int `json:"usedByData"`
 		} `json:"ram"`
 		Hdd struct {
 			Total      int64 `json:"total"`

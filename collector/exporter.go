@@ -27,9 +27,7 @@ type Exporter struct {
 	clusterRAMUsed               p.Gauge
 	clusterRAMUsedByData         p.Gauge
 	clusterRAMQuotaTotal         p.Gauge
-	clusterRAMQuotaTotalPerNode  p.Gauge
 	clusterRAMQuotaUsed          p.Gauge
-	clusterRAMQuotaUsedPerNode   p.Gauge
 	clusterDiskTotal             p.Gauge
 	clusterDiskQuotaTotal        p.Gauge
 	clusterDiskUsed              p.Gauge
@@ -200,9 +198,7 @@ func (e *Exporter) Describe(ch chan<- *p.Desc) {
 	e.clusterRAMUsed.Describe(ch)
 	e.clusterRAMUsedByData.Describe(ch)
 	e.clusterRAMQuotaTotal.Describe(ch)
-	e.clusterRAMQuotaTotalPerNode.Describe(ch)
 	e.clusterRAMQuotaUsed.Describe(ch)
-	e.clusterRAMQuotaUsedPerNode.Describe(ch)
 	e.clusterDiskTotal.Describe(ch)
 	e.clusterDiskQuotaTotal.Describe(ch)
 	e.clusterDiskUsed.Describe(ch)
@@ -284,9 +280,7 @@ func (e *Exporter) Collect(ch chan<- p.Metric) {
 	e.clusterRAMUsed.Collect(ch)
 	e.clusterRAMUsedByData.Collect(ch)
 	e.clusterRAMQuotaTotal.Collect(ch)
-	e.clusterRAMQuotaTotalPerNode.Collect(ch)
 	e.clusterRAMQuotaUsed.Collect(ch)
-	e.clusterRAMQuotaUsedPerNode.Collect(ch)
 	e.clusterDiskTotal.Collect(ch)
 	e.clusterDiskQuotaTotal.Collect(ch)
 	e.clusterDiskUsed.Collect(ch)
@@ -386,18 +380,16 @@ func (e *Exporter) scrapeClusterData() {
 
 	log.Debug("GET " + e.uri.URL + "/pools/default" + " - data: " + string(body))
 
-	var rebalance int
-	if cluster.RebalanceStatus == "running" {
-		rebalance = 1
+	rebalance := 1
+	if cluster.RebalanceStatus == "node" {
+		rebalance = 0
 	}
 	e.up.Set(1)
 	e.clusterRAMTotal.Set(float64(cluster.StorageTotals.RAM.Total))
 	e.clusterRAMUsed.Set(float64(cluster.StorageTotals.RAM.Used))
 	e.clusterRAMUsedByData.Set(float64(cluster.StorageTotals.RAM.UsedByData))
 	e.clusterRAMQuotaTotal.Set(float64(cluster.StorageTotals.RAM.QuotaTotal))
-	e.clusterRAMQuotaTotalPerNode.Set(float64(cluster.StorageTotals.RAM.QuotaTotalPerNode))
 	e.clusterRAMQuotaUsed.Set(float64(cluster.StorageTotals.RAM.QuotaUsed))
-	e.clusterRAMQuotaUsedPerNode.Set(float64(cluster.StorageTotals.RAM.QuotaUsedPerNode))
 	e.clusterDiskTotal.Set(float64(cluster.StorageTotals.Hdd.Total))
 	e.clusterDiskQuotaTotal.Set(float64(cluster.StorageTotals.Hdd.QuotaTotal))
 	e.clusterDiskUsed.Set(float64(cluster.StorageTotals.Hdd.Used))
