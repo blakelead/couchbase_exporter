@@ -101,6 +101,10 @@ type URI struct {
 	Password string
 }
 
+func newCounter(name string, help string) p.Counter {
+	return p.NewCounter(p.CounterOpts{Namespace: "cb", Name: name, Help: help})
+}
+
 func newGauge(name string, help string) p.Gauge {
 	return p.NewGauge(p.GaugeOpts{Namespace: "cb", Name: name, Help: help})
 }
@@ -114,9 +118,8 @@ func NewExporter(uri URI) (*Exporter, error) {
 	return &Exporter{
 		uri: uri,
 
-		totalScrapes: p.NewCounter(p.CounterOpts{Namespace: "cb", Name: "total_scrapes", Help: "Total number of scrapes"}),
+		totalScrapes: newCounter("total_scrapes", "Total number of scrapes"),
 
-		up:                           newGauge("up", "Cluster healthcheck"),
 		clusterRAMTotal:              newGauge("cluster_ram_total_bytes", "Total memory available to the cluster"),
 		clusterRAMUsed:               newGauge("cluster_ram_used_bytes", "Memory used by the cluster"),
 		clusterRAMUsedByData:         newGauge("cluster_ram_used_by_data_bytes", "Memory used by the data in the cluster"),
@@ -137,6 +140,7 @@ func NewExporter(uri URI) (*Exporter, error) {
 		clusterRebalanceStartCount:   newGauge("cluster_rebalance_start_count", "Number of rebalance starts since cluster is up"),
 		clusterRebalanceFailCount:    newGauge("cluster_rebalance_fail_count", "Number of rebalance fails since cluster is up"),
 
+		up:                           newGauge("node_service_up", "Couchbase service healthcheck"),
 		nodeRAMTotal:                 newGauge("node_ram_total_bytes", "Total memory available to the node"),
 		nodeRAMUsed:                  newGauge("node_ram_usage_bytes", "Memory used by the node"),
 		nodeRAMUsedByData:            newGauge("node_ram_used_by_data_bytes", "Memory used by data in the node"),
@@ -346,8 +350,6 @@ func (e *Exporter) Collect(ch chan<- p.Metric) {
 }
 
 func (e *Exporter) scrapeClusterData() {
-	e.up.Set(0)
-
 	req, err := http.NewRequest("GET", e.uri.URL+"/pools/default", nil)
 	if err != nil {
 		log.Error(err.Error())
@@ -382,7 +384,6 @@ func (e *Exporter) scrapeClusterData() {
 	if cluster.RebalanceStatus == "node" {
 		rebalance = 0
 	}
-	e.up.Set(1)
 	e.clusterRAMTotal.Set(float64(cluster.StorageTotals.RAM.Total))
 	e.clusterRAMUsed.Set(float64(cluster.StorageTotals.RAM.Used))
 	e.clusterRAMUsedByData.Set(float64(cluster.StorageTotals.RAM.UsedByData))
@@ -405,6 +406,7 @@ func (e *Exporter) scrapeClusterData() {
 }
 
 func (e *Exporter) scrapeNodeData() {
+	e.up.Set(0)
 	req, err := http.NewRequest("GET", e.uri.URL+"/nodes/self", nil)
 	if err != nil {
 		log.Error(err.Error())
@@ -448,6 +450,7 @@ func (e *Exporter) scrapeNodeData() {
 		log.Error(err.Error())
 	}
 
+	e.up.Set(1)
 	e.nodeRAMTotal.Set(float64(node.StorageTotals.RAM.Total))
 	e.nodeRAMUsed.Set(float64(node.StorageTotals.RAM.Used))
 	e.nodeRAMUsedByData.Set(float64(node.StorageTotals.RAM.UsedByData))

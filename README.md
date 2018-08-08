@@ -1,6 +1,7 @@
 Couchbase Exporter
 ==================
 
+[![Release](https://img.shields.io/badge/release-0.1.0-blue.svg)](https://github.com/blakelead/couchbase_exporter/releases/tag/0.1.0)
 [![Build Status](https://travis-ci.org/blakelead/couchbase_exporter.svg?branch=master)](https://travis-ci.org/blakelead/couchbase_exporter)
 [![Coverage Status](https://coveralls.io/repos/github/blakelead/couchbase_exporter/badge.svg?branch=master)](https://coveralls.io/github/blakelead/couchbase_exporter?branch=master)
 [![Software License](https://img.shields.io/badge/license-MIT-green.svg)](/LICENSE.txt)
@@ -40,7 +41,6 @@ Metrics
 
 |                name                |                    description                     |
 | ---------------------------------- | -------------------------------------------------- |
-| cb_up                              | Cluster healthcheck                                |
 | cb_cluster_ram_total_bytes         | Total memory available to the cluster              |
 | cb_cluster_ram_used_bytes          | Memory used by the cluster                         |
 | cb_cluster_ram_used_by_data_bytes  | Memory used by the data in the cluster             |
@@ -65,6 +65,7 @@ Metrics
 
 |                    name                    |                    description                     |
 | ------------------------------------------ | -------------------------------------------------- |
+| cb_node_service_up                         | Couchbase service healthcheck                      |
 | cb_node_ram_total_bytes                    | Total memory available to the node                 |
 | cb_node_ram_usage_bytes                    | Memory used by the node                            |
 | cb_node_ram_used_by_data_bytes             | Memory used by data in the node                    |
@@ -145,7 +146,7 @@ Todo
 - Couchbase 5 compatibility
 - Advanced bucket metrics
 - Possibility to chose either remote or local scraping
-- Filter metrics and buckets at the start of the exporter
+- Filter by metrics and buckets
 - Cleaner code
 
 Author Information
