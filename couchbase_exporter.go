@@ -50,19 +50,26 @@ func main() {
 	http.Handle(*metricsPath, p.UninstrumentedHandler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`<html>
-			<head><title>Couchbase Exporter</title></head>
-			<body>
-			<h1>Couchbase Exporter</h1>
-			<p><i>by Adel Abdelhak</i></p><br>
-			<p>See <a href="` + *metricsPath + `">Metrics</a></p>
-			</body>
-			</html>`))
+		<head><title>Couchbase Exporter</title></head>
+		<body>
+		<h1>Couchbase Exporter</h1>
+		<p><i>by blakelead</i></p><br>
+		<p>See <a href="` + *metricsPath + `">Metrics</a></p>
+		</body>
+		</html>`))
 	})
 
 	systemdSettings()
 
+	// custom server used to set timeouts
+	httpSrv := &http.Server{
+		Addr:         *listenAddr,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+
 	log.Info("Listening at ", *listenAddr)
-	log.Fatal(http.ListenAndServe(*listenAddr, nil))
+	log.Fatal(httpSrv.ListenAndServe())
 }
 
 func lookupEnv() {

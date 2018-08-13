@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 
 	p "github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
@@ -356,7 +357,7 @@ func (e *Exporter) scrapeClusterData() {
 		return
 	}
 	req.SetBasicAuth(e.uri.Username, e.uri.Password)
-	client := http.Client{}
+	client := http.Client{Timeout: 10 * time.Second}
 	res, err := client.Do(req)
 	if err != nil {
 		log.Error(err.Error())
@@ -413,7 +414,7 @@ func (e *Exporter) scrapeNodeData() {
 		return
 	}
 	req.SetBasicAuth(e.uri.Username, e.uri.Password)
-	client := http.Client{}
+	client := http.Client{Timeout: 10 * time.Second}
 	res, err := client.Do(req)
 	if err != nil {
 		log.Error(err.Error())
@@ -493,7 +494,7 @@ func (e *Exporter) scrapeBucketData() {
 		return
 	}
 	req.SetBasicAuth(e.uri.Username, e.uri.Password)
-	client := http.Client{}
+	client := http.Client{Timeout: 10 * time.Second}
 	res, err := client.Do(req)
 	if err != nil {
 		log.Error(err.Error())
