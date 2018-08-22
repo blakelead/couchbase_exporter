@@ -32,9 +32,9 @@ Available flags and equivalent environment variable:
 | -db.pwd             | CB_EXPORTER_DB_PASSWORD    | Administrator password                 | password              |
 | -log.level          | CB_EXPORTER_LOG_LEVEL      | Log level: info,debug,warn,error,fatal | info                  |
 | -log.format         | CB_EXPORTER_LOG_FORMAT     | Log format: text, json                 | text                  |
-| -scrape.cluster     | CB_EXPORTER_SCRAPE_CLUSTER        | If false, wont scrape cluster metrics  | true                  |
-| -scrape.node        | CB_EXPORTER_SCRAPE_NODE           | If false, wont scrape node metrics     | true                  |
-| -scrape.bucket      | CB_EXPORTER_SCRAPE_BUCKET         | If false, wont scrape bucket metrics   | true                  |
+| -metrics.cluster     | CB_EXPORTER_METRICS_CLUSTER        | If false, wont scrape cluster metrics  | true                  |
+| -metrics.node        | CB_EXPORTER_METRICS_NODE           | If false, wont scrape node metrics     | true                  |
+| -metrics.bucket      | CB_EXPORTER_METRICS_BUCKET         | If false, wont scrape bucket metrics   | true                  |
 | -help               |                            | Command line help                      |                       |
 
 Metrics
