@@ -18,13 +18,16 @@ import (
 )
 
 var (
-	listenAddr  = flag.String("web.listen-address", ":9191", "The address to listen on for HTTP requests.")
-	metricsPath = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
-	dbURL       = flag.String("db.url", "http://localhost:8091", "The address of Couchbase cluster.")
-	dbUser      = flag.String("db.user", "admin", "The administrator username.")
-	dbPwd       = flag.String("db.pwd", "password", "The administrator password.")
-	logLevel    = flag.String("log.level", "info", "Log level: info, debug, warn, error, fatal.")
-	logFormat   = flag.String("log.format", "text", "Log format: text or json.")
+	listenAddr    = flag.String("web.listen-address", ":9191", "The address to listen on for HTTP requests.")
+	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
+	dbURI         = flag.String("db.uri", "http://localhost:8091", "The address of Couchbase cluster.")
+	dbUser        = flag.String("db.user", "admin", "The administrator username.")
+	dbPwd         = flag.String("db.pwd", "password", "The administrator password.")
+	logLevel      = flag.String("log.level", "info", "Log level: info, debug, warn, error, fatal.")
+	logFormat     = flag.String("log.format", "text", "Log format: text or json.")
+	scrapeCluster = flag.Bool("scrape.cluster", true, "If false, cluster metrics wont be scraped.")
+	scrapeNode    = flag.Bool("scrape.node", true, "If false, node metrics wont be scraped.")
+	scrapeBucket  = flag.Bool("scrape.bucket", true, "If false, bucket metrics wont be scraped.")
 )
 
 func main() {
@@ -36,11 +39,20 @@ func main() {
 	log.SetOutput(os.Stdout)
 	log.SetLevel(setLogLevel())
 
-	CouchbaseExporter, err := collector.NewExporter(collector.URI{URL: *dbURL, Username: *dbUser, Password: *dbPwd})
+	exporters, err := collector.NewExporters(collector.URI{URL: *dbURI, Username: *dbUser, Password: *dbPwd})
 	if err != nil {
 		log.Fatal("error during creation of new exporter")
 	}
-	p.MustRegister(CouchbaseExporter)
+
+	if *scrapeCluster {
+		p.MustRegister(exporters.Cluster)
+	}
+	if *scrapeNode {
+		p.MustRegister(exporters.Node)
+	}
+	if *scrapeBucket {
+		p.MustRegister(exporters.Bucket)
+	}
 
 	// The two following lines are used to get rid of go metrics. Should be removed after wip.
 	p.Unregister(p.NewProcessCollector(os.Getpid(), ""))
@@ -75,25 +87,25 @@ func main() {
 }
 
 func lookupEnv() {
-	if val, ok := os.LookupEnv("LISTEN_ADDR"); ok {
+	if val, ok := os.LookupEnv("CB_EXPORTER_LISTEN_ADDR"); ok {
 		*listenAddr = val
 	}
-	if val, ok := os.LookupEnv("TELEMETRY_PATH"); ok {
+	if val, ok := os.LookupEnv("CB_EXPORTER_TELEMETRY_PATH"); ok {
 		*metricsPath = val
 	}
-	if val, ok := os.LookupEnv("CB_URI"); ok {
-		*dbURL = val
+	if val, ok := os.LookupEnv("CB_EXPORTER_DB_URI"); ok {
+		*dbURI = val
 	}
-	if val, ok := os.LookupEnv("CB_ADMIN_USER"); ok {
+	if val, ok := os.LookupEnv("CB_EXPORTER_DB_USER"); ok {
 		*dbUser = val
 	}
-	if val, ok := os.LookupEnv("CB_ADMIN_PASSWORD"); ok {
+	if val, ok := os.LookupEnv("CB_EXPORTER_DB_PASSWORD"); ok {
 		*dbPwd = val
 	}
-	if val, ok := os.LookupEnv("LOG_LEVEL"); ok {
+	if val, ok := os.LookupEnv("CB_EXPORTER_LOG_LEVEL"); ok {
 		*logLevel = val
 	}
-	if val, ok := os.LookupEnv("LOG_FORMAT"); ok {
+	if val, ok := os.LookupEnv("CB_EXPORTER_LOG_FORMAT"); ok {
 		*logFormat = val
 	}
 }
@@ -134,7 +146,7 @@ func systemdSettings() {
 			return
 		}
 		for {
-			_, err := http.Get(*dbURL)
+			_, err := http.Get(*dbURI)
 			if err == nil {
 				d.SdNotify(false, "WATCHDOG=1")
 			}
