@@ -127,6 +127,22 @@ Get the latest image from Docker Hub:
 $ docker pull blakelead/couchbase-exporter:latest
 ```
 
+and use it with the following variables:
+
+|     argument      |                description                 |        default        |
+| ----------------- | ------------------------------------------ | --------------------- |
+| LISTEN_ADDR       | The address to listen on for HTTP requests | :9191                 |
+| TELEMETRY_PATH    | Path under which to expose metrics         | /metrics              |
+| CB_URI            | The address of Couchbase cluster           | http://localhost:8091 |
+| CB_ADMIN_USER     | The administrator username                 | admin                 |
+| CB_ADMIN_PASSWORD | The administrator password                 | password              |
+
+Example:
+
+```bash
+$ docker run --name cbexporter -p 9191:9191 -e CB_ADMIN_USER=admin -e CB_ADMIN_PASSWORD=complicatedpassword blakelead/couchbase-exporter:latest
+```
+
 Systemd
 -------
 
