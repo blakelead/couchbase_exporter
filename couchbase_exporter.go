@@ -8,6 +8,7 @@ import (
 	"flag"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/blakelead/couchbase_exporter/collector"
@@ -107,6 +108,15 @@ func lookupEnv() {
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_LOG_FORMAT"); ok {
 		*logFormat = val
+	}
+	if val, ok := os.LookupEnv("CB_EXPORTER_SCRAPE_CLUSTER"); ok {
+		*scrapeCluster, _ = strconv.ParseBool(val)
+	}
+	if val, ok := os.LookupEnv("CB_EXPORTER_SCRAPE_NODE"); ok {
+		*scrapeNode, _ = strconv.ParseBool(val)
+	}
+	if val, ok := os.LookupEnv("CB_EXPORTER_SCRAPE_BUCKET"); ok {
+		*scrapeBucket, _ = strconv.ParseBool(val)
 	}
 }
 

@@ -2,7 +2,7 @@ Couchbase Exporter
 ==================
 
 [![Release](https://img.shields.io/badge/release-0.1.0-blue.svg)](https://github.com/blakelead/couchbase_exporter/releases/tag/0.1.0)
-[![Build Status](https://travis-ci.org/blakelead/couchbase_exporter.svg?branch=master)](https://travis-ci.org/blakelead/couchbase_exporter)
+[![Build Status](https://travis-ci.com/blakelead/couchbase_exporter.svg?branch=master)](https://travis-ci.org/blakelead/couchbase_exporter)
 [![Coverage Status](https://coveralls.io/repos/github/blakelead/couchbase_exporter/badge.svg?branch=master)](https://coveralls.io/github/blakelead/couchbase_exporter?branch=master)
 [![Software License](https://img.shields.io/badge/license-MIT-green.svg)](/LICENSE.txt)
 
@@ -23,16 +23,19 @@ You can either use command-line flags, or environment variables to pass custom p
 
 Available flags and equivalent environment variable:
 
-|      argument       | environment variable |              description               |        default        |
-| ------------------- | -------------------- | -------------------------------------- | --------------------- |
-| -web.listen-address | LISTEN_ADDR          | Address to listen on for HTTP requests | :9191                 |
-| -web.telemetry-path | TELEMETRY_PATH       | Path under which to expose metrics     | /metrics              |
-| -db.url             | CB_URI               | Address of Couchbase cluster           | http://127.0.0.1:8091 |
-| -db.user            | CB_ADMIN_USER        | Administrator username                 | admin                 |
-| -db.pwd             | CB_ADMIN_PASSWORD    | Administrator password                 | password              |
-| -log.level          | LOG_LEVEL            | Log level: info,debug,warn,error,fatal | info                  |
-| -log.format         | LOG_FORMAT           | Log format: text, json                 | text                  |
-| -help               |                      | Command line help                      |                       |
+|      argument       |    environment variable    |              description               |        default        |
+| ------------------- | -------------------------- | -------------------------------------- | --------------------- |
+| -web.listen-address | CB_EXPORTER_LISTEN_ADDR    | Address to listen on for HTTP requests | :9191                 |
+| -web.telemetry-path | CB_EXPORTER_TELEMETRY_PATH | Path under which to expose metrics     | /metrics              |
+| -db.uri             | CB_EXPORTER_DB_URI         | Address of Couchbase cluster           | http://127.0.0.1:8091 |
+| -db.user            | CB_EXPORTER_DB_USER        | Administrator username                 | admin                 |
+| -db.pwd             | CB_EXPORTER_DB_PASSWORD    | Administrator password                 | password              |
+| -log.level          | CB_EXPORTER_LOG_LEVEL      | Log level: info,debug,warn,error,fatal | info                  |
+| -log.format         | CB_EXPORTER_LOG_FORMAT     | Log format: text, json                 | text                  |
+| -scrape.cluster     | CB_EXPORTER_SCRAPE_CLUSTER        | If false, wont scrape cluster metrics  | true                  |
+| -scrape.node        | CB_EXPORTER_SCRAPE_NODE           | If false, wont scrape node metrics     | true                  |
+| -scrape.bucket      | CB_EXPORTER_SCRAPE_BUCKET         | If false, wont scrape bucket metrics   | true                  |
+| -help               |                            | Command line help                      |                       |
 
 Metrics
 -------
@@ -127,20 +130,10 @@ Get the latest image from Docker Hub:
 $ docker pull blakelead/couchbase-exporter:latest
 ```
 
-and use it with the following variables:
-
-|     argument      |                description                 |        default        |
-| ----------------- | ------------------------------------------ | --------------------- |
-| LISTEN_ADDR       | The address to listen on for HTTP requests | :9191                 |
-| TELEMETRY_PATH    | Path under which to expose metrics         | /metrics              |
-| CB_URI            | The address of Couchbase cluster           | http://localhost:8091 |
-| CB_ADMIN_USER     | The administrator username                 | admin                 |
-| CB_ADMIN_PASSWORD | The administrator password                 | password              |
-
-Example:
+and use it with environment variables like in the following example:
 
 ```bash
-$ docker run --name cbexporter -p 9191:9191 -e CB_ADMIN_USER=admin -e CB_ADMIN_PASSWORD=complicatedpassword blakelead/couchbase-exporter:latest
+$ docker run --name cbexporter -p 9191:9191 -e CB_EXPORTER_DB_USER=admin -e CB_EXPORTER_DB_PASSWORD=complicatedpassword blakelead/couchbase-exporter:latest
 ```
 
 Systemd
@@ -161,8 +154,6 @@ Todo
 - XDCR metrics
 - Couchbase 5 compatibility
 - Advanced bucket metrics
-- Possibility to chose either remote or local scraping
-- Filter by metrics and buckets
 - Cleaner code
 
 Author Information
