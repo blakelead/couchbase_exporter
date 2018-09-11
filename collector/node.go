@@ -154,7 +154,7 @@ func NewNodeExporter(context Context) (*NodeExporter, error) {
 	}
 
 	if context.CouchbaseVersion == "5.1.1" {
-		exporter.nodeVbActiveNumNonResidentNumber = newGauge("node_stats_vb_active_num_non_residentNumber", "Number of non-resident items in active vbuckets")
+		exporter.nodeVbActiveNumNonResidentNumber = newGauge("node_stats_vb_active_num_non_resident_number", "Number of non-resident items in active vbuckets")
 	}
 	return exporter, nil
 }
