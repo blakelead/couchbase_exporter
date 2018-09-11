@@ -39,20 +39,21 @@ type NodeData struct {
 		SwapUsed           int     `json:"swap_used"`
 	} `json:"systemStats"`
 	InterestingStats struct {
-		CmdGet                   int `json:"cmd_get"`
-		CouchDocsActualDiskSize  int `json:"couch_docs_actual_disk_size"`
-		CouchDocsDataSize        int `json:"couch_docs_data_size"`
-		CouchSpatialDataSize     int `json:"couch_spatial_data_size"`
-		CouchSpatialDiskSize     int `json:"couch_spatial_disk_size"`
-		CouchViewsActualDiskSize int `json:"couch_views_actual_disk_size"`
-		CouchViewsDataSize       int `json:"couch_views_data_size"`
-		CurrItems                int `json:"curr_items"`
-		CurrItemsTot             int `json:"curr_items_tot"`
-		EpBgFetched              int `json:"ep_bg_fetched"`
-		GetHits                  int `json:"get_hits"`
-		MemUsed                  int `json:"mem_used"`
-		Ops                      int `json:"ops"`
-		VbReplicaCurrItems       int `json:"vb_replica_curr_items"`
+		CmdGet                       int `json:"cmd_get"`
+		CouchDocsActualDiskSize      int `json:"couch_docs_actual_disk_size"`
+		CouchDocsDataSize            int `json:"couch_docs_data_size"`
+		CouchSpatialDataSize         int `json:"couch_spatial_data_size"`
+		CouchSpatialDiskSize         int `json:"couch_spatial_disk_size"`
+		CouchViewsActualDiskSize     int `json:"couch_views_actual_disk_size"`
+		CouchViewsDataSize           int `json:"couch_views_data_size"`
+		CurrItems                    int `json:"curr_items"`
+		CurrItemsTot                 int `json:"curr_items_tot"`
+		EpBgFetched                  int `json:"ep_bg_fetched"`
+		GetHits                      int `json:"get_hits"`
+		MemUsed                      int `json:"mem_used"`
+		Ops                          int `json:"ops"`
+		VbReplicaCurrItems           int `json:"vb_replica_curr_items"`
+		VbActiveNumNonResidentNumber int `json:"vb_active_num_non_residentNumber"`
 	} `json:"interestingStats"`
 	Uptime               string   `json:"uptime"`
 	McdMemoryReserved    int      `json:"mcdMemoryReserved"`
@@ -72,48 +73,49 @@ type NodeData struct {
 
 // NodeExporter describes the exporter object.
 type NodeExporter struct {
-	context                      Context
-	up                           p.Gauge
-	nodeRAMTotal                 p.Gauge
-	nodeRAMUsed                  p.Gauge
-	nodeRAMUsedByData            p.Gauge
-	nodeRAMQuotaTotal            p.Gauge
-	nodeRAMQuotaTotalPerNode     p.Gauge
-	nodeRAMQuotaUsed             p.Gauge
-	nodeRAMQuotaUsedPerNode      p.Gauge
-	nodeDiskTotal                p.Gauge
-	nodeDiskQuotaTotal           p.Gauge
-	nodeDiskUsed                 p.Gauge
-	nodeDiskUsedByData           p.Gauge
-	nodeDiskFree                 p.Gauge
-	nodeCPUUtilizationRate       p.Gauge
-	nodeSwapTotal                p.Gauge
-	nodeSwapUsed                 p.Gauge
-	nodeCmdGet                   p.Gauge
-	nodeCouchDocsActualDiskSize  p.Gauge
-	nodeCouchDocsDataSize        p.Gauge
-	nodeCouchSpatialDataSize     p.Gauge
-	nodeCouchSpatialDiskSize     p.Gauge
-	nodeCouchViewsActualDiskSize p.Gauge
-	nodeCouchViewsDataSize       p.Gauge
-	nodeCurrItems                p.Gauge
-	nodeCurrItemsTot             p.Gauge
-	nodeEpBgFetched              p.Gauge
-	nodeGetHits                  p.Gauge
-	nodeMemUsed                  p.Gauge
-	nodeOps                      p.Gauge
-	nodeVbReplicaCurrItems       p.Gauge
-	nodeUptime                   p.Gauge
-	nodesClusterMembership       p.Gauge
-	nodesStatus                  p.Gauge
-	nodeFtsRAMQuota              p.Gauge
-	nodeIndexRAMQuota            p.Gauge
-	nodeRAMQuota                 p.Gauge
+	context                          Context
+	up                               p.Gauge
+	nodeRAMTotal                     p.Gauge
+	nodeRAMUsed                      p.Gauge
+	nodeRAMUsedByData                p.Gauge
+	nodeRAMQuotaTotal                p.Gauge
+	nodeRAMQuotaTotalPerNode         p.Gauge
+	nodeRAMQuotaUsed                 p.Gauge
+	nodeRAMQuotaUsedPerNode          p.Gauge
+	nodeDiskTotal                    p.Gauge
+	nodeDiskQuotaTotal               p.Gauge
+	nodeDiskUsed                     p.Gauge
+	nodeDiskUsedByData               p.Gauge
+	nodeDiskFree                     p.Gauge
+	nodeCPUUtilizationRate           p.Gauge
+	nodeSwapTotal                    p.Gauge
+	nodeSwapUsed                     p.Gauge
+	nodeCmdGet                       p.Gauge
+	nodeCouchDocsActualDiskSize      p.Gauge
+	nodeCouchDocsDataSize            p.Gauge
+	nodeCouchSpatialDataSize         p.Gauge
+	nodeCouchSpatialDiskSize         p.Gauge
+	nodeCouchViewsActualDiskSize     p.Gauge
+	nodeCouchViewsDataSize           p.Gauge
+	nodeCurrItems                    p.Gauge
+	nodeCurrItemsTot                 p.Gauge
+	nodeEpBgFetched                  p.Gauge
+	nodeGetHits                      p.Gauge
+	nodeMemUsed                      p.Gauge
+	nodeOps                          p.Gauge
+	nodeVbReplicaCurrItems           p.Gauge
+	nodeVbActiveNumNonResidentNumber p.Gauge
+	nodeUptime                       p.Gauge
+	nodesClusterMembership           p.Gauge
+	nodesStatus                      p.Gauge
+	nodeFtsRAMQuota                  p.Gauge
+	nodeIndexRAMQuota                p.Gauge
+	nodeRAMQuota                     p.Gauge
 }
 
 // NewNodeExporter instantiates the Exporter with the URI and metrics.
 func NewNodeExporter(context Context) (*NodeExporter, error) {
-	return &NodeExporter{
+	exporter := &NodeExporter{
 		context:                      context,
 		up:                           newGauge("node_service_up", "Couchbase service healthcheck"),
 		nodeRAMTotal:                 newGauge("node_ram_total_bytes", "Total memory available to the node"),
@@ -149,7 +151,12 @@ func NewNodeExporter(context Context) (*NodeExporter, error) {
 		nodeFtsRAMQuota:              newGauge("node_fts_ram_quota_bytes", "Memory quota allocated to full text search buckets"),
 		nodeIndexRAMQuota:            newGauge("node_index_ram_quota_bytes", "Memory quota allocated to index buckets"),
 		nodeRAMQuota:                 newGauge("node_data_ram_quota_bytes", "Memory quota allocated to data buckets"),
-	}, nil
+	}
+
+	if context.CouchbaseVersion == "5.1.1" {
+		exporter.nodeVbActiveNumNonResidentNumber = newGauge("node_stats_vb_active_num_non_residentNumber", "Number of non-resident items in active vbuckets")
+	}
+	return exporter, nil
 }
 
 // Describe describes exported metrics.
@@ -188,6 +195,9 @@ func (e *NodeExporter) Describe(ch chan<- *p.Desc) {
 	e.nodeFtsRAMQuota.Describe(ch)
 	e.nodeIndexRAMQuota.Describe(ch)
 	e.nodeRAMQuota.Describe(ch)
+	if e.context.CouchbaseVersion == "5.1.1" {
+		e.nodeVbActiveNumNonResidentNumber.Describe(ch)
+	}
 }
 
 // Collect fetches data for each exported metric.
@@ -226,6 +236,9 @@ func (e *NodeExporter) Collect(ch chan<- p.Metric) {
 	e.nodeFtsRAMQuota.Collect(ch)
 	e.nodeIndexRAMQuota.Collect(ch)
 	e.nodeRAMQuota.Collect(ch)
+	if e.context.CouchbaseVersion == "5.1.1" {
+		e.nodeVbActiveNumNonResidentNumber.Collect(ch)
+	}
 }
 
 func (e *NodeExporter) scrape() {
@@ -307,4 +320,8 @@ func (e *NodeExporter) scrape() {
 	e.nodeFtsRAMQuota.Set(float64(node.FtsMemoryQuota * 1024 * 1024))
 	e.nodeIndexRAMQuota.Set(float64(node.IndexMemoryQuota * 1024 * 1024))
 	e.nodeRAMQuota.Set(float64(node.FtsMemoryQuota * 1024 * 1024))
+
+	if e.context.CouchbaseVersion == "5.1.1" {
+		e.nodeVbActiveNumNonResidentNumber.Set(float64(node.InterestingStats.VbActiveNumNonResidentNumber))
+	}
 }

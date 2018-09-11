@@ -43,6 +43,7 @@ type ClusterData struct {
 		RebalanceStart   int `json:"rebalance_start"`
 		RebalanceFail    int `json:"rebalance_fail"`
 	} `json:"counters"`
+	Balanced bool `json:"balanced"` // couchbase 5.1.1
 }
 
 // ClusterExporter describes the exporter object.
@@ -68,11 +69,12 @@ type ClusterExporter struct {
 	clusterRebalanceSuccessCount p.Gauge
 	clusterRebalanceStartCount   p.Gauge
 	clusterRebalanceFailCount    p.Gauge
+	clusterBalanced              p.Gauge
 }
 
 // NewClusterExporter instantiates the Exporter with the URI and metrics.
 func NewClusterExporter(context Context) (*ClusterExporter, error) {
-	return &ClusterExporter{
+	exporter := &ClusterExporter{
 		context:                      context,
 		totalScrapes:                 newCounter("total_scrapes", "Total number of scrapes"),
 		clusterRAMTotal:              newGauge("cluster_ram_total_bytes", "Total memory available to the cluster"),
@@ -94,7 +96,13 @@ func NewClusterExporter(context Context) (*ClusterExporter, error) {
 		clusterRebalanceSuccessCount: newGauge("cluster_rebalance_success_count", "Number of rebalance successes since cluster is up"),
 		clusterRebalanceStartCount:   newGauge("cluster_rebalance_start_count", "Number of rebalance starts since cluster is up"),
 		clusterRebalanceFailCount:    newGauge("cluster_rebalance_fail_count", "Number of rebalance fails since cluster is up"),
-	}, nil
+	}
+
+	if context.CouchbaseVersion == "5.1.1" {
+		exporter.clusterBalanced = newGauge("cluster_balanced", "Status of cluster balance")
+	}
+
+	return exporter, nil
 }
 
 // Describe describes exported metrics.
@@ -120,6 +128,9 @@ func (e *ClusterExporter) Describe(ch chan<- *p.Desc) {
 	e.clusterRebalanceSuccessCount.Describe(ch)
 	e.clusterRebalanceStartCount.Describe(ch)
 	e.clusterRebalanceFailCount.Describe(ch)
+	if e.context.CouchbaseVersion == "5.1.1" {
+		e.clusterBalanced.Describe(ch)
+	}
 }
 
 // Collect fetches data for each exported metric.
@@ -146,6 +157,9 @@ func (e *ClusterExporter) Collect(ch chan<- p.Metric) {
 	e.clusterRebalanceSuccessCount.Collect(ch)
 	e.clusterRebalanceStartCount.Collect(ch)
 	e.clusterRebalanceFailCount.Collect(ch)
+	if e.context.CouchbaseVersion == "5.1.1" {
+		e.clusterBalanced.Collect(ch)
+	}
 }
 
 func (e *ClusterExporter) scrape() {
@@ -180,7 +194,7 @@ func (e *ClusterExporter) scrape() {
 	log.Debug("GET " + e.context.URI + clusterRoute + " - data: " + string(body))
 
 	rebalance := 1
-	if cluster.RebalanceStatus == "node" {
+	if cluster.RebalanceStatus == "none" {
 		rebalance = 0
 	}
 	e.clusterRAMTotal.Set(float64(cluster.StorageTotals.RAM.Total))
@@ -202,4 +216,11 @@ func (e *ClusterExporter) scrape() {
 	e.clusterRebalanceSuccessCount.Set(float64(cluster.Counters.RebalanceSuccess))
 	e.clusterRebalanceStartCount.Set(float64(cluster.Counters.RebalanceStart))
 	e.clusterRebalanceFailCount.Set(float64(cluster.Counters.RebalanceFail))
+	if e.context.CouchbaseVersion == "5.1.1" {
+		balanced := 0
+		if cluster.Balanced == true {
+			balanced = 1
+		}
+		e.clusterBalanced.Set(float64(balanced))
+	}
 }

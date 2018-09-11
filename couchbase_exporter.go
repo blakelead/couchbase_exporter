@@ -32,8 +32,6 @@ var (
 	scrapeCluster = flag.Bool("scrape.cluster", true, "If false, cluster metrics wont be scraped.")
 	scrapeNode    = flag.Bool("scrape.node", true, "If false, node metrics wont be scraped.")
 	scrapeBucket  = flag.Bool("scrape.bucket", true, "If false, bucket metrics wont be scraped.")
-
-	validVersions = []string{"4.5.1", "5.1.1"}
 )
 
 func main() {
@@ -212,6 +210,7 @@ func getCouchbaseVersion(context *collector.Context) {
 		log.Warn("You are trying to scrape metrics for Couchbase Enterprise. Be aware that this exporter was not tested for Enterprise versions.")
 	}
 
+	validVersions := []string{"4.5.1", "5.1.1"}
 	for _, v := range validVersions {
 		if strings.HasPrefix(longVersion, v) {
 			context.CouchbaseVersion = v

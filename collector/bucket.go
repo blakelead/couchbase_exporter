@@ -17,7 +17,6 @@ import (
 // BucketData (/pools/default/buckets)
 type BucketData struct {
 	Name                   string `json:"name"`
-	BucketType             string `json:"bucketType"`
 	AuthType               string `json:"authType"`
 	ProxyPort              int    `json:"proxyPort"`
 	ReplicaIndex           bool   `json:"replicaIndex"`
@@ -39,10 +38,6 @@ type BucketData struct {
 		DataUsed         int     `json:"dataUsed"`
 		MemUsed          int     `json:"memUsed"`
 	} `json:"basicStats"`
-	EvictionPolicy        string   `json:"evictionPolicy"`
-	TimeSynchronization   string   `json:"timeSynchronization"`
-	BucketCapabilitiesVer string   `json:"bucketCapabilitiesVer"`
-	BucketCapabilities    []string `json:"bucketCapabilities"`
 }
 
 // BucketExporter describes the exporter object.
