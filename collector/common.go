@@ -10,11 +10,18 @@ import (
 	p "github.com/prometheus/client_golang/prometheus"
 )
 
-// URI is a custom url wrapper with credentials
-type URI struct {
-	URL      string
-	Username string
-	Password string
+var (
+	clusterRoute = "/pools/default"
+	nodeRoute    = "/nodes/self"
+	bucketRoute  = "/pools/default/buckets"
+)
+
+// Context is a custom url wrapper with credentials
+type Context struct {
+	URI              string
+	Username         string
+	Password         string
+	CouchbaseVersion string
 }
 
 // Exporters regroups all exporters structs
@@ -37,10 +44,10 @@ func newGaugeVec(name string, help string, labels []string) *p.GaugeVec {
 }
 
 // NewExporters instantiates the Exporter with the URI and metrics.
-func NewExporters(uri URI) (*Exporters, error) {
-	clusterExporter, _ := NewClusterExporter(uri)
-	nodeExporter, _ := NewNodeExporter(uri)
-	bucketExporter, _ := NewBucketExporter(uri)
+func NewExporters(context Context) (*Exporters, error) {
+	clusterExporter, _ := NewClusterExporter(context)
+	nodeExporter, _ := NewNodeExporter(context)
+	bucketExporter, _ := NewBucketExporter(context)
 
 	return &Exporters{clusterExporter, nodeExporter, bucketExporter}, nil
 }

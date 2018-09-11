@@ -5,10 +5,13 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/blakelead/couchbase_exporter/collector"
@@ -40,7 +43,11 @@ func main() {
 	log.SetOutput(os.Stdout)
 	log.SetLevel(setLogLevel())
 
-	exporters, err := collector.NewExporters(collector.URI{URL: *dbURI, Username: *dbUser, Password: *dbPwd})
+	context := collector.Context{URI: *dbURI, Username: *dbUser, Password: *dbPwd}
+
+	getCouchbaseVersion(&context)
+
+	exporters, err := collector.NewExporters(context)
 	if err != nil {
 		log.Fatal("error during creation of new exporter")
 	}
@@ -56,7 +63,7 @@ func main() {
 	}
 
 	// The two following lines are used to get rid of go metrics. Should be removed after wip.
-	p.Unregister(p.NewProcessCollector(os.Getpid(), ""))
+	p.Unregister(p.NewProcessCollector(p.ProcessCollectorOpts{}))
 	p.Unregister(p.NewGoCollector())
 
 	// p.UninstrumentedHandler() should be replaced by promhttp.Handle() after wip.
@@ -163,4 +170,52 @@ func systemdSettings() {
 			time.Sleep(interval / 3)
 		}
 	}()
+}
+
+func getCouchbaseVersion(context *collector.Context) {
+	req, err := http.NewRequest("GET", *dbURI+"/pools", nil)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	req.SetBasicAuth(*dbUser, *dbPwd)
+	client := http.Client{Timeout: 10 * time.Second}
+	res, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	if res.StatusCode != 200 {
+		log.Fatal(req.URL.Path + ": " + res.Status)
+	}
+
+	var data map[string]interface{}
+	body, err := ioutil.ReadAll(res.Body)
+	defer res.Body.Close()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	err = json.Unmarshal([]byte(body), &data)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	log.Debug("GET " + *dbURI + "/pools" + " - data: " + string(body))
+
+	longVersion := data["implementationVersion"].(string)
+	isCommunity := strings.Contains(longVersion, "community")
+
+	log.Info("Couchbase version: " + longVersion)
+	log.Info("Community version: " + strconv.FormatBool(isCommunity))
+
+	if !isCommunity {
+		log.Warn("You are trying to scrape metrics for Couchbase Enterprise. Be aware that this exporter was not tested for Enterprise versions.")
+	}
+
+	validVersions := []string{"4.5.1", "5.1.1"}
+	for _, v := range validVersions {
+		if strings.HasPrefix(longVersion, v) {
+			context.CouchbaseVersion = v
+			return
+		}
+	}
+	log.Warn("Please be aware that the version " + longVersion + " is not supported by this exporter.")
 }

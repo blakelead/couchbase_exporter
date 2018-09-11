@@ -17,7 +17,6 @@ import (
 // BucketData (/pools/default/buckets)
 type BucketData struct {
 	Name                   string `json:"name"`
-	BucketType             string `json:"bucketType"`
 	AuthType               string `json:"authType"`
 	ProxyPort              int    `json:"proxyPort"`
 	ReplicaIndex           bool   `json:"replicaIndex"`
@@ -39,15 +38,11 @@ type BucketData struct {
 		DataUsed         int     `json:"dataUsed"`
 		MemUsed          int     `json:"memUsed"`
 	} `json:"basicStats"`
-	EvictionPolicy        string   `json:"evictionPolicy"`
-	TimeSynchronization   string   `json:"timeSynchronization"`
-	BucketCapabilitiesVer string   `json:"bucketCapabilitiesVer"`
-	BucketCapabilities    []string `json:"bucketCapabilities"`
 }
 
 // BucketExporter describes the exporter object.
 type BucketExporter struct {
-	uri                    URI
+	context                Context
 	bucketProxyPort        *p.GaugeVec
 	bucketReplicaIndex     *p.GaugeVec
 	bucketReplicaNumber    *p.GaugeVec
@@ -64,9 +59,9 @@ type BucketExporter struct {
 }
 
 // NewBucketExporter instantiates the Exporter with the URI and metrics.
-func NewBucketExporter(uri URI) (*BucketExporter, error) {
+func NewBucketExporter(context Context) (*BucketExporter, error) {
 	return &BucketExporter{
-		uri:                    uri,
+		context:                context,
 		bucketProxyPort:        newGaugeVec("bucket_proxy_port", "Bucket proxy port", []string{"bucket"}),
 		bucketReplicaIndex:     newGaugeVec("bucket_replica_index", "Replica index for the bucket. 1:true", []string{"bucket"}),
 		bucketReplicaNumber:    newGaugeVec("bucket_replica_number", "Number of replicas for the bucket", []string{"bucket"}),
@@ -119,12 +114,12 @@ func (e *BucketExporter) Collect(ch chan<- p.Metric) {
 }
 
 func (e *BucketExporter) scrape() {
-	req, err := http.NewRequest("GET", e.uri.URL+"/pools/default/buckets", nil)
+	req, err := http.NewRequest("GET", e.context.URI+bucketRoute, nil)
 	if err != nil {
 		log.Error(err.Error())
 		return
 	}
-	req.SetBasicAuth(e.uri.Username, e.uri.Password)
+	req.SetBasicAuth(e.context.Username, e.context.Password)
 	client := http.Client{Timeout: 10 * time.Second}
 	res, err := client.Do(req)
 	if err != nil {
@@ -147,7 +142,7 @@ func (e *BucketExporter) scrape() {
 		log.Error(err.Error())
 	}
 
-	log.Debug("GET " + e.uri.URL + "/pools/default/buckets" + " - data: " + string(body))
+	log.Debug("GET " + e.context.URI + bucketRoute + " - data: " + string(body))
 
 	for _, bucket := range buckets {
 		var replicaIndex int
