@@ -63,7 +63,7 @@ func main() {
 	}
 
 	// The two following lines are used to get rid of go metrics. Should be removed after wip.
-	p.Unregister(p.NewProcessCollector(os.Getpid(), ""))
+	p.Unregister(p.NewProcessCollector(p.ProcessCollectorOpts{}))
 	p.Unregister(p.NewGoCollector())
 
 	// p.UninstrumentedHandler() should be replaced by promhttp.Handle() after wip.
