@@ -47,7 +47,7 @@ type ClusterData struct {
 
 // ClusterExporter describes the exporter object.
 type ClusterExporter struct {
-	uri                          URI
+	context                      Context
 	totalScrapes                 p.Counter
 	clusterRAMTotal              p.Gauge
 	clusterRAMUsed               p.Gauge
@@ -71,9 +71,9 @@ type ClusterExporter struct {
 }
 
 // NewClusterExporter instantiates the Exporter with the URI and metrics.
-func NewClusterExporter(uri URI) (*ClusterExporter, error) {
+func NewClusterExporter(context Context) (*ClusterExporter, error) {
 	return &ClusterExporter{
-		uri:                          uri,
+		context:                      context,
 		totalScrapes:                 newCounter("total_scrapes", "Total number of scrapes"),
 		clusterRAMTotal:              newGauge("cluster_ram_total_bytes", "Total memory available to the cluster"),
 		clusterRAMUsed:               newGauge("cluster_ram_used_bytes", "Memory used by the cluster"),
@@ -149,12 +149,12 @@ func (e *ClusterExporter) Collect(ch chan<- p.Metric) {
 }
 
 func (e *ClusterExporter) scrape() {
-	req, err := http.NewRequest("GET", e.uri.URL+"/pools/default", nil)
+	req, err := http.NewRequest("GET", e.context.URI+clusterRoute, nil)
 	if err != nil {
 		log.Error(err.Error())
 		return
 	}
-	req.SetBasicAuth(e.uri.Username, e.uri.Password)
+	req.SetBasicAuth(e.context.Username, e.context.Password)
 	client := http.Client{Timeout: 10 * time.Second}
 	res, err := client.Do(req)
 	if err != nil {
@@ -177,7 +177,7 @@ func (e *ClusterExporter) scrape() {
 		log.Error(err.Error())
 	}
 
-	log.Debug("GET " + e.uri.URL + "/pools/default" + " - data: " + string(body))
+	log.Debug("GET " + e.context.URI + clusterRoute + " - data: " + string(body))
 
 	rebalance := 1
 	if cluster.RebalanceStatus == "node" {

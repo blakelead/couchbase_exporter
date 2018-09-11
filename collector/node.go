@@ -72,7 +72,7 @@ type NodeData struct {
 
 // NodeExporter describes the exporter object.
 type NodeExporter struct {
-	uri                          URI
+	context                      Context
 	up                           p.Gauge
 	nodeRAMTotal                 p.Gauge
 	nodeRAMUsed                  p.Gauge
@@ -112,9 +112,9 @@ type NodeExporter struct {
 }
 
 // NewNodeExporter instantiates the Exporter with the URI and metrics.
-func NewNodeExporter(uri URI) (*NodeExporter, error) {
+func NewNodeExporter(context Context) (*NodeExporter, error) {
 	return &NodeExporter{
-		uri:                          uri,
+		context:                      context,
 		up:                           newGauge("node_service_up", "Couchbase service healthcheck"),
 		nodeRAMTotal:                 newGauge("node_ram_total_bytes", "Total memory available to the node"),
 		nodeRAMUsed:                  newGauge("node_ram_usage_bytes", "Memory used by the node"),
@@ -230,12 +230,12 @@ func (e *NodeExporter) Collect(ch chan<- p.Metric) {
 
 func (e *NodeExporter) scrape() {
 	e.up.Set(0)
-	req, err := http.NewRequest("GET", e.uri.URL+"/nodes/self", nil)
+	req, err := http.NewRequest("GET", e.context.URI+nodeRoute, nil)
 	if err != nil {
 		log.Error(err.Error())
 		return
 	}
-	req.SetBasicAuth(e.uri.Username, e.uri.Password)
+	req.SetBasicAuth(e.context.Username, e.context.Password)
 	client := http.Client{Timeout: 10 * time.Second}
 	res, err := client.Do(req)
 	if err != nil {
@@ -258,7 +258,7 @@ func (e *NodeExporter) scrape() {
 		log.Error(err.Error())
 	}
 
-	log.Debug("GET " + e.uri.URL + "/nodes/self" + " - data: " + string(body))
+	log.Debug("GET " + e.context.URI + nodeRoute + " - data: " + string(body))
 
 	var status int
 	if node.Status == "healthy" {
