@@ -189,7 +189,6 @@ type BucketStatsData struct {
 			MemUsed                              []float64 `json:"mem_used"`
 			Misses                               []float64 `json:"misses"`
 			Ops                                  []float64 `json:"ops"`
-			Timestamp                            []float64 `json:"timestamp"`
 			VbActiveEject                        []float64 `json:"vb_active_eject"`
 			VbActiveItmMemory                    []float64 `json:"vb_active_itm_memory"`
 			VbActiveMetaDataMemory               []float64 `json:"vb_active_meta_data_memory"`
@@ -422,7 +421,6 @@ type BucketStatsExporter struct {
 	bucketMemUsed                              *p.GaugeVec
 	bucketMisses                               *p.GaugeVec
 	bucketOps                                  *p.GaugeVec
-	bucketTimestamp                            *p.GaugeVec
 	bucketVbActiveEject                        *p.GaugeVec
 	bucketVbActiveItmMemory                    *p.GaugeVec
 	bucketVbActiveMetaDataMemory               *p.GaugeVec
@@ -479,232 +477,231 @@ type BucketStatsExporter struct {
 func NewBucketStatsExporter(context Context) (*BucketStatsExporter, error) {
 	exporter := &BucketStatsExporter{
 		context:                                 context,
-		bucketCouchTotalDiskSize:                newGaugeVec("bucket_couch_total_disk_size", "couch_total_disk_size", []string{"bucket"}),
-		bucketCouchDocsFragmentation:            newGaugeVec("bucket_couch_docs_fragmentation", "couch_docs_fragmentation", []string{"bucket"}),
-		bucketCouchViewsFragmentation:           newGaugeVec("bucket_couch_views_fragmentation", "couch_views_fragmentation", []string{"bucket"}),
-		bucketHitRatio:                          newGaugeVec("bucket_hit_ratio", "hit_ratio", []string{"bucket"}),
-		bucketEpCacheMissRate:                   newGaugeVec("bucket_ep_cache_miss_rate", "ep_cache_miss_rate", []string{"bucket"}),
-		bucketEpResidentItemsRate:               newGaugeVec("bucket_ep_resident_items_rate", "ep_resident_items_rate", []string{"bucket"}),
-		bucketVbAvgActiveQueueAge:               newGaugeVec("bucket_vb_avg_active_queue_age", "vb_avg_active_queue_age", []string{"bucket"}),
-		bucketVbAvgReplicaQueueAge:              newGaugeVec("bucket_vb_avg_replica_queue_age", "vb_avg_replica_queue_age", []string{"bucket"}),
-		bucketVbAvgPendingQueueAge:              newGaugeVec("bucket_vb_avg_pending_queue_age", "vb_avg_pending_queue_age", []string{"bucket"}),
-		bucketVbAvgTotalQueueAge:                newGaugeVec("bucket_vb_avg_total_queue_age", "vb_avg_total_queue_age", []string{"bucket"}),
-		bucketVbActiveResidentItemsRatio:        newGaugeVec("bucket_vb_active_resident_items_ratio", "vb_active_resident_items_ratio", []string{"bucket"}),
-		bucketVbReplicaResidentItemsRatio:       newGaugeVec("bucket_vb_replica_resident_items_ratio", "vb_replica_resident_items_ratio", []string{"bucket"}),
-		bucketVbPendingResidentItemsRatio:       newGaugeVec("bucket_vb_pending_resident_items_ratio", "vb_pending_resident_items_ratio", []string{"bucket"}),
-		bucketAvgDiskUpdateTime:                 newGaugeVec("bucket_avg_disk_update_time", "avg_disk_update_time", []string{"bucket"}),
-		bucketAvgDiskCommitTime:                 newGaugeVec("bucket_avg_disk_commit_time", "avg_disk_commit_time", []string{"bucket"}),
-		bucketAvgBgWaitTime:                     newGaugeVec("bucket_avg_bg_wait_time", "avg_bg_wait_time", []string{"bucket"}),
-		bucketEpDcpViewsIndexesCount:            newGaugeVec("bucket_ep_dcp_views_indexes_count", "ep_dcp_views_indexes_count", []string{"bucket"}),
-		bucketEpDcpViewsIndexesItemsRemaining:   newGaugeVec("bucket_ep_dcp_views_indexes_items_remaining", "ep_dcp_views_indexes_items_remaining", []string{"bucket"}),
-		bucketEpDcpViewsIndexesProducerCount:    newGaugeVec("bucket_ep_dcp_views_indexes_producer_count", "ep_dcp_views_indexes_producer_count", []string{"bucket"}),
-		bucketEpDcpViewsIndexesTotalBacklogSize: newGaugeVec("bucket_ep_dcp_views_indexes_total_backlog_size", "ep_dcp_views_indexes_total_backlog_size", []string{"bucket"}),
-		bucketEpDcpViewsIndexesItemsSent:        newGaugeVec("bucket_ep_dcp_views_indexes_items_sent", "ep_dcp_views_indexes_items_sent", []string{"bucket"}),
-		bucketEpDcpViewsIndexesTotalBytes:       newGaugeVec("bucket_ep_dcp_views_indexes_total_bytes", "ep_dcp_views_indexes_total_bytes", []string{"bucket"}),
-		bucketEpDcpViewsIndexesBackoff:          newGaugeVec("bucket_ep_dcp_views_indexes_backoff", "ep_dcp_views_indexes_backoff", []string{"bucket"}),
-		bucketBgWaitCount:                       newGaugeVec("bucket_bg_wait_count", "bg_wait_count", []string{"bucket"}),
-		bucketBgWaitTotal:                       newGaugeVec("bucket_bg_wait_total", "bg_wait_total", []string{"bucket"}),
-		bucketBytesRead:                         newGaugeVec("bucket_bytes_read", "bytes_read", []string{"bucket"}),
-		bucketBytesWritten:                      newGaugeVec("bucket_bytes_written", "bytes_written", []string{"bucket"}),
-		bucketCasBadval:                         newGaugeVec("bucket_cas_badval", "cas_badval", []string{"bucket"}),
-		bucketCasHits:                           newGaugeVec("bucket_cas_hits", "cas_hits", []string{"bucket"}),
-		bucketCasMisses:                         newGaugeVec("bucket_cas_misses", "cas_misses", []string{"bucket"}),
-		bucketCmdGet:                            newGaugeVec("bucket_cmd_get", "cmd_get", []string{"bucket"}),
-		bucketCmdSet:                            newGaugeVec("bucket_cmd_set", "cmd_set", []string{"bucket"}),
-		bucketCouchDocsActualDiskSize:           newGaugeVec("bucket_couch_docs_actual_disk_size", "couch_docs_actual_disk_size", []string{"bucket"}),
-		bucketCouchDocsDataSize:                 newGaugeVec("bucket_couch_docs_data_size", "couch_docs_data_size", []string{"bucket"}),
-		bucketCouchDocsDiskSize:                 newGaugeVec("bucket_couch_docs_disk_size", "couch_docs_disk_size", []string{"bucket"}),
-		bucketCouchSpatialDataSize:              newGaugeVec("bucket_couch_spatial_data_size", "couch_spatial_data_size", []string{"bucket"}),
-		bucketCouchSpatialDiskSize:              newGaugeVec("bucket_couch_spatial_disk_size", "couch_spatial_disk_size", []string{"bucket"}),
-		bucketCouchSpatialOps:                   newGaugeVec("bucket_couch_spatial_ops", "couch_spatial_ops", []string{"bucket"}),
-		bucketCouchViewsActualDiskSize:          newGaugeVec("bucket_couch_views_actual_disk_size", "couch_views_actual_disk_size", []string{"bucket"}),
-		bucketCouchViewsDataSize:                newGaugeVec("bucket_couch_views_data_size", "couch_views_data_size", []string{"bucket"}),
-		bucketCouchViewsDiskSize:                newGaugeVec("bucket_couch_views_disk_size", "couch_views_disk_size", []string{"bucket"}),
-		bucketCouchViewsOps:                     newGaugeVec("bucket_couch_views_ops", "couch_views_ops", []string{"bucket"}),
-		bucketCurrConnections:                   newGaugeVec("bucket_curr_connections", "curr_connections", []string{"bucket"}),
-		bucketCurrItems:                         newGaugeVec("bucket_curr_items", "curr_items", []string{"bucket"}),
-		bucketCurrItemsTot:                      newGaugeVec("bucket_curr_items_tot", "curr_items_tot", []string{"bucket"}),
-		bucketDecrHits:                          newGaugeVec("bucket_decr_hits", "decr_hits", []string{"bucket"}),
-		bucketDecrMisses:                        newGaugeVec("bucket_decr_misses", "decr_misses", []string{"bucket"}),
-		bucketDeleteHits:                        newGaugeVec("bucket_delete_hits", "delete_hits", []string{"bucket"}),
-		bucketDeleteMisses:                      newGaugeVec("bucket_delete_misses", "delete_misses", []string{"bucket"}),
-		bucketDiskCommitCount:                   newGaugeVec("bucket_disk_commit_count", "disk_commit_count", []string{"bucket"}),
-		bucketDiskCommitTotal:                   newGaugeVec("bucket_disk_commit_total", "disk_commit_total", []string{"bucket"}),
-		bucketDiskUpdateCount:                   newGaugeVec("bucket_disk_update_count", "disk_update_count", []string{"bucket"}),
-		bucketDiskUpdateTotal:                   newGaugeVec("bucket_disk_update_total", "disk_update_total", []string{"bucket"}),
-		bucketDiskWriteQueue:                    newGaugeVec("bucket_disk_write_queue", "disk_write_queue", []string{"bucket"}),
-		bucketEpBgFetched:                       newGaugeVec("bucket_ep_bg_fetched", "ep_bg_fetched", []string{"bucket"}),
-		bucketEpDcp2IBackoff:                    newGaugeVec("bucket_ep_dcp_2i_backoff", "ep_dcp_2i_backoff", []string{"bucket"}),
-		bucketEpDcp2ICount:                      newGaugeVec("bucket_ep_dcp_2i_count", "ep_dcp_2i_count", []string{"bucket"}),
-		bucketEpDcp2IItemsRemaining:             newGaugeVec("bucket_ep_dcp_2i_items_remaining", "ep_dcp_2i_items_remaining", []string{"bucket"}),
-		bucketEpDcp2IItemsSent:                  newGaugeVec("bucket_ep_dcp_2i_items_sent", "ep_dcp_2i_items_sent", []string{"bucket"}),
-		bucketEpDcp2IProducerCount:              newGaugeVec("bucket_ep_dcp_2i_producer_count", "ep_dcp_2i_producer_count", []string{"bucket"}),
-		bucketEpDcp2ITotalBacklogSize:           newGaugeVec("bucket_ep_dcp_2i_total_backlog_size", "ep_dcp_2i_total_backlog_size", []string{"bucket"}),
-		bucketEpDcp2ITotalBytes:                 newGaugeVec("bucket_ep_dcp_2i_total_bytes", "ep_dcp_2i_total_bytes", []string{"bucket"}),
-		bucketEpDcpFtsBackoff:                   newGaugeVec("bucket_ep_dcp_fts_backoff", "ep_dcp_fts_backoff", []string{"bucket"}),
-		bucketEpDcpFtsCount:                     newGaugeVec("bucket_ep_dcp_fts_count", "ep_dcp_fts_count", []string{"bucket"}),
-		bucketEpDcpFtsItemsRemaining:            newGaugeVec("bucket_ep_dcp_fts_items_remaining", "ep_dcp_fts_items_remaining", []string{"bucket"}),
-		bucketEpDcpFtsItemsSent:                 newGaugeVec("bucket_ep_dcp_fts_items_sent", "ep_dcp_fts_items_sent", []string{"bucket"}),
-		bucketEpDcpFtsProducerCount:             newGaugeVec("bucket_ep_dcp_fts_producer_count", "ep_dcp_fts_producer_count", []string{"bucket"}),
-		bucketEpDcpFtsTotalBacklogSize:          newGaugeVec("bucket_ep_dcp_fts_total_backlog_size", "ep_dcp_fts_total_backlog_size", []string{"bucket"}),
-		bucketEpDcpFtsTotalBytes:                newGaugeVec("bucket_ep_dcp_fts_total_bytes", "ep_dcp_fts_total_bytes", []string{"bucket"}),
-		bucketEpDcpOtherBackoff:                 newGaugeVec("bucket_ep_dcp_other_backoff", "ep_dcp_other_backoff", []string{"bucket"}),
-		bucketEpDcpOtherCount:                   newGaugeVec("bucket_ep_dcp_other_count", "ep_dcp_other_count", []string{"bucket"}),
-		bucketEpDcpOtherItemsRemaining:          newGaugeVec("bucket_ep_dcp_other_items_remaining", "ep_dcp_other_items_remaining", []string{"bucket"}),
-		bucketEpDcpOtherItemsSent:               newGaugeVec("bucket_ep_dcp_other_items_sent", "ep_dcp_other_items_sent", []string{"bucket"}),
-		bucketEpDcpOtherProducerCount:           newGaugeVec("bucket_ep_dcp_other_producer_count", "ep_dcp_other_producer_count", []string{"bucket"}),
-		bucketEpDcpOtherTotalBacklogSize:        newGaugeVec("bucket_ep_dcp_other_total_backlog_size", "ep_dcp_other_total_backlog_size", []string{"bucket"}),
-		bucketEpDcpOtherTotalBytes:              newGaugeVec("bucket_ep_dcp_other_total_bytes", "ep_dcp_other_total_bytes", []string{"bucket"}),
-		bucketEpDcpReplicaBackoff:               newGaugeVec("bucket_ep_dcp_replica_backoff", "ep_dcp_replica_backoff", []string{"bucket"}),
-		bucketEpDcpReplicaCount:                 newGaugeVec("bucket_ep_dcp_replica_count", "ep_dcp_replica_count", []string{"bucket"}),
-		bucketEpDcpReplicaItemsRemaining:        newGaugeVec("bucket_ep_dcp_replica_items_remaining", "ep_dcp_replica_items_remaining", []string{"bucket"}),
-		bucketEpDcpReplicaItemsSent:             newGaugeVec("bucket_ep_dcp_replica_items_sent", "ep_dcp_replica_items_sent", []string{"bucket"}),
-		bucketEpDcpReplicaProducerCount:         newGaugeVec("bucket_ep_dcp_replica_producer_count", "ep_dcp_replica_producer_count", []string{"bucket"}),
-		bucketEpDcpReplicaTotalBacklogSize:      newGaugeVec("bucket_ep_dcp_replica_total_backlog_size", "ep_dcp_replica_total_backlog_size", []string{"bucket"}),
-		bucketEpDcpReplicaTotalBytes:            newGaugeVec("bucket_ep_dcp_replica_total_bytes", "ep_dcp_replica_total_bytes", []string{"bucket"}),
-		bucketEpDcpViewsBackoff:                 newGaugeVec("bucket_ep_dcp_views_backoff", "ep_dcp_views_backoff", []string{"bucket"}),
-		bucketEpDcpViewsCount:                   newGaugeVec("bucket_ep_dcp_views_count", "ep_dcp_views_count", []string{"bucket"}),
-		bucketEpDcpViewsItemsRemaining:          newGaugeVec("bucket_ep_dcp_views_items_remaining", "ep_dcp_views_items_remaining", []string{"bucket"}),
-		bucketEpDcpViewsItemsSent:               newGaugeVec("bucket_ep_dcp_views_items_sent", "ep_dcp_views_items_sent", []string{"bucket"}),
-		bucketEpDcpViewsProducerCount:           newGaugeVec("bucket_ep_dcp_views_producer_count", "ep_dcp_views_producer_count", []string{"bucket"}),
-		bucketEpDcpViewsTotalBacklogSize:        newGaugeVec("bucket_ep_dcp_views_total_backlog_size", "ep_dcp_views_total_backlog_size", []string{"bucket"}),
-		bucketEpDcpViewsTotalBytes:              newGaugeVec("bucket_ep_dcp_views_total_bytes", "ep_dcp_views_total_bytes", []string{"bucket"}),
-		bucketEpDcpXdcrBackoff:                  newGaugeVec("bucket_ep_dcp_xdcr_backoff", "ep_dcp_xdcr_backoff", []string{"bucket"}),
-		bucketEpDcpXdcrCount:                    newGaugeVec("bucket_ep_dcp_xdcr_count", "ep_dcp_xdcr_count", []string{"bucket"}),
-		bucketEpDcpXdcrItemsRemaining:           newGaugeVec("bucket_ep_dcp_xdcr_items_remaining", "ep_dcp_xdcr_items_remaining", []string{"bucket"}),
-		bucketEpDcpXdcrItemsSent:                newGaugeVec("bucket_ep_dcp_xdcr_items_sent", "ep_dcp_xdcr_items_sent", []string{"bucket"}),
-		bucketEpDcpXdcrProducerCount:            newGaugeVec("bucket_ep_dcp_xdcr_producer_count", "ep_dcp_xdcr_producer_count", []string{"bucket"}),
-		bucketEpDcpXdcrTotalBacklogSize:         newGaugeVec("bucket_ep_dcp_xdcr_total_backlog_size", "ep_dcp_xdcr_total_backlog_size", []string{"bucket"}),
-		bucketEpDcpXdcrTotalBytes:               newGaugeVec("bucket_ep_dcp_xdcr_total_bytes", "ep_dcp_xdcr_total_bytes", []string{"bucket"}),
-		bucketEpDiskqueueDrain:                  newGaugeVec("bucket_ep_diskqueue_drain", "ep_diskqueue_drain", []string{"bucket"}),
-		bucketEpDiskqueueFill:                   newGaugeVec("bucket_ep_diskqueue_fill", "ep_diskqueue_fill", []string{"bucket"}),
-		bucketEpDiskqueueItems:                  newGaugeVec("bucket_ep_diskqueue_items", "ep_diskqueue_items", []string{"bucket"}),
-		bucketEpFlusherTodo:                     newGaugeVec("bucket_ep_flusher_todo", "ep_flusher_todo", []string{"bucket"}),
-		bucketEpItemCommitFailed:                newGaugeVec("bucket_ep_item_commit_failed", "ep_item_commit_failed", []string{"bucket"}),
-		bucketEpKvSize:                          newGaugeVec("bucket_ep_kv_size", "ep_kv_size", []string{"bucket"}),
-		bucketEpMaxSize:                         newGaugeVec("bucket_ep_max_size", "ep_max_size", []string{"bucket"}),
-		bucketEpMemHighWat:                      newGaugeVec("bucket_ep_mem_high_wat", "ep_mem_high_wat", []string{"bucket"}),
-		bucketEpMemLowWat:                       newGaugeVec("bucket_ep_mem_low_wat", "ep_mem_low_wat", []string{"bucket"}),
-		bucketEpMetaDataMemory:                  newGaugeVec("bucket_ep_meta_data_memory", "ep_meta_data_memory", []string{"bucket"}),
-		bucketEpNumNonResident:                  newGaugeVec("bucket_ep_num_non_resident", "ep_num_non_resident", []string{"bucket"}),
-		bucketEpNumOpsDelMeta:                   newGaugeVec("bucket_ep_num_ops_del_meta", "ep_num_ops_del_meta", []string{"bucket"}),
-		bucketEpNumOpsDelRetMeta:                newGaugeVec("bucket_ep_num_ops_del_ret_meta", "ep_num_ops_del_ret_meta", []string{"bucket"}),
-		bucketEpNumOpsGetMeta:                   newGaugeVec("bucket_ep_num_ops_get_meta", "ep_num_ops_get_meta", []string{"bucket"}),
-		bucketEpNumOpsSetMeta:                   newGaugeVec("bucket_ep_num_ops_set_meta", "ep_num_ops_set_meta", []string{"bucket"}),
-		bucketEpNumOpsSetRetMeta:                newGaugeVec("bucket_ep_num_ops_set_ret_meta", "ep_num_ops_set_ret_meta", []string{"bucket"}),
-		bucketEpNumValueEjects:                  newGaugeVec("bucket_ep_num_value_ejects", "ep_num_value_ejects", []string{"bucket"}),
-		bucketEpOomErrors:                       newGaugeVec("bucket_ep_oom_errors", "ep_oom_errors", []string{"bucket"}),
-		bucketEpOpsCreate:                       newGaugeVec("bucket_ep_ops_create", "ep_ops_create", []string{"bucket"}),
-		bucketEpOpsUpdate:                       newGaugeVec("bucket_ep_ops_update", "ep_ops_update", []string{"bucket"}),
-		bucketEpOverhead:                        newGaugeVec("bucket_ep_overhead", "ep_overhead", []string{"bucket"}),
-		bucketEpQueueSize:                       newGaugeVec("bucket_ep_queue_size", "ep_queue_size", []string{"bucket"}),
-		bucketEpTmpOomErrors:                    newGaugeVec("bucket_ep_tmp_oom_errors", "ep_tmp_oom_errors", []string{"bucket"}),
-		bucketEpVbTotal:                         newGaugeVec("bucket_ep_vb_total", "ep_vb_total", []string{"bucket"}),
-		bucketEvictions:                         newGaugeVec("bucket_evictions", "evictions", []string{"bucket"}),
-		bucketGetHits:                           newGaugeVec("bucket_get_hits", "get_hits", []string{"bucket"}),
-		bucketGetMisses:                         newGaugeVec("bucket_get_misses", "get_misses", []string{"bucket"}),
-		bucketIncrHits:                          newGaugeVec("bucket_incr_hits", "incr_hits", []string{"bucket"}),
-		bucketIncrMisses:                        newGaugeVec("bucket_incr_misses", "incr_misses", []string{"bucket"}),
-		bucketMemUsed:                           newGaugeVec("bucket_mem_used", "mem_used", []string{"bucket"}),
-		bucketMisses:                            newGaugeVec("bucket_misses", "misses", []string{"bucket"}),
-		bucketOps:                               newGaugeVec("bucket_ops", "ops", []string{"bucket"}),
-		bucketTimestamp:                         newGaugeVec("bucket_timestamp", "timestamp", []string{"bucket"}),
-		bucketVbActiveEject:                     newGaugeVec("bucket_vb_active_eject", "vb_active_eject", []string{"bucket"}),
-		bucketVbActiveItmMemory:                 newGaugeVec("bucket_vb_active_itm_memory", "vb_active_itm_memory", []string{"bucket"}),
-		bucketVbActiveMetaDataMemory:            newGaugeVec("bucket_vb_active_meta_data_memory", "vb_active_meta_data_memory", []string{"bucket"}),
-		bucketVbActiveNum:                       newGaugeVec("bucket_vb_active_num", "vb_active_num", []string{"bucket"}),
-		bucketVbActiveNumNonResident:            newGaugeVec("bucket_vb_active_num_non_resident", "vb_active_num_non_resident", []string{"bucket"}),
-		bucketVbActiveOpsCreate:                 newGaugeVec("bucket_vb_active_ops_create", "vb_active_ops_create", []string{"bucket"}),
-		bucketVbActiveOpsUpdate:                 newGaugeVec("bucket_vb_active_ops_update", "vb_active_ops_update", []string{"bucket"}),
-		bucketVbActiveQueueAge:                  newGaugeVec("bucket_vb_active_queue_age", "vb_active_queue_age", []string{"bucket"}),
-		bucketVbActiveQueueDrain:                newGaugeVec("bucket_vb_active_queue_drain", "vb_active_queue_drain", []string{"bucket"}),
-		bucketVbActiveQueueFill:                 newGaugeVec("bucket_vb_active_queue_fill", "vb_active_queue_fill", []string{"bucket"}),
-		bucketVbActiveQueueSize:                 newGaugeVec("bucket_vb_active_queue_size", "vb_active_queue_size", []string{"bucket"}),
-		bucketVbPendingCurrItems:                newGaugeVec("bucket_vb_pending_curr_items", "vb_pending_curr_items", []string{"bucket"}),
-		bucketVbPendingEject:                    newGaugeVec("bucket_vb_pending_eject", "vb_pending_eject", []string{"bucket"}),
-		bucketVbPendingItmMemory:                newGaugeVec("bucket_vb_pending_itm_memory", "vb_pending_itm_memory", []string{"bucket"}),
-		bucketVbPendingMetaDataMemory:           newGaugeVec("bucket_vb_pending_meta_data_memory", "vb_pending_meta_data_memory", []string{"bucket"}),
-		bucketVbPendingNum:                      newGaugeVec("bucket_vb_pending_num", "vb_pending_num", []string{"bucket"}),
-		bucketVbPendingNumNonResident:           newGaugeVec("bucket_vb_pending_num_non_resident", "vb_pending_num_non_resident", []string{"bucket"}),
-		bucketVbPendingOpsCreate:                newGaugeVec("bucket_vb_pending_ops_create", "vb_pending_ops_create", []string{"bucket"}),
-		bucketVbPendingOpsUpdate:                newGaugeVec("bucket_vb_pending_ops_update", "vb_pending_ops_update", []string{"bucket"}),
-		bucketVbPendingQueueAge:                 newGaugeVec("bucket_vb_pending_queue_age", "vb_pending_queue_age", []string{"bucket"}),
-		bucketVbPendingQueueDrain:               newGaugeVec("bucket_vb_pending_queue_drain", "vb_pending_queue_drain", []string{"bucket"}),
-		bucketVbPendingQueueFill:                newGaugeVec("bucket_vb_pending_queue_fill", "vb_pending_queue_fill", []string{"bucket"}),
-		bucketVbPendingQueueSize:                newGaugeVec("bucket_vb_pending_queue_size", "vb_pending_queue_size", []string{"bucket"}),
-		bucketVbReplicaCurrItems:                newGaugeVec("bucket_vb_replica_curr_items", "vb_replica_curr_items", []string{"bucket"}),
-		bucketVbReplicaEject:                    newGaugeVec("bucket_vb_replica_eject", "vb_replica_eject", []string{"bucket"}),
-		bucketVbReplicaItmMemory:                newGaugeVec("bucket_vb_replica_itm_memory", "vb_replica_itm_memory", []string{"bucket"}),
-		bucketVbReplicaMetaDataMemory:           newGaugeVec("bucket_vb_replica_meta_data_memory", "vb_replica_meta_data_memory", []string{"bucket"}),
-		bucketVbReplicaNum:                      newGaugeVec("bucket_vb_replica_num", "vb_replica_num", []string{"bucket"}),
-		bucketVbReplicaNumNonResident:           newGaugeVec("bucket_vb_replica_num_non_resident", "vb_replica_num_non_resident", []string{"bucket"}),
-		bucketVbReplicaOpsCreate:                newGaugeVec("bucket_vb_replica_ops_create", "vb_replica_ops_create", []string{"bucket"}),
-		bucketVbReplicaOpsUpdate:                newGaugeVec("bucket_vb_replica_ops_update", "vb_replica_ops_update", []string{"bucket"}),
-		bucketVbReplicaQueueAge:                 newGaugeVec("bucket_vb_replica_queue_age", "vb_replica_queue_age", []string{"bucket"}),
-		bucketVbReplicaQueueDrain:               newGaugeVec("bucket_vb_replica_queue_drain", "vb_replica_queue_drain", []string{"bucket"}),
-		bucketVbReplicaQueueFill:                newGaugeVec("bucket_vb_replica_queue_fill", "vb_replica_queue_fill", []string{"bucket"}),
-		bucketVbReplicaQueueSize:                newGaugeVec("bucket_vb_replica_queue_size", "vb_replica_queue_size", []string{"bucket"}),
-		bucketVbTotalQueueAge:                   newGaugeVec("bucket_vb_total_queue_age", "vb_total_queue_age", []string{"bucket"}),
-		bucketXdcOps:                            newGaugeVec("bucket_xdc_ops", "xdc_ops", []string{"bucket"}),
-		bucketCPUIdleMs:                         newGaugeVec("bucket_cpu_idle_ms", "cpu_idle_ms", []string{"bucket"}),
-		bucketCPULocalMs:                        newGaugeVec("bucket_cpu_local_ms", "cpu_local_ms", []string{"bucket"}),
-		bucketCPUUtilizationRate:                newGaugeVec("bucket_cpu_utilization_rate", "cpu_utilization_rate", []string{"bucket"}),
-		bucketHibernatedRequests:                newGaugeVec("bucket_hibernated_requests", "hibernated_requests", []string{"bucket"}),
-		bucketHibernatedWaked:                   newGaugeVec("bucket_hibernated_waked", "hibernated_waked", []string{"bucket"}),
-		bucketMemActualFree:                     newGaugeVec("bucket_mem_actual_free", "mem_actual_free", []string{"bucket"}),
-		bucketMemActualUsed:                     newGaugeVec("bucket_mem_actual_used", "mem_actual_used", []string{"bucket"}),
-		bucketMemFree:                           newGaugeVec("bucket_mem_free", "mem_free", []string{"bucket"}),
-		bucketMemTotal:                          newGaugeVec("bucket_mem_total", "mem_total", []string{"bucket"}),
-		bucketMemUsedSys:                        newGaugeVec("bucket_mem_used_sys", "mem_used_sys", []string{"bucket"}),
-		bucketRestRequests:                      newGaugeVec("bucket_rest_requests", "rest_requests", []string{"bucket"}),
-		bucketSwapTotal:                         newGaugeVec("bucket_swap_total", "swap_total", []string{"bucket"}),
-		bucketSwapUsed:                          newGaugeVec("bucket_swap_used", "swap_used", []string{"bucket"}),
+		bucketCouchTotalDiskSize:                newGaugeVec("bucket_couch_total_disk_size", "Couchbase total disk size", []string{"bucket"}),
+		bucketCouchDocsFragmentation:            newGaugeVec("bucket_couch_docs_fragmentation", "Couchbase documents fragmentation", []string{"bucket"}),
+		bucketCouchViewsFragmentation:           newGaugeVec("bucket_couch_views_fragmentation", "Couchbase views fragmentation", []string{"bucket"}),
+		bucketHitRatio:                          newGaugeVec("bucket_hit_ratio", "Hit ratio", []string{"bucket"}),
+		bucketEpCacheMissRate:                   newGaugeVec("bucket_ep_cache_miss_rate", "Cache miss rate", []string{"bucket"}),
+		bucketEpResidentItemsRate:               newGaugeVec("bucket_ep_resident_items_rate", "Number of resident items", []string{"bucket"}),
+		bucketVbAvgActiveQueueAge:               newGaugeVec("bucket_vb_avg_active_queue_age", "Average age in seconds of active items in the active item queue", []string{"bucket"}),
+		bucketVbAvgReplicaQueueAge:              newGaugeVec("bucket_vb_avg_replica_queue_age", "Average age in seconds of replica items in the replica item queue", []string{"bucket"}),
+		bucketVbAvgPendingQueueAge:              newGaugeVec("bucket_vb_avg_pending_queue_age", "Average age in seconds of pending items in the pending item queue", []string{"bucket"}),
+		bucketVbAvgTotalQueueAge:                newGaugeVec("bucket_vb_avg_total_queue_age", "Average age of items in the queue", []string{"bucket"}),
+		bucketVbActiveResidentItemsRatio:        newGaugeVec("bucket_vb_active_resident_items_ratio", "Number of resident items", []string{"bucket"}),
+		bucketVbReplicaResidentItemsRatio:       newGaugeVec("bucket_vb_replica_resident_items_ratio", "Number of resident replica items", []string{"bucket"}),
+		bucketVbPendingResidentItemsRatio:       newGaugeVec("bucket_vb_pending_resident_items_ratio", "Number of resident pending items", []string{"bucket"}),
+		bucketAvgDiskUpdateTime:                 newGaugeVec("bucket_avg_disk_update_time", "Average disk update time", []string{"bucket"}),
+		bucketAvgDiskCommitTime:                 newGaugeVec("bucket_avg_disk_commit_time", "Average disk commit time", []string{"bucket"}),
+		bucketAvgBgWaitTime:                     newGaugeVec("bucket_avg_bg_wait_time", "Average background wait time", []string{"bucket"}),
+		bucketEpDcpViewsIndexesCount:            newGaugeVec("bucket_ep_dcp_views_indexes_count", "Number of indexes views DCP connections", []string{"bucket"}),
+		bucketEpDcpViewsIndexesItemsRemaining:   newGaugeVec("bucket_ep_dcp_views_indexes_items_remaining", "Number of indexes views items remaining to be sent", []string{"bucket"}),
+		bucketEpDcpViewsIndexesProducerCount:    newGaugeVec("bucket_ep_dcp_views_indexes_producer_count", "Number of indexes views producers", []string{"bucket"}),
+		bucketEpDcpViewsIndexesTotalBacklogSize: newGaugeVec("bucket_ep_dcp_views_indexes_total_backlog_size", "Number of indexes views items remaining for replication", []string{"bucket"}),
+		bucketEpDcpViewsIndexesItemsSent:        newGaugeVec("bucket_ep_dcp_views_indexes_items_sent", "Number of indexes views sent", []string{"bucket"}),
+		bucketEpDcpViewsIndexesTotalBytes:       newGaugeVec("bucket_ep_dcp_views_indexes_total_bytes", "Number of bytes per second being sent for indexes views DCP connections", []string{"bucket"}),
+		bucketEpDcpViewsIndexesBackoff:          newGaugeVec("bucket_ep_dcp_views_indexes_backoff", "Number of backoffs for indexes views DCP connections", []string{"bucket"}),
+		bucketBgWaitCount:                       newGaugeVec("bucket_bg_wait_count", "Background wait", []string{"bucket"}),
+		bucketBgWaitTotal:                       newGaugeVec("bucket_bg_wait_total", "Total background wait", []string{"bucket"}),
+		bucketBytesRead:                         newGaugeVec("bucket_bytes_read", "Bytes read", []string{"bucket"}),
+		bucketBytesWritten:                      newGaugeVec("bucket_bytes_written", "Bytes written", []string{"bucket"}),
+		bucketCasBadval:                         newGaugeVec("bucket_cas_badval", "Compare and Swap bad values", []string{"bucket"}),
+		bucketCasHits:                           newGaugeVec("bucket_cas_hits", "Compare and Swap hits", []string{"bucket"}),
+		bucketCasMisses:                         newGaugeVec("bucket_cas_misses", "Compare and Swap misses", []string{"bucket"}),
+		bucketCmdGet:                            newGaugeVec("bucket_cmd_get", "Gets from memory", []string{"bucket"}),
+		bucketCmdSet:                            newGaugeVec("bucket_cmd_set", "Sets to memory", []string{"bucket"}),
+		bucketCouchDocsActualDiskSize:           newGaugeVec("bucket_couch_docs_actual_disk_size", "Total size of documents on disk in bytes", []string{"bucket"}),
+		bucketCouchDocsDataSize:                 newGaugeVec("bucket_couch_docs_data_size", "Documents size in bytes", []string{"bucket"}),
+		bucketCouchDocsDiskSize:                 newGaugeVec("bucket_couch_docs_disk_size", "Total size of documents in bytes", []string{"bucket"}),
+		bucketCouchSpatialDataSize:              newGaugeVec("bucket_couch_spatial_data_size", "Size of object data for spatial views", []string{"bucket"}),
+		bucketCouchSpatialDiskSize:              newGaugeVec("bucket_couch_spatial_disk_size", "Amount of disk space occupied by spatial views", []string{"bucket"}),
+		bucketCouchSpatialOps:                   newGaugeVec("bucket_couch_spatial_ops", "Spatial operations", []string{"bucket"}),
+		bucketCouchViewsActualDiskSize:          newGaugeVec("bucket_couch_views_actual_disk_size", "Total size of views on disk in bytes", []string{"bucket"}),
+		bucketCouchViewsDataSize:                newGaugeVec("bucket_couch_views_data_size", "Views size in bytes", []string{"bucket"}),
+		bucketCouchViewsDiskSize:                newGaugeVec("bucket_couch_views_disk_size", "Total size of views in bytes", []string{"bucket"}),
+		bucketCouchViewsOps:                     newGaugeVec("bucket_couch_views_ops", "View operations", []string{"bucket"}),
+		bucketCurrConnections:                   newGaugeVec("bucket_curr_connections", "Current bucket connections", []string{"bucket"}),
+		bucketCurrItems:                         newGaugeVec("bucket_curr_items", "Number of active items in memory", []string{"bucket"}),
+		bucketCurrItemsTot:                      newGaugeVec("bucket_curr_items_tot", "Total number of items", []string{"bucket"}),
+		bucketDecrHits:                          newGaugeVec("bucket_decr_hits", "Decrement hits", []string{"bucket"}),
+		bucketDecrMisses:                        newGaugeVec("bucket_decr_misses", "Decrement misses", []string{"bucket"}),
+		bucketDeleteHits:                        newGaugeVec("bucket_delete_hits", "Delete hits", []string{"bucket"}),
+		bucketDeleteMisses:                      newGaugeVec("bucket_delete_misses", "Delete misses", []string{"bucket"}),
+		bucketDiskCommitCount:                   newGaugeVec("bucket_disk_commit_count", "Disk commits", []string{"bucket"}),
+		bucketDiskCommitTotal:                   newGaugeVec("bucket_disk_commit_total", "Total disk commits", []string{"bucket"}),
+		bucketDiskUpdateCount:                   newGaugeVec("bucket_disk_update_count", "Disk updates", []string{"bucket"}),
+		bucketDiskUpdateTotal:                   newGaugeVec("bucket_disk_update_total", "Total disk updates", []string{"bucket"}),
+		bucketDiskWriteQueue:                    newGaugeVec("bucket_disk_write_queue", "Disk write queue depth", []string{"bucket"}),
+		bucketEpBgFetched:                       newGaugeVec("bucket_ep_bg_fetched", "Disk reads per second", []string{"bucket"}),
+		bucketEpDcp2IBackoff:                    newGaugeVec("bucket_ep_dcp_2i_backoff", "Number of backoffs for indexes DCP connections", []string{"bucket"}),
+		bucketEpDcp2ICount:                      newGaugeVec("bucket_ep_dcp_2i_count", "Number of indexes DCP connections", []string{"bucket"}),
+		bucketEpDcp2IItemsRemaining:             newGaugeVec("bucket_ep_dcp_2i_items_remaining", "Number of indexes items remaining to be sent", []string{"bucket"}),
+		bucketEpDcp2IItemsSent:                  newGaugeVec("bucket_ep_dcp_2i_items_sent", "Number of indexes items sent", []string{"bucket"}),
+		bucketEpDcp2IProducerCount:              newGaugeVec("bucket_ep_dcp_2i_producer_count", "Number of indexes producers", []string{"bucket"}),
+		bucketEpDcp2ITotalBacklogSize:           newGaugeVec("bucket_ep_dcp_2i_total_backlog_size", "Number of indexes total backlog size", []string{"bucket"}),
+		bucketEpDcp2ITotalBytes:                 newGaugeVec("bucket_ep_dcp_2i_total_bytes", "Number bytes per second being sent for indexes DCP connections", []string{"bucket"}),
+		bucketEpDcpFtsBackoff:                   newGaugeVec("bucket_ep_dcp_fts_backoff", "Number of backoffs for fts DCP connections", []string{"bucket"}),
+		bucketEpDcpFtsCount:                     newGaugeVec("bucket_ep_dcp_fts_count", "Number of fts DCP connections", []string{"bucket"}),
+		bucketEpDcpFtsItemsRemaining:            newGaugeVec("bucket_ep_dcp_fts_items_remaining", "Number of fts items remaining to be sent", []string{"bucket"}),
+		bucketEpDcpFtsItemsSent:                 newGaugeVec("bucket_ep_dcp_fts_items_sent", "Number of fts items sent", []string{"bucket"}),
+		bucketEpDcpFtsProducerCount:             newGaugeVec("bucket_ep_dcp_fts_producer_count", "Number of fts producers", []string{"bucket"}),
+		bucketEpDcpFtsTotalBacklogSize:          newGaugeVec("bucket_ep_dcp_fts_total_backlog_size", "Number of fts total backlog size", []string{"bucket"}),
+		bucketEpDcpFtsTotalBytes:                newGaugeVec("bucket_ep_dcp_fts_total_bytes", "Number bytes per second being sent for fts DCP connections", []string{"bucket"}),
+		bucketEpDcpOtherBackoff:                 newGaugeVec("bucket_ep_dcp_other_backoff", "Number of backoffs for other DCP connections", []string{"bucket"}),
+		bucketEpDcpOtherCount:                   newGaugeVec("bucket_ep_dcp_other_count", "Number of other DCP connections", []string{"bucket"}),
+		bucketEpDcpOtherItemsRemaining:          newGaugeVec("bucket_ep_dcp_other_items_remaining", "Number of other items remaining to be sent", []string{"bucket"}),
+		bucketEpDcpOtherItemsSent:               newGaugeVec("bucket_ep_dcp_other_items_sent", "Number of other items sent", []string{"bucket"}),
+		bucketEpDcpOtherProducerCount:           newGaugeVec("bucket_ep_dcp_other_producer_count", "Number of other producers", []string{"bucket"}),
+		bucketEpDcpOtherTotalBacklogSize:        newGaugeVec("bucket_ep_dcp_other_total_backlog_size", "Number of other total backlog size", []string{"bucket"}),
+		bucketEpDcpOtherTotalBytes:              newGaugeVec("bucket_ep_dcp_other_total_bytes", "Number bytes per second being sent for other DCP connections", []string{"bucket"}),
+		bucketEpDcpReplicaBackoff:               newGaugeVec("bucket_ep_dcp_replica_backoff", "Number of backoffs for replica DCP connections", []string{"bucket"}),
+		bucketEpDcpReplicaCount:                 newGaugeVec("bucket_ep_dcp_replica_count", "Number of replica DCP connections", []string{"bucket"}),
+		bucketEpDcpReplicaItemsRemaining:        newGaugeVec("bucket_ep_dcp_replica_items_remaining", "Number of replica items remaining to be sent", []string{"bucket"}),
+		bucketEpDcpReplicaItemsSent:             newGaugeVec("bucket_ep_dcp_replica_items_sent", "Number of replica items sent", []string{"bucket"}),
+		bucketEpDcpReplicaProducerCount:         newGaugeVec("bucket_ep_dcp_replica_producer_count", "Number of replica producers", []string{"bucket"}),
+		bucketEpDcpReplicaTotalBacklogSize:      newGaugeVec("bucket_ep_dcp_replica_total_backlog_size", "Number of replica total backlog size", []string{"bucket"}),
+		bucketEpDcpReplicaTotalBytes:            newGaugeVec("bucket_ep_dcp_replica_total_bytes", "Number bytes per second being sent for replica DCP connections", []string{"bucket"}),
+		bucketEpDcpViewsBackoff:                 newGaugeVec("bucket_ep_dcp_views_backoff", "Number of backoffs for views DCP connections", []string{"bucket"}),
+		bucketEpDcpViewsCount:                   newGaugeVec("bucket_ep_dcp_views_count", "Number of views DCP connections", []string{"bucket"}),
+		bucketEpDcpViewsItemsRemaining:          newGaugeVec("bucket_ep_dcp_views_items_remaining", "Number of views items remaining to be sent", []string{"bucket"}),
+		bucketEpDcpViewsItemsSent:               newGaugeVec("bucket_ep_dcp_views_items_sent", "Number of views items sent", []string{"bucket"}),
+		bucketEpDcpViewsProducerCount:           newGaugeVec("bucket_ep_dcp_views_producer_count", "Number of views producers", []string{"bucket"}),
+		bucketEpDcpViewsTotalBacklogSize:        newGaugeVec("bucket_ep_dcp_views_total_backlog_size", "Number of views total backlog size", []string{"bucket"}),
+		bucketEpDcpViewsTotalBytes:              newGaugeVec("bucket_ep_dcp_views_total_bytes", "Number bytes per second being sent for views DCP connections", []string{"bucket"}),
+		bucketEpDcpXdcrBackoff:                  newGaugeVec("bucket_ep_dcp_xdcr_backoff", "Number of backoffs for xdcr DCP connections", []string{"bucket"}),
+		bucketEpDcpXdcrCount:                    newGaugeVec("bucket_ep_dcp_xdcr_count", "Number of xdcr DCP connections", []string{"bucket"}),
+		bucketEpDcpXdcrItemsRemaining:           newGaugeVec("bucket_ep_dcp_xdcr_items_remaining", "Number of xdcr items remaining to be sent", []string{"bucket"}),
+		bucketEpDcpXdcrItemsSent:                newGaugeVec("bucket_ep_dcp_xdcr_items_sent", "Number of xdcr items sent", []string{"bucket"}),
+		bucketEpDcpXdcrProducerCount:            newGaugeVec("bucket_ep_dcp_xdcr_producer_count", "Number of xdcr producers", []string{"bucket"}),
+		bucketEpDcpXdcrTotalBacklogSize:         newGaugeVec("bucket_ep_dcp_xdcr_total_backlog_size", "Number of xdcr total backlog size", []string{"bucket"}),
+		bucketEpDcpXdcrTotalBytes:               newGaugeVec("bucket_ep_dcp_xdcr_total_bytes", "Number bytes per second being sent for xdcr DCP connections", []string{"bucket"}),
+		bucketEpDiskqueueDrain:                  newGaugeVec("bucket_ep_diskqueue_drain", "Total Drained items on disk queue", []string{"bucket"}),
+		bucketEpDiskqueueFill:                   newGaugeVec("bucket_ep_diskqueue_fill", "Total enqueued items on disk queue", []string{"bucket"}),
+		bucketEpDiskqueueItems:                  newGaugeVec("bucket_ep_diskqueue_items", "Total number of items waiting to be written to disk", []string{"bucket"}),
+		bucketEpFlusherTodo:                     newGaugeVec("bucket_ep_flusher_todo", "Number of items currently being written", []string{"bucket"}),
+		bucketEpItemCommitFailed:                newGaugeVec("bucket_ep_item_commit_failed", "Number of times a transaction failed to commit due to storage errors", []string{"bucket"}),
+		bucketEpKvSize:                          newGaugeVec("bucket_ep_kv_size", "Total amount of user data cached in RAM", []string{"bucket"}),
+		bucketEpMaxSize:                         newGaugeVec("bucket_ep_max_size", "Maximum amount of memory this bucket can use", []string{"bucket"}),
+		bucketEpMemHighWat:                      newGaugeVec("bucket_ep_mem_high_wat", "Memory usage high water mark for auto-evictions", []string{"bucket"}),
+		bucketEpMemLowWat:                       newGaugeVec("bucket_ep_mem_low_wat", "Memory usage low water mark for auto-evictions", []string{"bucket"}),
+		bucketEpMetaDataMemory:                  newGaugeVec("bucket_ep_meta_data_memory", "Total amount of item metadata consuming RAM", []string{"bucket"}),
+		bucketEpNumNonResident:                  newGaugeVec("bucket_ep_num_non_resident", "Number of non-resident items", []string{"bucket"}),
+		bucketEpNumOpsDelMeta:                   newGaugeVec("bucket_ep_num_ops_del_meta", "Number of delete operations per second for this bucket as the target for XDCR", []string{"bucket"}),
+		bucketEpNumOpsDelRetMeta:                newGaugeVec("bucket_ep_num_ops_del_ret_meta", "Number of delRetMeta operations per second for this bucket as the target for XDCR", []string{"bucket"}),
+		bucketEpNumOpsGetMeta:                   newGaugeVec("bucket_ep_num_ops_get_meta", "Number of read operations per second for this bucket as the target for XDCR", []string{"bucket"}),
+		bucketEpNumOpsSetMeta:                   newGaugeVec("bucket_ep_num_ops_set_meta", "Number of write operations per second for this bucket as the target for XDCR", []string{"bucket"}),
+		bucketEpNumOpsSetRetMeta:                newGaugeVec("bucket_ep_num_ops_set_ret_meta", "Number of setRetMeta operations per second for this bucket as the target for XDCR", []string{"bucket"}),
+		bucketEpNumValueEjects:                  newGaugeVec("bucket_ep_num_value_ejects", "Number of times item values got ejected from memory to disk", []string{"bucket"}),
+		bucketEpOomErrors:                       newGaugeVec("bucket_ep_oom_errors", "Number of times unrecoverable OOMs happened while processing operations", []string{"bucket"}),
+		bucketEpOpsCreate:                       newGaugeVec("bucket_ep_ops_create", "Create operations", []string{"bucket"}),
+		bucketEpOpsUpdate:                       newGaugeVec("bucket_ep_ops_update", "Update operations", []string{"bucket"}),
+		bucketEpOverhead:                        newGaugeVec("bucket_ep_overhead", "Extra memory used by transient data like persistence queues or checkpoints", []string{"bucket"}),
+		bucketEpQueueSize:                       newGaugeVec("bucket_ep_queue_size", "Number of items queued for storage", []string{"bucket"}),
+		bucketEpTmpOomErrors:                    newGaugeVec("bucket_ep_tmp_oom_errors", "Number of times recoverable OOMs happened while processing operations", []string{"bucket"}),
+		bucketEpVbTotal:                         newGaugeVec("bucket_ep_vb_total", "Total number of vBuckets for this bucket", []string{"bucket"}),
+		bucketEvictions:                         newGaugeVec("bucket_evictions", "Number of evictions", []string{"bucket"}),
+		bucketGetHits:                           newGaugeVec("bucket_get_hits", "Number of get hits", []string{"bucket"}),
+		bucketGetMisses:                         newGaugeVec("bucket_get_misses", "Number of get misses", []string{"bucket"}),
+		bucketIncrHits:                          newGaugeVec("bucket_incr_hits", "Number of increment hits", []string{"bucket"}),
+		bucketIncrMisses:                        newGaugeVec("bucket_incr_misses", "Number of increment misses", []string{"bucket"}),
+		bucketMemUsed:                           newGaugeVec("bucket_mem_used", "Engine's total memory usage (deprecated)", []string{"bucket"}),
+		bucketMisses:                            newGaugeVec("bucket_misses", "Total number of misses", []string{"bucket"}),
+		bucketOps:                               newGaugeVec("bucket_ops", "Total number of operations", []string{"bucket"}),
+		bucketVbActiveEject:                     newGaugeVec("bucket_vb_active_eject", "Number of items per second being ejected to disk from active vBuckets", []string{"bucket"}),
+		bucketVbActiveItmMemory:                 newGaugeVec("bucket_vb_active_itm_memory", "Amount of active user data cached in RAM", []string{"bucket"}),
+		bucketVbActiveMetaDataMemory:            newGaugeVec("bucket_vb_active_meta_data_memory", "Amount of active item metadata consuming RAM", []string{"bucket"}),
+		bucketVbActiveNum:                       newGaugeVec("bucket_vb_active_num", "Number of active items", []string{"bucket"}),
+		bucketVbActiveNumNonResident:            newGaugeVec("bucket_vb_active_num_non_resident", "Number of non resident vBuckets in the active state for this bucket", []string{"bucket"}),
+		bucketVbActiveOpsCreate:                 newGaugeVec("bucket_vb_active_ops_create", "New items per second being inserted into active vBuckets", []string{"bucket"}),
+		bucketVbActiveOpsUpdate:                 newGaugeVec("bucket_vb_active_ops_update", "Number of items updated on active vBucket per second for this bucket", []string{"bucket"}),
+		bucketVbActiveQueueAge:                  newGaugeVec("bucket_vb_active_queue_age", "Sum of disk queue item age in milliseconds", []string{"bucket"}),
+		bucketVbActiveQueueDrain:                newGaugeVec("bucket_vb_active_queue_drain", "Total drained items in the queue", []string{"bucket"}),
+		bucketVbActiveQueueFill:                 newGaugeVec("bucket_vb_active_queue_fill", "Number of active items per second being put on the active item disk queue", []string{"bucket"}),
+		bucketVbActiveQueueSize:                 newGaugeVec("bucket_vb_active_queue_size", "Number of active items in the queue", []string{"bucket"}),
+		bucketVbPendingCurrItems:                newGaugeVec("bucket_vb_pending_curr_items", "Number of items in pending vBuckets", []string{"bucket"}),
+		bucketVbPendingEject:                    newGaugeVec("bucket_vb_pending_eject", "Number of items per second being ejected to disk from pending vBuckets", []string{"bucket"}),
+		bucketVbPendingItmMemory:                newGaugeVec("bucket_vb_pending_itm_memory", "Amount of pending user data cached in RAM", []string{"bucket"}),
+		bucketVbPendingMetaDataMemory:           newGaugeVec("bucket_vb_pending_meta_data_memory", "Amount of pending item metadata consuming RAM", []string{"bucket"}),
+		bucketVbPendingNum:                      newGaugeVec("bucket_vb_pending_num", "Number of pending items", []string{"bucket"}),
+		bucketVbPendingNumNonResident:           newGaugeVec("bucket_vb_pending_num_non_resident", "Number of non resident vBuckets in the pending state for this bucket", []string{"bucket"}),
+		bucketVbPendingOpsCreate:                newGaugeVec("bucket_vb_pending_ops_create", "Number of pending create operations", []string{"bucket"}),
+		bucketVbPendingOpsUpdate:                newGaugeVec("bucket_vb_pending_ops_update", "Number of items updated on pending vBucket per second for this bucket", []string{"bucket"}),
+		bucketVbPendingQueueAge:                 newGaugeVec("bucket_vb_pending_queue_age", "Sum of disk pending queue item age in milliseconds", []string{"bucket"}),
+		bucketVbPendingQueueDrain:               newGaugeVec("bucket_vb_pending_queue_drain", "Total drained pending items in the queue", []string{"bucket"}),
+		bucketVbPendingQueueFill:                newGaugeVec("bucket_vb_pending_queue_fill", "Total enqueued pending items on disk queue", []string{"bucket"}),
+		bucketVbPendingQueueSize:                newGaugeVec("bucket_vb_pending_queue_size", "Number of pending items in the queue", []string{"bucket"}),
+		bucketVbReplicaCurrItems:                newGaugeVec("bucket_vb_replica_curr_items", "Number of in memory items", []string{"bucket"}),
+		bucketVbReplicaEject:                    newGaugeVec("bucket_vb_replica_eject", "Number of items per second being ejected to disk from replica vBuckets", []string{"bucket"}),
+		bucketVbReplicaItmMemory:                newGaugeVec("bucket_vb_replica_itm_memory", "Amount of replica user data cached in RAM", []string{"bucket"}),
+		bucketVbReplicaMetaDataMemory:           newGaugeVec("bucket_vb_replica_meta_data_memory", "Total metadata memory", []string{"bucket"}),
+		bucketVbReplicaNum:                      newGaugeVec("bucket_vb_replica_num", "Number of replica vBuckets", []string{"bucket"}),
+		bucketVbReplicaNumNonResident:           newGaugeVec("bucket_vb_replica_num_non_resident", "Number of non resident vBuckets in the replica state for this bucket", []string{"bucket"}),
+		bucketVbReplicaOpsCreate:                newGaugeVec("bucket_vb_replica_ops_create", "Number of replica create operations", []string{"bucket"}),
+		bucketVbReplicaOpsUpdate:                newGaugeVec("bucket_vb_replica_ops_update", "Number of items updated on replica vBucket per second for this bucket", []string{"bucket"}),
+		bucketVbReplicaQueueAge:                 newGaugeVec("bucket_vb_replica_queue_age", "Sum of disk replica queue item age in milliseconds", []string{"bucket"}),
+		bucketVbReplicaQueueDrain:               newGaugeVec("bucket_vb_replica_queue_drain", "Total drained replica items in the queue", []string{"bucket"}),
+		bucketVbReplicaQueueFill:                newGaugeVec("bucket_vb_replica_queue_fill", "Total enqueued replica items on disk queue", []string{"bucket"}),
+		bucketVbReplicaQueueSize:                newGaugeVec("bucket_vb_replica_queue_size", "Replica items in disk queue", []string{"bucket"}),
+		bucketVbTotalQueueAge:                   newGaugeVec("bucket_vb_total_queue_age", "Sum of disk queue item age in milliseconds", []string{"bucket"}),
+		bucketXdcOps:                            newGaugeVec("bucket_xdc_ops", "Number of cross-datacenter replication operations", []string{"bucket"}),
+		bucketCPUIdleMs:                         newGaugeVec("bucket_cpu_idle_ms", "CPU idle milliseconds", []string{"bucket"}),
+		bucketCPULocalMs:                        newGaugeVec("bucket_cpu_local_ms", "CPU local milliseconds", []string{"bucket"}),
+		bucketCPUUtilizationRate:                newGaugeVec("bucket_cpu_utilization_rate", "CPU utilization percentage", []string{"bucket"}),
+		bucketHibernatedRequests:                newGaugeVec("bucket_hibernated_requests", "Number of streaming requests now idle", []string{"bucket"}),
+		bucketHibernatedWaked:                   newGaugeVec("bucket_hibernated_waked", "Rate of streaming request wakeups", []string{"bucket"}),
+		bucketMemActualFree:                     newGaugeVec("bucket_mem_actual_free", "Actual free memory", []string{"bucket"}),
+		bucketMemActualUsed:                     newGaugeVec("bucket_mem_actual_used", "Actual used memory", []string{"bucket"}),
+		bucketMemFree:                           newGaugeVec("bucket_mem_free", "Free memory", []string{"bucket"}),
+		bucketMemTotal:                          newGaugeVec("bucket_mem_total", "Total memeory", []string{"bucket"}),
+		bucketMemUsedSys:                        newGaugeVec("bucket_mem_used_sys", "System memory usage", []string{"bucket"}),
+		bucketRestRequests:                      newGaugeVec("bucket_rest_requests", "Number of HTTP requests", []string{"bucket"}),
+		bucketSwapTotal:                         newGaugeVec("bucket_swap_total", "Total amount of swap available", []string{"bucket"}),
+		bucketSwapUsed:                          newGaugeVec("bucket_swap_used", "Amount of swap used", []string{"bucket"}),
 	}
 
 	if context.CouchbaseVersion == "4.5.1" {
-		exporter.bucketEpTapRebalanceCount = newGaugeVec("bucket_ep_tap_rebalance_count", "ep_tap_rebalance_count", []string{"bucket"})
-		exporter.bucketEpTapRebalanceQlen = newGaugeVec("bucket_ep_tap_rebalance_qlen", "ep_tap_rebalance_qlen", []string{"bucket"})
-		exporter.bucketEpTapRebalanceQueueBackfillremaining = newGaugeVec("bucket_ep_tap_rebalance_queue_backfillremaining", "ep_tap_rebalance_queue_backfillremaining", []string{"bucket"})
-		exporter.bucketEpTapRebalanceQueueBackoff = newGaugeVec("bucket_ep_tap_rebalance_queue_backoff", "ep_tap_rebalance_queue_backoff", []string{"bucket"})
-		exporter.bucketEpTapRebalanceQueueDrain = newGaugeVec("bucket_ep_tap_rebalance_queue_drain", "ep_tap_rebalance_queue_drain", []string{"bucket"})
-		exporter.bucketEpTapRebalanceQueueFill = newGaugeVec("bucket_ep_tap_rebalance_queue_fill", "ep_tap_rebalance_queue_fill", []string{"bucket"})
-		exporter.bucketEpTapRebalanceQueueItemondisk = newGaugeVec("bucket_ep_tap_rebalance_queue_itemondisk", "ep_tap_rebalance_queue_itemondisk", []string{"bucket"})
-		exporter.bucketEpTapRebalanceTotalBacklogSize = newGaugeVec("bucket_ep_tap_rebalance_total_backlog_size", "ep_tap_rebalance_total_backlog_size", []string{"bucket"})
-		exporter.bucketEpTapReplicaCount = newGaugeVec("bucket_ep_tap_replica_count", "ep_tap_replica_count", []string{"bucket"})
-		exporter.bucketEpTapReplicaQlen = newGaugeVec("bucket_ep_tap_replica_qlen", "ep_tap_replica_qlen", []string{"bucket"})
-		exporter.bucketEpTapReplicaQueueBackfillremaining = newGaugeVec("bucket_ep_tap_replica_queue_backfillremaining", "ep_tap_replica_queue_backfillremaining", []string{"bucket"})
-		exporter.bucketEpTapReplicaQueueBackoff = newGaugeVec("bucket_ep_tap_replica_queue_backoff", "ep_tap_replica_queue_backoff", []string{"bucket"})
-		exporter.bucketEpTapReplicaQueueDrain = newGaugeVec("bucket_ep_tap_replica_queue_drain", "ep_tap_replica_queue_drain", []string{"bucket"})
-		exporter.bucketEpTapReplicaQueueFill = newGaugeVec("bucket_ep_tap_replica_queue_fill", "ep_tap_replica_queue_fill", []string{"bucket"})
-		exporter.bucketEpTapReplicaQueueItemondisk = newGaugeVec("bucket_ep_tap_replica_queue_itemondisk", "ep_tap_replica_queue_itemondisk", []string{"bucket"})
-		exporter.bucketEpTapReplicaTotalBacklogSize = newGaugeVec("bucket_ep_tap_replica_total_backlog_size", "ep_tap_replica_total_backlog_size", []string{"bucket"})
-		exporter.bucketEpTapTotalCount = newGaugeVec("bucket_ep_tap_total_count", "ep_tap_total_count", []string{"bucket"})
-		exporter.bucketEpTapTotalQlen = newGaugeVec("bucket_ep_tap_total_qlen", "ep_tap_total_qlen", []string{"bucket"})
-		exporter.bucketEpTapTotalQueueBackfillremaining = newGaugeVec("bucket_ep_tap_total_queue_backfillremaining", "ep_tap_total_queue_backfillremaining", []string{"bucket"})
-		exporter.bucketEpTapTotalQueueBackoff = newGaugeVec("bucket_ep_tap_total_queue_backoff", "ep_tap_total_queue_backoff", []string{"bucket"})
-		exporter.bucketEpTapTotalQueueDrain = newGaugeVec("bucket_ep_tap_total_queue_drain", "ep_tap_total_queue_drain", []string{"bucket"})
-		exporter.bucketEpTapTotalQueueFill = newGaugeVec("bucket_ep_tap_total_queue_fill", "ep_tap_total_queue_fill", []string{"bucket"})
-		exporter.bucketEpTapTotalQueueItemondisk = newGaugeVec("bucket_ep_tap_total_queue_itemondisk", "ep_tap_total_queue_itemondisk", []string{"bucket"})
-		exporter.bucketEpTapTotalTotalBacklogSize = newGaugeVec("bucket_ep_tap_total_total_backlog_size", "ep_tap_total_total_backlog_size", []string{"bucket"})
-		exporter.bucketEpTapUserCount = newGaugeVec("bucket_ep_tap_user_count", "ep_tap_user_count", []string{"bucket"})
-		exporter.bucketEpTapUserQlen = newGaugeVec("bucket_ep_tap_user_qlen", "ep_tap_user_qlen", []string{"bucket"})
-		exporter.bucketEpTapUserQueueBackfillremaining = newGaugeVec("bucket_ep_tap_user_queue_backfillremaining", "ep_tap_user_queue_backfillremaining", []string{"bucket"})
-		exporter.bucketEpTapUserQueueBackoff = newGaugeVec("bucket_ep_tap_user_queue_backoff", "ep_tap_user_queue_backoff", []string{"bucket"})
-		exporter.bucketEpTapUserQueueDrain = newGaugeVec("bucket_ep_tap_user_queue_drain", "ep_tap_user_queue_drain", []string{"bucket"})
-		exporter.bucketEpTapUserQueueFill = newGaugeVec("bucket_ep_tap_user_queue_fill", "ep_tap_user_queue_fill", []string{"bucket"})
-		exporter.bucketEpTapUserQueueItemondisk = newGaugeVec("bucket_ep_tap_user_queue_itemondisk", "ep_tap_user_queue_itemondisk", []string{"bucket"})
-		exporter.bucketEpTapUserTotalBacklogSize = newGaugeVec("bucket_ep_tap_user_total_backlog_size", "ep_tap_user_total_backlog_size", []string{"bucket"})
+		exporter.bucketEpTapRebalanceCount = newGaugeVec("bucket_ep_tap_rebalance_count", "Number of internal rebalancing TAP queues", []string{"bucket"})
+		exporter.bucketEpTapRebalanceQlen = newGaugeVec("bucket_ep_tap_rebalance_qlen", "Number of items in the rebalance TAP queues", []string{"bucket"})
+		exporter.bucketEpTapRebalanceQueueBackfillremaining = newGaugeVec("bucket_ep_tap_rebalance_queue_backfillremaining", "Number of items in the backfill queues of rebalancing TAP connections", []string{"bucket"})
+		exporter.bucketEpTapRebalanceQueueBackoff = newGaugeVec("bucket_ep_tap_rebalance_queue_backoff", "Number of back-offs received per second while sending data over rebalancing TAP connections", []string{"bucket"})
+		exporter.bucketEpTapRebalanceQueueDrain = newGaugeVec("bucket_ep_tap_rebalance_queue_drain", "Number of items per second being sent over rebalancing TAP connections, i.e. removed from queue", []string{"bucket"})
+		exporter.bucketEpTapRebalanceQueueFill = newGaugeVec("bucket_ep_tap_rebalance_queue_fill", "Number of items per second being sent to queue", []string{"bucket"})
+		exporter.bucketEpTapRebalanceQueueItemondisk = newGaugeVec("bucket_ep_tap_rebalance_queue_itemondisk", "Number of items still on disk to be loaded for rebalancing TAP connections", []string{"bucket"})
+		exporter.bucketEpTapRebalanceTotalBacklogSize = newGaugeVec("bucket_ep_tap_rebalance_total_backlog_size", "Number of remaining items for rebalancing TAP connections", []string{"bucket"})
+		exporter.bucketEpTapReplicaCount = newGaugeVec("bucket_ep_tap_replica_count", "Number of internal replication TAP queues", []string{"bucket"})
+		exporter.bucketEpTapReplicaQlen = newGaugeVec("bucket_ep_tap_replica_qlen", "Number of items in the replication TAP queues", []string{"bucket"})
+		exporter.bucketEpTapReplicaQueueBackfillremaining = newGaugeVec("bucket_ep_tap_replica_queue_backfillremaining", "Number of items in the backfill queues of replication TAP connections", []string{"bucket"})
+		exporter.bucketEpTapReplicaQueueBackoff = newGaugeVec("bucket_ep_tap_replica_queue_backoff", "Number of back-offs received per second while sending data over replication TAP connections", []string{"bucket"})
+		exporter.bucketEpTapReplicaQueueDrain = newGaugeVec("bucket_ep_tap_replica_queue_drain", "Total drained items in the replica queue", []string{"bucket"})
+		exporter.bucketEpTapReplicaQueueFill = newGaugeVec("bucket_ep_tap_replica_queue_fill", "Number of items per second being sent to queue", []string{"bucket"})
+		exporter.bucketEpTapReplicaQueueItemondisk = newGaugeVec("bucket_ep_tap_replica_queue_itemondisk", "Number of items still on disk to be loaded for replication TAP connections", []string{"bucket"})
+		exporter.bucketEpTapReplicaTotalBacklogSize = newGaugeVec("bucket_ep_tap_replica_total_backlog_size", "Number of remaining items for replication TAP connections", []string{"bucket"})
+		exporter.bucketEpTapTotalCount = newGaugeVec("bucket_ep_tap_total_count", "Total number of internal TAP queues", []string{"bucket"})
+		exporter.bucketEpTapTotalQlen = newGaugeVec("bucket_ep_tap_total_qlen", "Total number of items in TAP queues", []string{"bucket"})
+		exporter.bucketEpTapTotalQueueBackfillremaining = newGaugeVec("bucket_ep_tap_total_queue_backfillremaining", "Total number of items in the backfill queues of TAP connections", []string{"bucket"})
+		exporter.bucketEpTapTotalQueueBackoff = newGaugeVec("bucket_ep_tap_total_queue_backoff", "Total number of back-offs received per second while sending data over TAP connections", []string{"bucket"})
+		exporter.bucketEpTapTotalQueueDrain = newGaugeVec("bucket_ep_tap_total_queue_drain", "Total drained items in the queue", []string{"bucket"})
+		exporter.bucketEpTapTotalQueueFill = newGaugeVec("bucket_ep_tap_total_queue_fill", "Total enqueued items in the queue", []string{"bucket"})
+		exporter.bucketEpTapTotalQueueItemondisk = newGaugeVec("bucket_ep_tap_total_queue_itemondisk", "Total number of items still on disk to be loaded for TAP connections", []string{"bucket"})
+		exporter.bucketEpTapTotalTotalBacklogSize = newGaugeVec("bucket_ep_tap_total_total_backlog_size", "Number of remaining items for replication", []string{"bucket"})
+		exporter.bucketEpTapUserCount = newGaugeVec("bucket_ep_tap_user_count", "Number of internal user TAP queues", []string{"bucket"})
+		exporter.bucketEpTapUserQlen = newGaugeVec("bucket_ep_tap_user_qlen", "Number of items in user TAP queues", []string{"bucket"})
+		exporter.bucketEpTapUserQueueBackfillremaining = newGaugeVec("bucket_ep_tap_user_queue_backfillremaining", "Number of items in the backfill queues of user TAP connections", []string{"bucket"})
+		exporter.bucketEpTapUserQueueBackoff = newGaugeVec("bucket_ep_tap_user_queue_backoff", "Number of back-offs received per second while sending data over user TAP connections", []string{"bucket"})
+		exporter.bucketEpTapUserQueueDrain = newGaugeVec("bucket_ep_tap_user_queue_drain", "Number of items per second being sent over user TAP connections to this bucket, i.e. removed from queue", []string{"bucket"})
+		exporter.bucketEpTapUserQueueFill = newGaugeVec("bucket_ep_tap_user_queue_fill", "Number of items per second being sent to queue", []string{"bucket"})
+		exporter.bucketEpTapUserQueueItemondisk = newGaugeVec("bucket_ep_tap_user_queue_itemondisk", "Number of items still on disk to be loaded for client TAP connections", []string{"bucket"})
+		exporter.bucketEpTapUserTotalBacklogSize = newGaugeVec("bucket_ep_tap_user_total_backlog_size", "Number of remaining items for client TAP connections", []string{"bucket"})
 	}
 	if context.CouchbaseVersion == "5.1.1" {
-		exporter.bucketAvgActiveTimestampDrift = newGaugeVec("bucket_avg_active_timestamp_drift", "avg_active_timestamp_drift", []string{"bucket"})
-		exporter.bucketAvgReplicaTimestampDrift = newGaugeVec("bucket_avg_replica_timestamp_drift", "avg_replica_timestamp_drift", []string{"bucket"})
-		exporter.bucketEpActiveAheadExceptions = newGaugeVec("bucket_ep_active_ahead_exceptions", "ep_active_ahead_exceptions", []string{"bucket"})
-		exporter.bucketEpActiveHlcDrift = newGaugeVec("bucket_ep_active_hlc_drift", "ep_active_hlc_drift", []string{"bucket"})
-		exporter.bucketEpActiveHlcDriftCount = newGaugeVec("bucket_ep_active_hlc_drift_count", "ep_active_hlc_drift_count", []string{"bucket"})
-		exporter.bucketEpClockCasDriftThresholdExceeded = newGaugeVec("bucket_ep_clock_cas_drift_threshold_exceeded", "ep_clock_cas_drift_threshold_exceeded", []string{"bucket"})
-		exporter.bucketEpReplicaAheadExceptions = newGaugeVec("bucket_ep_replica_ahead_exceptions", "ep_replica_ahead_exceptions", []string{"bucket"})
-		exporter.bucketEpReplicaHlcDrift = newGaugeVec("bucket_ep_replica_hlc_drift", "ep_replica_hlc_drift", []string{"bucket"})
-		exporter.bucketEpReplicaHlcDriftCount = newGaugeVec("bucket_ep_replica_hlc_drift_count", "ep_replica_hlc_drift_count", []string{"bucket"})
+		exporter.bucketAvgActiveTimestampDrift = newGaugeVec("bucket_avg_active_timestamp_drift", "Average active timestamp drift", []string{"bucket"})
+		exporter.bucketAvgReplicaTimestampDrift = newGaugeVec("bucket_avg_replica_timestamp_drift", "Average replica timestamp drift", []string{"bucket"})
+		exporter.bucketEpActiveAheadExceptions = newGaugeVec("bucket_ep_active_ahead_exceptions", "Sum total of all active vBuckets drift_ahead_threshold_exceeded counter", []string{"bucket"})
+		exporter.bucketEpActiveHlcDrift = newGaugeVec("bucket_ep_active_hlc_drift", "Total absolute drift for all active vBuckets", []string{"bucket"})
+		exporter.bucketEpActiveHlcDriftCount = newGaugeVec("bucket_ep_active_hlc_drift_count", "Number of updates applied to ep_active_hlc_drift", []string{"bucket"})
+		exporter.bucketEpClockCasDriftThresholdExceeded = newGaugeVec("bucket_ep_clock_cas_drift_threshold_exceeded", "Ep clock cas drift threshold exceeded", []string{"bucket"})
+		exporter.bucketEpReplicaAheadExceptions = newGaugeVec("bucket_ep_replica_ahead_exceptions", "Sum total of all replica vBuckets' drift_ahead_threshold_exceeded counter", []string{"bucket"})
+		exporter.bucketEpReplicaHlcDrift = newGaugeVec("bucket_ep_replica_hlc_drift", "Total abosulte drift for all replica vBuckets", []string{"bucket"})
+		exporter.bucketEpReplicaHlcDriftCount = newGaugeVec("bucket_ep_replica_hlc_drift_count", "Number of updates applied to ep_replica_hlc_drift", []string{"bucket"})
 	}
 
 	return exporter, nil
@@ -842,7 +839,6 @@ func (e *BucketStatsExporter) Describe(ch chan<- *p.Desc) {
 	e.bucketMemUsed.Describe(ch)
 	e.bucketMisses.Describe(ch)
 	e.bucketOps.Describe(ch)
-	e.bucketTimestamp.Describe(ch)
 	e.bucketVbActiveEject.Describe(ch)
 	e.bucketVbActiveItmMemory.Describe(ch)
 	e.bucketVbActiveMetaDataMemory.Describe(ch)
@@ -1075,7 +1071,6 @@ func (e *BucketStatsExporter) Collect(ch chan<- p.Metric) {
 	e.bucketMemUsed.Collect(ch)
 	e.bucketMisses.Collect(ch)
 	e.bucketOps.Collect(ch)
-	e.bucketTimestamp.Collect(ch)
 	e.bucketVbActiveEject.Collect(ch)
 	e.bucketVbActiveItmMemory.Collect(ch)
 	e.bucketVbActiveMetaDataMemory.Collect(ch)
@@ -1366,7 +1361,6 @@ func (e *BucketStatsExporter) scrape() {
 		e.bucketMemUsed.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucketStats.Op.Samples.MemUsed[len(bucketStats.Op.Samples.MemUsed)-1]))
 		e.bucketMisses.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucketStats.Op.Samples.Misses[len(bucketStats.Op.Samples.Misses)-1]))
 		e.bucketOps.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucketStats.Op.Samples.Ops[len(bucketStats.Op.Samples.Ops)-1]))
-		e.bucketTimestamp.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucketStats.Op.Samples.Timestamp[len(bucketStats.Op.Samples.Timestamp)-1]))
 		e.bucketVbActiveEject.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucketStats.Op.Samples.VbActiveEject[len(bucketStats.Op.Samples.VbActiveEject)-1]))
 		e.bucketVbActiveItmMemory.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucketStats.Op.Samples.VbActiveItmMemory[len(bucketStats.Op.Samples.VbActiveItmMemory)-1]))
 		e.bucketVbActiveMetaDataMemory.With(p.Labels{"bucket": bucket.Name}).Set(float64(bucketStats.Op.Samples.VbActiveMetaDataMemory[len(bucketStats.Op.Samples.VbActiveMetaDataMemory)-1]))
