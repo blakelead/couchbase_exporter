@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"sync"
 	"time"
 
 	p "github.com/prometheus/client_golang/prometheus"
@@ -97,6 +98,8 @@ func (e *BucketExporter) Describe(ch chan<- *p.Desc) {
 
 // Collect fetches data for each exported metric.
 func (e *BucketExporter) Collect(ch chan<- p.Metric) {
+	var mutex sync.RWMutex
+	mutex.Lock()
 	e.scrape()
 	e.bucketProxyPort.Collect(ch)
 	e.bucketReplicaIndex.Collect(ch)
@@ -111,6 +114,7 @@ func (e *BucketExporter) Collect(ch chan<- p.Metric) {
 	e.bucketDiskUsed.Collect(ch)
 	e.bucketDataUsed.Collect(ch)
 	e.bucketMemUsed.Collect(ch)
+	mutex.Unlock()
 }
 
 func (e *BucketExporter) scrape() {

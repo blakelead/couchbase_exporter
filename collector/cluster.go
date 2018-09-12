@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"sync"
 	"time"
 
 	p "github.com/prometheus/client_golang/prometheus"
@@ -135,6 +136,8 @@ func (e *ClusterExporter) Describe(ch chan<- *p.Desc) {
 
 // Collect fetches data for each exported metric.
 func (e *ClusterExporter) Collect(ch chan<- p.Metric) {
+	var mutex sync.RWMutex
+	mutex.Lock()
 	e.totalScrapes.Inc()
 	e.scrape()
 	e.totalScrapes.Collect(ch)
@@ -160,6 +163,7 @@ func (e *ClusterExporter) Collect(ch chan<- p.Metric) {
 	if e.context.CouchbaseVersion == "5.1.1" {
 		e.clusterBalanced.Collect(ch)
 	}
+	mutex.Unlock()
 }
 
 func (e *ClusterExporter) scrape() {

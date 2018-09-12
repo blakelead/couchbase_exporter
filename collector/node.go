@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	p "github.com/prometheus/client_golang/prometheus"
@@ -53,7 +54,7 @@ type NodeData struct {
 		MemUsed                      int `json:"mem_used"`
 		Ops                          int `json:"ops"`
 		VbReplicaCurrItems           int `json:"vb_replica_curr_items"`
-		VbActiveNumNonResidentNumber int `json:"vb_active_num_non_residentNumber"`
+		VbActiveNumNonResidentNumber int `json:"vb_active_num_non_residentNumber"` // couchbase 5.1.1
 	} `json:"interestingStats"`
 	Uptime               string   `json:"uptime"`
 	McdMemoryReserved    int      `json:"mcdMemoryReserved"`
@@ -202,6 +203,8 @@ func (e *NodeExporter) Describe(ch chan<- *p.Desc) {
 
 // Collect fetches data for each exported metric.
 func (e *NodeExporter) Collect(ch chan<- p.Metric) {
+	var mutex sync.RWMutex
+	mutex.Lock()
 	e.scrape()
 	e.nodeRAMTotal.Collect(ch)
 	e.nodeRAMUsed.Collect(ch)
@@ -239,6 +242,7 @@ func (e *NodeExporter) Collect(ch chan<- p.Metric) {
 	if e.context.CouchbaseVersion == "5.1.1" {
 		e.nodeVbActiveNumNonResidentNumber.Collect(ch)
 	}
+	mutex.Unlock()
 }
 
 func (e *NodeExporter) scrape() {

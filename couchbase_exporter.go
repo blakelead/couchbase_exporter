@@ -60,6 +60,7 @@ func main() {
 	}
 	if *scrapeBucket {
 		p.MustRegister(exporters.Bucket)
+		p.MustRegister(exporters.BucketStats)
 	}
 
 	// The two following lines are used to get rid of go metrics. Should be removed after wip.

@@ -141,21 +141,13 @@ $ docker run --name cbexporter -p 9191:9191 -e CB_EXPORTER_DB_USER=admin -e CB_E
 Systemd
 -------
 
-You can use `exporter.service` to execute **couchbase_exporter** with systemd.
+You can adapt and use `exporter.service` template to run **couchbase_exporter** with systemd.
 
 ```bash
 $ sudo mv exporter.service /etc/systemd/system/couchbase-exporter.service
 $ sudo systemctl enable couchbase-exporter.service
 $ sudo systemctl start couchbase-exporter.service
 ```
-
-Todo
------
-
-- Unit tests
-- XDCR metrics
-- Advanced bucket metrics
-- Cleaner code
 
 Author Information
 ------------------

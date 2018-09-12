@@ -5,8 +5,6 @@
 package collector
 
 import (
-	"sync"
-
 	p "github.com/prometheus/client_golang/prometheus"
 )
 
@@ -26,9 +24,10 @@ type Context struct {
 
 // Exporters regroups all exporters structs
 type Exporters struct {
-	Cluster *ClusterExporter
-	Node    *NodeExporter
-	Bucket  *BucketExporter
+	Cluster     *ClusterExporter
+	Node        *NodeExporter
+	Bucket      *BucketExporter
+	BucketStats *BucketStatsExporter
 }
 
 func newCounter(name string, help string) p.Counter {
@@ -48,25 +47,7 @@ func NewExporters(context Context) (*Exporters, error) {
 	clusterExporter, _ := NewClusterExporter(context)
 	nodeExporter, _ := NewNodeExporter(context)
 	bucketExporter, _ := NewBucketExporter(context)
+	bucketStatsExporter, _ := NewBucketStatsExporter(context)
 
-	return &Exporters{clusterExporter, nodeExporter, bucketExporter}, nil
-}
-
-// Describe describes exported metrics.
-func (e *Exporters) Describe(ch chan<- *p.Desc) {
-	e.Cluster.Describe(ch)
-	e.Node.Describe(ch)
-	e.Bucket.Describe(ch)
-}
-
-// Collect fetches data for each exported metric.
-func (e *Exporters) Collect(ch chan<- p.Metric) {
-	var mutex sync.RWMutex
-	mutex.Lock()
-
-	e.Cluster.Collect(ch)
-	e.Node.Collect(ch)
-	e.Bucket.Collect(ch)
-
-	mutex.Unlock()
+	return &Exporters{clusterExporter, nodeExporter, bucketExporter, bucketStatsExporter}, nil
 }
