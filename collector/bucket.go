@@ -32,7 +32,7 @@ type BucketData struct {
 	} `json:"quota"`
 	BasicStats struct {
 		QuotaPercentUsed float64 `json:"quotaPercentUsed"`
-		OpsPerSec        int     `json:"opsPerSec"`
+		OpsPerSec        float64 `json:"opsPerSec"`
 		DiskFetches      int     `json:"diskFetches"`
 		ItemCount        int     `json:"itemCount"`
 		DiskUsed         int     `json:"diskUsed"`
