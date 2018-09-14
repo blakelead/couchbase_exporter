@@ -1,7 +1,6 @@
 Couchbase Exporter
 ==================
 
-[![Release](https://img.shields.io/badge/release-0.1.0-blue.svg)](https://github.com/blakelead/couchbase_exporter/releases/tag/0.1.0)
 [![Build Status](https://travis-ci.com/blakelead/couchbase_exporter.svg?branch=master)](https://travis-ci.org/blakelead/couchbase_exporter)
 [![Coverage Status](https://coveralls.io/repos/github/blakelead/couchbase_exporter/badge.svg?branch=master)](https://coveralls.io/github/blakelead/couchbase_exporter?branch=master)
 [![Software License](https://img.shields.io/badge/license-MIT-green.svg)](/LICENSE.txt)
@@ -32,9 +31,9 @@ Available flags and equivalent environment variable:
 | -db.pwd             | CB_EXPORTER_DB_PASSWORD    | Administrator password                 | password              |
 | -log.level          | CB_EXPORTER_LOG_LEVEL      | Log level: info,debug,warn,error,fatal | info                  |
 | -log.format         | CB_EXPORTER_LOG_FORMAT     | Log format: text, json                 | text                  |
-| -scrape.cluster     | CB_EXPORTER_SCRAPE_CLUSTER        | If false, wont scrape cluster metrics  | true                  |
-| -scrape.node        | CB_EXPORTER_SCRAPE_NODE           | If false, wont scrape node metrics     | true                  |
-| -scrape.bucket      | CB_EXPORTER_SCRAPE_BUCKET         | If false, wont scrape bucket metrics   | true                  |
+| -scrape.cluster     | CB_EXPORTER_SCRAPE_CLUSTER | If false, wont scrape cluster metrics  | true                  |
+| -scrape.node        | CB_EXPORTER_SCRAPE_NODE    | If false, wont scrape node metrics     | true                  |
+| -scrape.bucket      | CB_EXPORTER_SCRAPE_BUCKET  | If false, wont scrape bucket metrics   | true                  |
 | -help               |                            | Command line help                      |                       |
 
 Metrics
@@ -340,7 +339,7 @@ Metrics
 | cb_bucket_ep_active_hlc_drift_count                | Number of updates applied to ep_active_hlc_drift                                                        |
 | cb_bucket_ep_clock_cas_drift_threshold_exceeded    | Ep clock cas drift threshold exceeded                                                                   |
 | cb_bucket_ep_replica_ahead_exceptions              | Sum total of all replica vBuckets' drift_ahead_threshold_exceeded counter                               |
-| cb_bucket_ep_replica_hlc_drift                     | Total abosulte drift for all replica vBuckets                                                           |
+| cb_bucket_ep_replica_hlc_drift                     | Total absolute drift for all replica vBuckets                                                           |
 | cb_bucket_ep_replica_hlc_drift_count               | Number of updates applied to ep_replica_hlc_drift                                                       |
 
 Docker
