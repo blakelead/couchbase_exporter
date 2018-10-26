@@ -176,27 +176,32 @@ func systemdSettings() {
 func getCouchbaseVersion(context *collector.Context) {
 	req, err := http.NewRequest("GET", *dbURI+"/pools", nil)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Error(err.Error())
+		return
 	}
 	req.SetBasicAuth(*dbUser, *dbPwd)
 	client := http.Client{Timeout: 10 * time.Second}
 	res, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Error(err.Error())
+		return
 	}
 	if res.StatusCode != 200 {
-		log.Fatal(req.URL.Path + ": " + res.Status)
+		log.Error(req.URL.Path + ": " + res.Status)
+		return
 	}
 
 	var data map[string]interface{}
 	body, err := ioutil.ReadAll(res.Body)
 	defer res.Body.Close()
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Error(err.Error())
+		return
 	}
 	err = json.Unmarshal([]byte(body), &data)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Error(err.Error())
+		return
 	}
 
 	log.Debug("GET " + *dbURI + "/pools" + " - data: " + string(body))
