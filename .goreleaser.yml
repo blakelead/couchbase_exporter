@@ -2,7 +2,6 @@ builds:
 - main: couchbase_exporter.go
   binary: couchbase_exporter
   goos:
-    - windows
     - darwin
     - linux
   goarch:
