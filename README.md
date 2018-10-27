@@ -77,7 +77,7 @@ Available flags and equivalent environment variable:
 | cb_node_disk_total_bytes                        | Total disk space available to the node                     |
 | cb_node_disk_quota_total_bytes                  | Disk space quota for the node                              |
 | cb_node_disk_used_bytes                         | Disk space used by the node                                |
-| cb_node_disk_quota_used_bytes                   | Disk space quota used by the node                          |
+| cb_node_disk_used_by_data_bytes                 | Disk space used by data in the node                        |
 | cb_node_disk_free_bytes                         | Free disk space in the node                                |
 | cb_node_cpu_utilization_rate                    | CPU utilization rate in percent                            |
 | cb_node_swap_total_bytes                        | Total swap space allocated to the node                     |
