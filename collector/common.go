@@ -26,9 +26,7 @@ type Metrics struct {
 		Name        string   `json:"name"`
 		ID          string   `json:"id"`
 		Description string   `json:"description"`
-		Suffix      string   `json:"suffix"`
 		Labels      []string `json:"labels"`
-		Type        string   `json:"type"`
 	} `json:"list"`
 }
 
@@ -50,18 +48,18 @@ type Exporters struct {
 	XDCR        *XDCRExporter
 }
 
-func newCounter(name string, help string) p.Counter {
-	return p.NewCounter(p.CounterOpts{Namespace: "cb", Name: name, Help: help})
-}
-
-func newGauge(name string, help string) p.Gauge {
-	return p.NewGauge(p.GaugeOpts{Namespace: "cb", Name: name, Help: help})
-}
-
 // GaugeVecStruct is a wrapper for GaugeVec
 type GaugeVecStruct struct {
 	id       string
 	gaugeVec p.GaugeVec
+}
+
+func newCounter(name string, help string) p.Counter {
+	return p.NewCounter(p.CounterOpts{Namespace: "cb", Name: name, Help: help})
+}
+
+func newGaugeVec(name string, help string, labels []string) *p.GaugeVec {
+	return p.NewGaugeVec(p.GaugeOpts{Namespace: "cb", Name: name, Help: help}, labels)
 }
 
 func newGaugeVecStruct(name string, id string, help string, labels []string) *GaugeVecStruct {
@@ -69,10 +67,6 @@ func newGaugeVecStruct(name string, id string, help string, labels []string) *Ga
 		id:       id,
 		gaugeVec: *p.NewGaugeVec(p.GaugeOpts{Namespace: "cb", Name: name, Help: help}, labels),
 	}
-}
-
-func newGaugeVec(name string, help string, labels []string) *p.GaugeVec {
-	return p.NewGaugeVec(p.GaugeOpts{Namespace: "cb", Name: name, Help: help}, labels)
 }
 
 // NewExporters instantiates the Exporter with the URI and metrics.

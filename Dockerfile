@@ -11,8 +11,10 @@ ENV CB_EXPORTER_LISTEN_ADDR=9191             \
     CB_EXPORTER_SCRAPE_CLUSTER=true          \
     CB_EXPORTER_SCRAPE_NODE=true             \
     CB_EXPORTER_SCRAPE_BUCKET=true           \
-    CB_EXPORTER_CONF_DIR=metrics
+    CB_EXPORTER_SCRAPE_XDCR=true             \
+    CB_EXPORTER_CONF_DIR=/etc/couchbase_exporter/metrics
 
 ADD ./dist/couchbase_exporter /bin/couchbase_exporter
+ADD ./dist/metrics $CB_EXPORTER_CONF_DIR
 
 CMD /bin/couchbase_exporter
