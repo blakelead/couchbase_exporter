@@ -1,0 +1,13 @@
+{
+    "name": "bucket",
+    "route": "/pools/default/buckets",
+    "list": [
+        { "name": "bucket_ram_quota_percent_used", "id": "BasicStats.QuotaPercentUsed", "description": "Memory used by the bucket in percent",          "labels": ["bucket"] },
+        { "name": "bucket_ops_per_second",         "id": "BasicStats.OpsPerSec",        "description": "Number of operations per second in the bucket", "labels": ["bucket"] },
+        { "name": "bucket_disk_fetches",           "id": "BasicStats.DiskFetches",      "description": "Disk fetches for the bucket",                   "labels": ["bucket"] },
+        { "name": "bucket_item_count",             "id": "BasicStats.ItemCount",        "description": "Number of items in the bucket",                 "labels": ["bucket"] },
+        { "name": "bucket_disk_used_bytes",        "id": "BasicStats.DiskUsed",         "description": "Disk used by the bucket",                       "labels": ["bucket"] },
+        { "name": "bucket_data_used_bytes",        "id": "BasicStats.DataUsed",         "description": "Data loaded in memory",                         "labels": ["bucket"] },
+        { "name": "bucket_ram_used_bytes",         "id": "BasicStats.MemUsed",          "description": "Bucket RAM used",                               "labels": ["bucket"] }
+    ]
+}

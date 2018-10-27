@@ -7,7 +7,6 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -32,6 +31,10 @@ var (
 	scrapeCluster = flag.Bool("scrape.cluster", true, "If false, cluster metrics wont be scraped.")
 	scrapeNode    = flag.Bool("scrape.node", true, "If false, node metrics wont be scraped.")
 	scrapeBucket  = flag.Bool("scrape.bucket", true, "If false, bucket metrics wont be scraped.")
+	scrapeXDCR    = flag.Bool("scrape.xdcr", true, "If false, XDCR metrics wont be scraped.")
+	confDir       = flag.String("conf.dir", "metrics", "Directory containing configuration files.")
+
+	validVersions = []string{"4.5.1", "5.1.1"}
 )
 
 func main() {
@@ -43,13 +46,13 @@ func main() {
 	log.SetOutput(os.Stdout)
 	log.SetLevel(setLogLevel())
 
-	context := collector.Context{URI: *dbURI, Username: *dbUser, Password: *dbPwd}
+	context := collector.Context{URI: *dbURI, Username: *dbUser, Password: *dbPwd, ConfDir: *confDir}
 
 	getCouchbaseVersion(&context)
 
 	exporters, err := collector.NewExporters(context)
 	if err != nil {
-		log.Fatal("error during creation of new exporter")
+		log.Fatal("Error during creation of new exporter.")
 	}
 
 	if *scrapeCluster {
@@ -61,6 +64,9 @@ func main() {
 	if *scrapeBucket {
 		p.MustRegister(exporters.Bucket)
 		p.MustRegister(exporters.BucketStats)
+	}
+	if *scrapeXDCR {
+		p.MustRegister(exporters.XDCR)
 	}
 
 	// The two following lines are used to get rid of go metrics. Should be removed after wip.
@@ -126,6 +132,9 @@ func lookupEnv() {
 	if val, ok := os.LookupEnv("CB_EXPORTER_SCRAPE_BUCKET"); ok {
 		*scrapeBucket, _ = strconv.ParseBool(val)
 	}
+	if val, ok := os.LookupEnv("CB_EXPORTER_CONF_DIR"); ok {
+		*confDir = val
+	}
 }
 
 func setLogLevel() log.Level {
@@ -174,49 +183,30 @@ func systemdSettings() {
 }
 
 func getCouchbaseVersion(context *collector.Context) {
-	req, err := http.NewRequest("GET", *dbURI+"/pools", nil)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	req.SetBasicAuth(*dbUser, *dbPwd)
-	client := http.Client{Timeout: 10 * time.Second}
-	res, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	if res.StatusCode != 200 {
-		log.Fatal(req.URL.Path + ": " + res.Status)
-	}
-
+	body := collector.Fetch(*context, "/pools")
 	var data map[string]interface{}
-	body, err := ioutil.ReadAll(res.Body)
-	defer res.Body.Close()
+	err := json.Unmarshal(body, &data)
 	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = json.Unmarshal([]byte(body), &data)
-	if err != nil {
-		log.Fatal(err.Error())
+		log.Error(err.Error())
+		return
 	}
 
-	log.Debug("GET " + *dbURI + "/pools" + " - data: " + string(body))
+	rawVersion := data["implementationVersion"].(string)
+	isCommunity := strings.Contains(rawVersion, "community")
 
-	longVersion := data["implementationVersion"].(string)
-	isCommunity := strings.Contains(longVersion, "community")
-
-	log.Info("Couchbase version: " + longVersion)
+	log.Info("Couchbase version: " + rawVersion)
 	log.Info("Community version: " + strconv.FormatBool(isCommunity))
 
 	if !isCommunity {
-		log.Warn("You are trying to scrape metrics for Couchbase Enterprise. Be aware that this exporter was not tested for Enterprise versions.")
+		log.Warn("This exporter was not tested for Couchbase Enterprise versions")
 	}
 
-	validVersions := []string{"4.5.1", "5.1.1"}
 	for _, v := range validVersions {
-		if strings.HasPrefix(longVersion, v) {
+		if strings.HasPrefix(rawVersion, v) {
 			context.CouchbaseVersion = v
 			return
 		}
 	}
-	log.Warn("Please be aware that the version " + longVersion + " is not supported by this exporter.")
+
+	log.Warn("Version " + rawVersion + " may not be supported by this exporter")
 }

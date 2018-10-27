@@ -1,5 +1,4 @@
-Couchbase Exporter
-==================
+# Couchbase Exporter
 
 [![Build Status](https://travis-ci.com/blakelead/couchbase_exporter.svg?branch=master)](https://travis-ci.org/blakelead/couchbase_exporter)
 [![Coverage Status](https://coveralls.io/repos/github/blakelead/couchbase_exporter/badge.svg?branch=master)](https://coveralls.io/github/blakelead/couchbase_exporter?branch=master)
@@ -7,37 +6,39 @@ Couchbase Exporter
 
 Expose metrics from *Couchbase Community 4.5.1 and 5.1.1* cluster for consumption by Prometheus.
 
-> WIP: each release will introduce new metrics and probably lots of breaking changes.
+## Disclaimer
 
-Getting Started
----------------
+Couchbase exporter is in its early stage. I'll add new features constantly at the cost of breaking things often. Your are welcome to contribute by creating issues or making pull requests.
+
+## Getting Started
 
 Run from command line:
 
 ```bash
-$ ./couchbase_exporter [flags]
+./couchbase_exporter [flags]
 ```
 
 You can either use command-line flags, or environment variables to pass custom parameters. Environment variables take precedence over flags.
 
 Available flags and equivalent environment variable:
 
-|      argument       |    environment variable    |              description               |        default        |
-| ------------------- | -------------------------- | -------------------------------------- | --------------------- |
-| -web.listen-address | CB_EXPORTER_LISTEN_ADDR    | Address to listen on for HTTP requests | :9191                 |
-| -web.telemetry-path | CB_EXPORTER_TELEMETRY_PATH | Path under which to expose metrics     | /metrics              |
-| -db.uri             | CB_EXPORTER_DB_URI         | Address of Couchbase cluster           | http://127.0.0.1:8091 |
-| -db.user            | CB_EXPORTER_DB_USER        | Administrator username                 | admin                 |
-| -db.pwd             | CB_EXPORTER_DB_PASSWORD    | Administrator password                 | password              |
-| -log.level          | CB_EXPORTER_LOG_LEVEL      | Log level: info,debug,warn,error,fatal | info                  |
-| -log.format         | CB_EXPORTER_LOG_FORMAT     | Log format: text, json                 | text                  |
-| -scrape.cluster     | CB_EXPORTER_SCRAPE_CLUSTER | If false, wont scrape cluster metrics  | true                  |
-| -scrape.node        | CB_EXPORTER_SCRAPE_NODE    | If false, wont scrape node metrics     | true                  |
-| -scrape.bucket      | CB_EXPORTER_SCRAPE_BUCKET  | If false, wont scrape bucket metrics   | true                  |
-| -help               |                            | Command line help                      |                       |
+|      argument       |    environment variable    |               description                |        default        |
+| ------------------- | -------------------------- | ---------------------------------------- | --------------------- |
+| -web.listen-address | CB_EXPORTER_LISTEN_ADDR    | Address to listen on for HTTP requests   | :9191                 |
+| -web.telemetry-path | CB_EXPORTER_TELEMETRY_PATH | Path under which to expose metrics       | /metrics              |
+| -db.uri             | CB_EXPORTER_DB_URI         | Address of Couchbase cluster             | http://127.0.0.1:8091 |
+| -db.user            | CB_EXPORTER_DB_USER        | Administrator username                   | admin                 |
+| -db.pwd             | CB_EXPORTER_DB_PASSWORD    | Administrator password                   | password              |
+| -log.level          | CB_EXPORTER_LOG_LEVEL      | Log level: info,debug,warn,error,fatal   | info                  |
+| -log.format         | CB_EXPORTER_LOG_FORMAT     | Log format: text, json                   | text                  |
+| -scrape.cluster     | CB_EXPORTER_SCRAPE_CLUSTER | If false, wont scrape cluster metrics    | true                  |
+| -scrape.node        | CB_EXPORTER_SCRAPE_NODE    | If false, wont scrape node metrics       | true                  |
+| -scrape.bucket      | CB_EXPORTER_SCRAPE_BUCKET  | If false, wont scrape bucket metrics     | true                  |
+| -scrape.xdcr        | CB_EXPORTER_SCRAPE_XDCR    | If false, wont scrape xdcr metrics       | true                  |
+| -conf.dir           | CB_EXPORTER_CONF_DIR       | Directory containing configuration files | metrics               |
+| -help               |                            | Command line help                        |                       |
 
-Metrics
--------
+## Metrics
 
 ### Cluster metrics
 
@@ -77,7 +78,7 @@ Metrics
 | cb_node_disk_total_bytes                        | Total disk space available to the node                     |
 | cb_node_disk_quota_total_bytes                  | Disk space quota for the node                              |
 | cb_node_disk_used_bytes                         | Disk space used by the node                                |
-| cb_node_disk_quota_used_bytes                   | Disk space quota used by the node                          |
+| cb_node_disk_used_by_data_bytes                 | Disk space used by data in the node                        |
 | cb_node_disk_free_bytes                         | Free disk space in the node                                |
 | cb_node_cpu_utilization_rate                    | CPU utilization rate in percent                            |
 | cb_node_swap_total_bytes                        | Total swap space allocated to the node                     |
@@ -108,12 +109,6 @@ Metrics
 
 |                        name                        |                                               description                                               |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| cb_bucket_proxy_port                               | Bucket proxy port                                                                                       |
-| cb_bucket_replica_index                            | Replica index for the bucket                                                                            |
-| cb_bucket_replica_number                           | Number of replicas for the bucket                                                                       |
-| cb_bucket_threads_number                           | Bucket thread number                                                                                    |
-| cb_bucket_ram_quota_bytes                          | Memory used by the bucket                                                                               |
-| cb_bucket_raw_ram_quota_bytes                      | Raw memory used by the bucket                                                                           |
 | cb_bucket_ram_quota_percent_used                   | Memory used by the bucket in percent                                                                    |
 | cb_bucket_ops_per_second                           | Number of operations per second                                                                         |
 | cb_bucket_disk_fetches                             | Disk fetches for the bucket                                                                             |
@@ -342,33 +337,54 @@ Metrics
 | cb_bucket_ep_replica_hlc_drift                     | Total absolute drift for all replica vBuckets                                                           |
 | cb_bucket_ep_replica_hlc_drift_count               | Number of updates applied to ep_replica_hlc_drift                                                       |
 
-Docker
-------
+### XDCR metrics
+
+|            name             |                                                     description                                                     |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| cb_xdcr_bandwidth_usage        | Bandwidth used during replication, measured in bytes per second                                                     |
+| cb_xdcr_changes_left           | Number of updates still pending replication                                                                         |
+| cb_xdcr_data_replicated        | Size of data replicated in bytes                                                                                    |
+| cb_xdcr_docs_checked           | Number of documents checked for changes                                                                             |
+| cb_xdcr_docs_failed_cr_source  | Number of documents that have failed conflict resolution on the source cluster and not replicated to target cluster |
+| cb_xdcr_docs_filtered          | Number of documents that have been filtered out and not replicated to target cluster                                |
+| cb_xdcr_docs_opt_repd          | Number of docs sent optimistically                                                                                  |
+| cb_xdcr_docs_received_from_dcp | Number of documents received from DCP                                                                               |
+| cb_xdcr_docs_rep_queue         | Number of documents in replication queue                                                                            |
+| cb_xdcr_docs_written           | Number of documents written to the destination cluster via XDCR                                                     |
+| cb_xdcr_meta_latency_wt        | Weighted average time for requesting document metadata                                                              |
+| cb_xdcr_num_checkpoints        | Number of checkpoints issued in replication queue                                                                   |
+| cb_xdcr_num_failedckpts        | Number of checkpoints failed during replication                                                                     |
+| cb_xdcr_rate_received_from_dcp | Number of documents received from DCP per second                                                                    |
+| cb_xdcr_rate_replicated        | Rate of documents being replicated, measured in documents per second                                                |
+| cb_xdcr_size_rep_queue         | Size of replication queue in bytes                                                                                  |
+| cb_xdcr_time_committing        | Seconds elapsed during replication                                                                                  |
+| cb_xdcr_wtavg_docs_latency     | Weighted average latency for sending replicated changes to destination cluster                                      |
+| cb_xdcr_wtavg_meta_latency     | Weighted average time for requesting document metadata                                                              |
+
+## Docker
 
 Get the latest image from Docker Hub:
 
 ```bash
-$ docker pull blakelead/couchbase-exporter:latest
+docker pull blakelead/couchbase-exporter:latest
 ```
 
 and use it with environment variables like in the following example:
 
 ```bash
-$ docker run --name cbexporter -p 9191:9191 -e CB_EXPORTER_DB_USER=admin -e CB_EXPORTER_DB_PASSWORD=complicatedpassword blakelead/couchbase-exporter:latest
+docker run --name cbexporter -p 9191:9191 -e CB_EXPORTER_DB_USER=admin -e CB_EXPORTER_DB_PASSWORD=complicatedpassword blakelead/couchbase-exporter:latest
 ```
 
-Systemd
--------
+## Systemd
 
 You can adapt and use `exporter.service` template to run **couchbase_exporter** with systemd.
 
 ```bash
-$ sudo mv exporter.service /etc/systemd/system/couchbase-exporter.service
-$ sudo systemctl enable couchbase-exporter.service
-$ sudo systemctl start couchbase-exporter.service
+sudo mv exporter.service /etc/systemd/system/couchbase-exporter.service
+sudo systemctl enable couchbase-exporter.service
+sudo systemctl start couchbase-exporter.service
 ```
 
-Author Information
-------------------
+## Author Information
 
 Adel Abdelhak
