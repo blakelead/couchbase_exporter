@@ -375,12 +375,24 @@ and use it with environment variables like in the following example:
 docker run --name cbexporter -p 9191:9191 -e CB_EXPORTER_DB_USER=admin -e CB_EXPORTER_DB_PASSWORD=complicatedpassword blakelead/couchbase-exporter:latest
 ```
 
-## Systemd
+## Examples
 
-You can adapt and use `exporter.service` template to run **couchbase_exporter** with systemd.
+You can find example files in `examples` directory.
+
+### Prometheus
+
+Some alerting rules that can be used in Prometheus configuration for alert manager notifications.
+
+### Grafana
+
+Minimal dashboard that shows how to use the exporter metrics.
+
+### Systemd
+
+You can adapt and use the service template to run **couchbase_exporter** with systemd.
 
 ```bash
-sudo mv exporter.service /etc/systemd/system/couchbase-exporter.service
+sudo mv systemd-exporter.service /etc/systemd/system/couchbase-exporter.service
 sudo systemctl enable couchbase-exporter.service
 sudo systemctl start couchbase-exporter.service
 ```
