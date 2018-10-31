@@ -175,7 +175,8 @@ func loadConfFile() {
 			log.Fatal(err.Error())
 		}
 	} else {
-		log.Fatal("No configuration file was found in working directory.")
+		log.Info("No configuration file was found in the working directory.")
+		return
 	}
 
 	*listenAddr = conf.Web.ListenAddress
