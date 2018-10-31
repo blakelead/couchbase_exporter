@@ -1,0 +1,20 @@
+---
+  
+web:
+  listenAddress: :9191
+  telemetryPath: /metrics
+
+db:
+  user: admin
+  password: password
+  uri: http://localhost:8091
+
+log:
+  level: info
+  format: text
+
+scrape:
+  cluster: true
+  node: true
+  bucket: true
+  xdcr: true
