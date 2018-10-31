@@ -6,11 +6,9 @@ Wants=local-fs.target network-online.target network.target
 [Service]
 Type=notify
 ExecStart=/path/to/couchbase_exporter \
-        -web.listen-address changeme  \
-        -web.telemetry-path changeme  \
-        -db.uri             changeme  \
-        -db.user            changeme  \
-        -db.pwd             changeme
+        -web.listen-address :9191     \
+        -web.telemetry-path /metrics  \
+        -db.uri http://localhost:8091
 WatchdogSec=30s
 Restart=on-failure
 

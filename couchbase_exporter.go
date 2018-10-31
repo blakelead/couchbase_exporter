@@ -7,6 +7,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -14,6 +15,7 @@ import (
 	"time"
 
 	"github.com/blakelead/couchbase_exporter/collector"
+	yaml "gopkg.in/yaml.v2"
 
 	d "github.com/coreos/go-systemd/daemon"
 	p "github.com/prometheus/client_golang/prometheus"
@@ -21,38 +23,39 @@ import (
 )
 
 var (
+	dbUser        = ""
+	dbPwd         = ""
 	listenAddr    = flag.String("web.listen-address", ":9191", "The address to listen on for HTTP requests.")
 	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	dbURI         = flag.String("db.uri", "http://localhost:8091", "The address of Couchbase cluster.")
-	dbUser        = flag.String("db.user", "admin", "The administrator username.")
-	dbPwd         = flag.String("db.pwd", "password", "The administrator password.")
 	logLevel      = flag.String("log.level", "info", "Log level: info, debug, warn, error, fatal.")
 	logFormat     = flag.String("log.format", "text", "Log format: text or json.")
 	scrapeCluster = flag.Bool("scrape.cluster", true, "If false, cluster metrics wont be scraped.")
 	scrapeNode    = flag.Bool("scrape.node", true, "If false, node metrics wont be scraped.")
 	scrapeBucket  = flag.Bool("scrape.bucket", true, "If false, bucket metrics wont be scraped.")
 	scrapeXDCR    = flag.Bool("scrape.xdcr", true, "If false, XDCR metrics wont be scraped.")
-	confDir       = flag.String("conf.dir", "metrics", "Directory containing configuration files.")
 
 	validVersions = []string{"4.5.1", "5.1.1"}
 )
 
 func main() {
-	flag.Parse()
 
+	loadConfFile()
 	lookupEnv()
+	flag.Parse()
+	checkCredentials()
 
 	log.SetFormatter(setLogFormat())
 	log.SetOutput(os.Stdout)
 	log.SetLevel(setLogLevel())
 
-	context := collector.Context{URI: *dbURI, Username: *dbUser, Password: *dbPwd, ConfDir: *confDir}
+	context := collector.Context{URI: *dbURI, Username: dbUser, Password: dbPwd}
 
 	getCouchbaseVersion(&context)
 
 	exporters, err := collector.NewExporters(context)
 	if err != nil {
-		log.Fatal("Error during creation of new exporter.")
+		log.Fatal("Error during exporters creation.")
 	}
 
 	if *scrapeCluster {
@@ -69,11 +72,6 @@ func main() {
 		p.MustRegister(exporters.XDCR)
 	}
 
-	// The two following lines are used to get rid of go metrics. Should be removed after wip.
-	p.Unregister(p.NewProcessCollector(p.ProcessCollectorOpts{}))
-	p.Unregister(p.NewGoCollector())
-
-	// p.UninstrumentedHandler() should be replaced by promhttp.Handle() after wip.
 	http.Handle(*metricsPath, p.UninstrumentedHandler())
 	if *metricsPath != "/" {
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -112,10 +110,10 @@ func lookupEnv() {
 		*dbURI = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_DB_USER"); ok {
-		*dbUser = val
+		dbUser = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_DB_PASSWORD"); ok {
-		*dbPwd = val
+		dbPwd = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_LOG_LEVEL"); ok {
 		*logLevel = val
@@ -132,8 +130,70 @@ func lookupEnv() {
 	if val, ok := os.LookupEnv("CB_EXPORTER_SCRAPE_BUCKET"); ok {
 		*scrapeBucket, _ = strconv.ParseBool(val)
 	}
-	if val, ok := os.LookupEnv("CB_EXPORTER_CONF_DIR"); ok {
-		*confDir = val
+}
+
+func loadConfFile() {
+	type confStruct struct {
+		Web struct {
+			ListenAddress string `json:"listenAddress" yaml:"listenAddress"`
+			TelemetryPath string `json:"telemetryPath" yaml:"telemetryPath"`
+		} `json:"web" yaml:"web"`
+		DB struct {
+			User     string `json:"user" yaml:"user"`
+			Password string `json:"password" yaml:"password"`
+			URI      string `json:"uri" yaml:"uri"`
+		} `json:"db" yaml:"db"`
+		Log struct {
+			Level  string `json:"level" yaml:"level"`
+			Format string `json:"format" yaml:"format"`
+		} `json:"log" yaml:"log"`
+		Scrape struct {
+			Cluster bool `json:"cluster" yaml:"cluster"`
+			Node    bool `json:"node" yaml:"node"`
+			Bucket  bool `json:"bucket" yaml:"bucket"`
+			XDCR    bool `json:"xdcr" yaml:"xdcr"`
+		} `json:"scrape" yaml:"scrape"`
+	}
+
+	var conf confStruct
+	if _, err := os.Stat("config.json"); err == nil {
+		rawConf, err := ioutil.ReadFile("config.json")
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		err = json.Unmarshal(rawConf, &conf)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	} else if _, err := os.Stat("config.yml"); err == nil {
+		rawConf, err := ioutil.ReadFile("config.yml")
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		err = yaml.Unmarshal(rawConf, &conf)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	} else {
+		log.Fatal("No configuration file was found in working directory.")
+	}
+
+	*listenAddr = conf.Web.ListenAddress
+	*metricsPath = conf.Web.TelemetryPath
+	*dbURI = conf.DB.URI
+	dbUser = conf.DB.User
+	dbPwd = conf.DB.Password
+	*logLevel = conf.Log.Level
+	*logFormat = conf.Log.Format
+	*scrapeCluster = conf.Scrape.Cluster
+	*scrapeNode = conf.Scrape.Node
+	*scrapeBucket = conf.Scrape.Bucket
+	*scrapeXDCR = conf.Scrape.XDCR
+}
+
+func checkCredentials() {
+	if len(dbUser) == 0 || len(dbPwd) == 0 {
+		log.Fatal("Couchbase username and/or password are not set. You can set them either by providing a configuration file, or with environment variables.")
 	}
 }
 
@@ -187,7 +247,7 @@ func getCouchbaseVersion(context *collector.Context) {
 	var data map[string]interface{}
 	err := json.Unmarshal(body, &data)
 	if err != nil {
-		log.Error(err.Error())
+		log.Fatal("Could not parse Couchbase version infos.")
 		return
 	}
 
