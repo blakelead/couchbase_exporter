@@ -19,7 +19,6 @@ after_success:
   - CGO_ENABLED="0" GOARCH="amd64" GOOS="linux" go build -a -installsuffix cgo -o dist/couchbase_exporter
   - docker login -u "$DOCKER_HUB_ID" -p "$DOCKER_HUB_PASSWORD"
   - export REPO=$DOCKER_HUB_ID/couchbase-exporter
-  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_TAG ; fi`
+  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; elif [ "$TRAVIS_BRANCH" == "develop" ]; then echo "devel"; else echo $TRAVIS_TAG; fi`
   - echo $REPO:$TAG
-  - docker build -f Dockerfile -t $REPO:$TAG .
-  - docker push $REPO
+  - if [ ! -z "$TAG"]; then docker build -f Dockerfile -t $REPO:$TAG .; docker push $REPO; fi
