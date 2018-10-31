@@ -36,7 +36,6 @@ type Context struct {
 	Username         string
 	Password         string
 	CouchbaseVersion string
-	ConfDir          string
 }
 
 // Exporters regroups all exporters structs
@@ -148,7 +147,7 @@ func MultiFetch(context Context, routes []string) map[string][]byte {
 
 // GetMetricsFromFile checks if metric file exist and convert it to Metrics structure
 func GetMetricsFromFile(metricType string, context Context) Metrics {
-	filename := context.ConfDir + "/" + metricType + "-"
+	filename := "metrics/" + metricType + "-"
 	if _, err := os.Stat(filename + context.CouchbaseVersion + ".json"); os.IsNotExist(err) {
 		filename = filename + "default.json"
 	} else {

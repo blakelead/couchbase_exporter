@@ -18,25 +18,28 @@ Run from command line:
 ./couchbase_exporter [flags]
 ```
 
-You can either use command-line flags, or environment variables to pass custom parameters. Environment variables take precedence over flags.
+The exporter supports various configuration ways: command line arguments takes precedence over environment variables that take precedence over configuration file.
 
-Available flags and equivalent environment variable:
+Configuration file can be written in json or yaml, must be named `config.json` or `config.yml`, and must be placed in the same directory that the exporter binary. You can find complete examples of configuation files in the sources.
 
-|      argument       |    environment variable    |               description                |        default        |
-| ------------------- | -------------------------- | ---------------------------------------- | --------------------- |
-| -web.listen-address | CB_EXPORTER_LISTEN_ADDR    | Address to listen on for HTTP requests   | :9191                 |
-| -web.telemetry-path | CB_EXPORTER_TELEMETRY_PATH | Path under which to expose metrics       | /metrics              |
-| -db.uri             | CB_EXPORTER_DB_URI         | Address of Couchbase cluster             | http://127.0.0.1:8091 |
-| -db.user            | CB_EXPORTER_DB_USER        | Administrator username                   | admin                 |
-| -db.pwd             | CB_EXPORTER_DB_PASSWORD    | Administrator password                   | password              |
-| -log.level          | CB_EXPORTER_LOG_LEVEL      | Log level: info,debug,warn,error,fatal   | info                  |
-| -log.format         | CB_EXPORTER_LOG_FORMAT     | Log format: text, json                   | text                  |
-| -scrape.cluster     | CB_EXPORTER_SCRAPE_CLUSTER | If false, wont scrape cluster metrics    | true                  |
-| -scrape.node        | CB_EXPORTER_SCRAPE_NODE    | If false, wont scrape node metrics       | true                  |
-| -scrape.bucket      | CB_EXPORTER_SCRAPE_BUCKET  | If false, wont scrape bucket metrics     | true                  |
-| -scrape.xdcr        | CB_EXPORTER_SCRAPE_XDCR    | If false, wont scrape xdcr metrics       | true                  |
-| -conf.dir           | CB_EXPORTER_CONF_DIR       | Directory containing configuration files | metrics               |
-| -help               |                            | Command line help                        |                       |
+As for available flags and equivalent environment, here is a list:
+
+|    environment variable    |      argument       |               description                |        default        |
+| -------------------------- | ------------------- | ---------------------------------------- | --------------------- |
+| CB_EXPORTER_LISTEN_ADDR    | -web.listen-address | Address to listen on for HTTP requests   | :9191                 |
+| CB_EXPORTER_TELEMETRY_PATH | -web.telemetry-path | Path under which to expose metrics       | /metrics              |
+| CB_EXPORTER_DB_URI         | -db.uri             | Address of Couchbase cluster             | http://127.0.0.1:8091 |
+| CB_EXPORTER_DB_USER        |                     | Administrator username                   |                       |
+| CB_EXPORTER_DB_PASSWORD    |                     | Administrator password                   |                       |
+| CB_EXPORTER_LOG_LEVEL      | -log.level          | Log level: info,debug,warn,error,fatal   | info                  |
+| CB_EXPORTER_LOG_FORMAT     | -log.format         | Log format: text, json                   | text                  |
+| CB_EXPORTER_SCRAPE_CLUSTER | -scrape.cluster     | If false, wont scrape cluster metrics    | true                  |
+| CB_EXPORTER_SCRAPE_NODE    | -scrape.node        | If false, wont scrape node metrics       | true                  |
+| CB_EXPORTER_SCRAPE_BUCKET  | -scrape.bucket      | If false, wont scrape bucket metrics     | true                  |
+| CB_EXPORTER_SCRAPE_XDCR    | -scrape.xdcr        | If false, wont scrape xdcr metrics       | true                  |
+|                            | -help               | Command line help                        |                       |
+
+> Important: for security reasons credentials cannot be set with command line arguments.
 
 ## Metrics
 
