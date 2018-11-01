@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"sync"
 
 	p "github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
@@ -25,15 +24,19 @@ type Task struct {
 type XDCRExporter struct {
 	context Context
 	route   string
-	metrics []*GaugeVecStruct
+	metrics map[string]*p.Desc
 }
 
 // NewXDCRExporter instantiates the Exporter with the URI and metrics.
 func NewXDCRExporter(context Context) (*XDCRExporter, error) {
-	xdcrMetrics := GetMetricsFromFile("xdcr", context)
-	var metrics []*GaugeVecStruct
-	for _, m := range xdcrMetrics.List {
-		metrics = append(metrics, newGaugeVecStruct(m.Name, m.ID, m.Description, m.Labels))
+	xdcrMetrics, err := GetMetricsFromFile("xdcr", context.CouchbaseVersion)
+	if err != nil {
+		return &XDCRExporter{}, err
+	}
+	metrics := make(map[string]*p.Desc, len(xdcrMetrics.List))
+	for _, metric := range xdcrMetrics.List {
+		fqName := p.BuildFQName("cb", xdcrMetrics.Name, metric.Name)
+		metrics[metric.ID] = p.NewDesc(fqName, metric.Description, metric.Labels, nil)
 	}
 	return &XDCRExporter{
 		context: context,
@@ -44,22 +47,23 @@ func NewXDCRExporter(context Context) (*XDCRExporter, error) {
 
 // Describe describes exported metrics.
 func (e *XDCRExporter) Describe(ch chan<- *p.Desc) {
-	for _, m := range e.metrics {
-		m.gaugeVec.Describe(ch)
+	for _, metric := range e.metrics {
+		ch <- metric
 	}
 }
 
 // Collect fetches data for each exported metric.
 func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
-	var mutex sync.RWMutex
-	mutex.Lock()
-
 	// get task list where xdcr are listed
-	body := Fetch(e.context, "/pools/default/tasks")
-	var tasks []Task
-	err := json.Unmarshal(body, &tasks)
+	body, err := Fetch(e.context, "/pools/default/tasks")
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("Error when retrieving XDCR data. XDCR metrics won't be scraped")
+		return
+	}
+	var tasks []Task
+	err = json.Unmarshal(body, &tasks)
+	if err != nil {
+		log.Error("Could not unmarshal tasks data")
 		return
 	}
 
@@ -67,9 +71,9 @@ func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
 	var routes []string
 	for _, task := range tasks {
 		if task.Type == "xdcr" {
-			info := strings.Split(task.ID, "/") // id is in the form uuid/src/dest
-			for _, m := range e.metrics {
-				route := fmt.Sprintf("%s/%s/stats/replications%%2F%s%%2F%s%%2F%s%%2F%s", e.route, info[1], info[0], info[1], info[2], m.id)
+			longID := strings.Split(task.ID, "/") // id is in the form uuid/src/dest
+			for id := range e.metrics {
+				route := fmt.Sprintf("%s/%s/stats/replications%%2F%s%%2F%s%%2F%s%%2F%s", e.route, longID[1], longID[0], longID[1], longID[2], id)
 				routes = append(routes, route)
 			}
 		}
@@ -79,13 +83,13 @@ func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
 	bodies := MultiFetch(e.context, routes)
 
 	for route, body := range bodies {
-		info := strings.Split(route, "%2F")
-		uuid, src, dest, id := info[1], info[2], info[3], info[4]
+		longID := strings.Split(route, "%2F")
+		uuid, src, dest, id := longID[1], longID[2], longID[3], longID[4]
 
 		var xdcr map[string]interface{}
 		err := json.Unmarshal(body, &xdcr)
 		if err != nil {
-			log.Error(err.Error())
+			log.Error("Could not unmarshal XDCR data for remote " + uuid + " and metric " + id)
 			continue
 		}
 		for node, values := range xdcr["nodeStats"].(map[string]interface{}) {
@@ -94,20 +98,15 @@ func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
 				log.Warn("No value found for " + id + " metric in remote " + uuid)
 				continue
 			}
-			var metric *GaugeVecStruct
-			for _, m := range e.metrics {
-				if m.id == id {
+			var metric *p.Desc
+			for mid, m := range e.metrics {
+				if mid == id {
 					metric = m
 					break
 				}
 			}
 			v := list[len(list)-1].(float64)
-			metric.gaugeVec.With((p.Labels{"node": node, "remote_cluster_id": uuid, "source_bucket": src, "destination_bucket": dest})).Set(v)
+			ch <- p.MustNewConstMetric(metric, p.GaugeValue, v, node, uuid, src, dest)
 		}
 	}
-
-	for _, m := range e.metrics {
-		m.gaugeVec.Collect(ch)
-	}
-	mutex.Unlock()
 }

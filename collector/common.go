@@ -47,74 +47,81 @@ type Exporters struct {
 	XDCR        *XDCRExporter
 }
 
-// GaugeVecStruct is a wrapper for GaugeVec
-type GaugeVecStruct struct {
-	id       string
-	gaugeVec p.GaugeVec
-}
-
-func newCounter(name string, help string) p.Counter {
-	return p.NewCounter(p.CounterOpts{Namespace: "cb", Name: name, Help: help})
-}
-
-func newGaugeVec(name string, help string, labels []string) *p.GaugeVec {
-	return p.NewGaugeVec(p.GaugeOpts{Namespace: "cb", Name: name, Help: help}, labels)
-}
-
-func newGaugeVecStruct(name string, id string, help string, labels []string) *GaugeVecStruct {
-	return &GaugeVecStruct{
-		id:       id,
-		gaugeVec: *p.NewGaugeVec(p.GaugeOpts{Namespace: "cb", Name: name, Help: help}, labels),
+// InitExporters instantiates the Exporter with the URI and metrics.
+func InitExporters(context Context, scrapeCluster, scrapeNode, scrapeBucket, scrapeXDCR bool) {
+	if scrapeCluster {
+		clusterExporter, err := NewClusterExporter(context)
+		if err != nil {
+			log.Error("Error during creation of cluster exporter. Cluster metrics won't be scraped")
+			return
+		}
+		p.MustRegister(clusterExporter)
+		log.Debug("Cluster exporter registered")
+	}
+	if scrapeNode {
+		nodeExporter, err := NewNodeExporter(context)
+		if err != nil {
+			log.Error("Error during creation of node exporter. Node metrics won't be scraped")
+			return
+		}
+		p.MustRegister(nodeExporter)
+		log.Debug("Node exporter registered")
+	}
+	if scrapeBucket {
+		bucketExporter, err := NewBucketExporter(context)
+		if err != nil {
+			log.Error("Error during creation of bucket exporter. Bucket metrics won't be scraped")
+			return
+		}
+		p.MustRegister(bucketExporter)
+		log.Debug("Bucket exporter registered")
+		if err != nil {
+			log.Error("Error during creation of bucketstats exporter. Bucket stats metrics won't be scraped")
+			return
+		}
+		bucketStatsExporter, _ := NewBucketStatsExporter(context)
+		p.MustRegister(bucketStatsExporter)
+		log.Debug("Bucketstats exporter registered")
+	}
+	if scrapeXDCR {
+		XDCRExporter, err := NewXDCRExporter(context)
+		if err != nil {
+			log.Error("Error during creation of XDCR exporter. XDCR metrics won't be scraped")
+			return
+		}
+		p.MustRegister(XDCRExporter)
+		log.Debug("XDCR exporter registered")
 	}
 }
 
-// NewExporters instantiates the Exporter with the URI and metrics.
-func NewExporters(context Context) (*Exporters, error) {
-	clusterExporter, _ := NewClusterExporter(context)
-	nodeExporter, _ := NewNodeExporter(context)
-	bucketExporter, _ := NewBucketExporter(context)
-	bucketStatsExporter, _ := NewBucketStatsExporter(context)
-	XDCRExporter, _ := NewXDCRExporter(context)
-
-	return &Exporters{
-			clusterExporter,
-			nodeExporter,
-			bucketExporter,
-			bucketStatsExporter,
-			XDCRExporter},
-		nil
-}
-
 // Fetch is a helper function that fetches data from Couchbase API
-func Fetch(context Context, route string) []byte {
+func Fetch(context Context, route string) ([]byte, error) {
 	start := time.Now()
+	defer log.Debug("Get " + context.URI + route + " (" + time.Since(start).String() + ")")
 	req, err := http.NewRequest("GET", context.URI+route, nil)
 	if err != nil {
 		log.Error(err.Error())
-		return nil
+		return []byte{}, err
 	}
 	req.SetBasicAuth(context.Username, context.Password)
 	client := http.Client{Timeout: 10 * time.Second}
 	res, err := client.Do(req)
 	if err != nil {
 		log.Error(err.Error())
-		return nil
+		return []byte{}, err
 	}
 	if res.StatusCode != 200 {
 		log.Error(req.Method + " " + req.URL.Path + ": " + res.Status)
-		return nil
+		return []byte{}, err
 	}
-
-	secs := time.Since(start).String()
-	log.Debug("Get " + context.URI + route + " (" + secs + ")")
 
 	body, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		log.Error(err.Error())
-		return nil
+		return []byte{}, err
 	}
-	return body
+	return body, nil
 }
 
 // MultiFetch is like Fetch but makes multiple requests concurrently
@@ -128,10 +135,14 @@ func MultiFetch(context Context, routes []string) map[string][]byte {
 		wg.Add(1)
 		go func(route string) {
 			defer wg.Done()
+			body, err := Fetch(context, route)
+			if err != nil {
+				return
+			}
 			ch <- struct {
 				route string
 				body  []byte
-			}{route, Fetch(context, route)}
+			}{route, body}
 		}(route)
 	}
 	go func() {
@@ -146,37 +157,44 @@ func MultiFetch(context Context, routes []string) map[string][]byte {
 }
 
 // GetMetricsFromFile checks if metric file exist and convert it to Metrics structure
-func GetMetricsFromFile(metricType string, context Context) Metrics {
+func GetMetricsFromFile(metricType string, cbVersion string) (Metrics, error) {
 	filename := "metrics/" + metricType + "-"
-	if _, err := os.Stat(filename + context.CouchbaseVersion + ".json"); os.IsNotExist(err) {
-		filename = filename + "default.json"
+	if _, err := os.Stat(filename + cbVersion + ".json"); err == nil {
+		filename = filename + cbVersion + ".json"
 	} else {
-		filename = filename + context.CouchbaseVersion + ".json"
+		filename = filename + "default.json"
 	}
 	rawMetrics, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("Could not read file " + filename)
+		return Metrics{}, err
 	}
 	var metrics Metrics
 	err = json.Unmarshal(rawMetrics, &metrics)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("Could not unmarshal file " + filename)
+		return Metrics{}, err
 	}
-	log.Info("Loaded " + filename)
-	return metrics
+	log.Debug(filename + " loaded")
+	return metrics, nil
 }
 
 // FlattenStruct flattens structure into a map
-func FlattenStruct(obj interface{}, def string) map[string]interface{} {
+func FlattenStruct(obj interface{}, def ...string) map[string]interface{} {
 	fields := make(map[string]interface{}, 0)
 	objValue := reflect.ValueOf(obj)
 	objType := reflect.TypeOf(obj)
+
+	var prefix string
+	if len(def) > 0 {
+		prefix = def[0]
+	}
 
 	for i := 0; i < objType.NumField(); i++ {
 		attrField := objValue.Type().Field(i)
 		valueField := objValue.Field(i)
 		var key bytes.Buffer
-		key.WriteString(def + attrField.Name)
+		key.WriteString(prefix + attrField.Name)
 
 		switch valueField.Kind() {
 		case reflect.Struct:

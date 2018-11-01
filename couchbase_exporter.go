@@ -14,11 +14,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"github.com/blakelead/couchbase_exporter/collector"
 	yaml "gopkg.in/yaml.v2"
 
 	d "github.com/coreos/go-systemd/daemon"
-	p "github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -53,29 +54,13 @@ func main() {
 
 	getCouchbaseVersion(&context)
 
-	exporters, err := collector.NewExporters(context)
-	if err != nil {
-		log.Fatal("Error during exporters creation.")
-	}
+	collector.InitExporters(context, *scrapeCluster, *scrapeNode, *scrapeBucket, *scrapeXDCR)
 
-	if *scrapeCluster {
-		p.MustRegister(exporters.Cluster)
-	}
-	if *scrapeNode {
-		p.MustRegister(exporters.Node)
-	}
-	if *scrapeBucket {
-		p.MustRegister(exporters.Bucket)
-		p.MustRegister(exporters.BucketStats)
-	}
-	if *scrapeXDCR {
-		p.MustRegister(exporters.XDCR)
-	}
-
-	http.Handle(*metricsPath, p.UninstrumentedHandler())
+	http.Handle(*metricsPath, promhttp.Handler())
 	if *metricsPath != "/" {
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte(`<html>
+			w.Write([]byte(`
+			<html>
 			<head><title>Couchbase Exporter</title></head>
 			<body>
 			<h1>Couchbase Exporter</h1>
@@ -159,23 +144,23 @@ func loadConfFile() {
 	if _, err := os.Stat("config.json"); err == nil {
 		rawConf, err := ioutil.ReadFile("config.json")
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Fatal("Could not red file config.json")
 		}
 		err = json.Unmarshal(rawConf, &conf)
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Fatal("Could not unmarshal file config.json")
 		}
 	} else if _, err := os.Stat("config.yml"); err == nil {
 		rawConf, err := ioutil.ReadFile("config.yml")
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Fatal("Could not red file config.yaml")
 		}
 		err = yaml.Unmarshal(rawConf, &conf)
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Fatal("Could not unmarshal file config.yaml")
 		}
 	} else {
-		log.Info("No configuration file was found in the working directory.")
+		log.Info("No configuration file was found in the working directory")
 		return
 	}
 
@@ -194,7 +179,7 @@ func loadConfFile() {
 
 func checkCredentials() {
 	if len(dbUser) == 0 || len(dbPwd) == 0 {
-		log.Fatal("Couchbase username and/or password are not set. You can set them either by providing a configuration file, or with environment variables.")
+		log.Fatal("Couchbase username and/or password are not set. You can set them either by providing a configuration file, or with environment variables")
 	}
 }
 
@@ -244,11 +229,15 @@ func systemdSettings() {
 }
 
 func getCouchbaseVersion(context *collector.Context) {
-	body := collector.Fetch(*context, "/pools")
-	var data map[string]interface{}
-	err := json.Unmarshal(body, &data)
+	body, err := collector.Fetch(*context, "/pools")
 	if err != nil {
-		log.Fatal("Could not parse Couchbase version infos.")
+		log.Error("Error when retrieving Couchbase version informations")
+		return
+	}
+	var data map[string]interface{}
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		log.Error("Could not parse Couchbase version infos")
 		return
 	}
 

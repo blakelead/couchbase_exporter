@@ -6,7 +6,6 @@ package collector
 
 import (
 	"encoding/json"
-	"sync"
 
 	p "github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
@@ -49,70 +48,75 @@ type ClusterExporter struct {
 	context      Context
 	route        string
 	totalScrapes p.Counter
-	metrics      []*GaugeVecStruct
+	metrics      map[string]*p.Desc
 }
 
 // NewClusterExporter instantiates the Exporter with the URI and metrics.
 func NewClusterExporter(context Context) (*ClusterExporter, error) {
-	clusterMetrics := GetMetricsFromFile("cluster", context)
-	var metrics []*GaugeVecStruct
-	for _, m := range clusterMetrics.List {
-		metrics = append(metrics, newGaugeVecStruct(m.Name, m.ID, m.Description, m.Labels))
+	clusterMetrics, err := GetMetricsFromFile("cluster", context.CouchbaseVersion)
+	if err != nil {
+		return &ClusterExporter{}, err
+	}
+	metrics := make(map[string]*p.Desc, len(clusterMetrics.List))
+	for _, metric := range clusterMetrics.List {
+		fqName := p.BuildFQName("cb", clusterMetrics.Name, metric.Name)
+		metrics[metric.ID] = p.NewDesc(fqName, metric.Description, metric.Labels, nil)
 	}
 	return &ClusterExporter{
-		context:      context,
-		route:        clusterMetrics.Route,
-		totalScrapes: newCounter("total_scrapes", "Total number of scrapes"),
-		metrics:      metrics,
+		context: context,
+		route:   clusterMetrics.Route,
+		totalScrapes: p.NewCounter(p.CounterOpts{
+			Name: p.BuildFQName("cb", clusterMetrics.Name, "scrapes_total"),
+			Help: "Number of scrapes since the start of the exporter.",
+		}),
+		metrics: metrics,
 	}, nil
 }
 
 // Describe describes exported metrics.
 func (e *ClusterExporter) Describe(ch chan<- *p.Desc) {
-	e.totalScrapes.Describe(ch)
-	for _, m := range e.metrics {
-		m.gaugeVec.Describe(ch)
+	ch <- e.totalScrapes.Desc()
+	for _, metric := range e.metrics {
+		ch <- metric
 	}
 }
 
 // Collect fetches data for each exported metric.
 func (e *ClusterExporter) Collect(ch chan<- p.Metric) {
-	var mutex sync.RWMutex
-	mutex.Lock()
 	e.totalScrapes.Inc()
+	ch <- e.totalScrapes
 
-	body := Fetch(e.context, e.route)
-	var cluster ClusterData
-	err := json.Unmarshal(body, &cluster)
+	body, err := Fetch(e.context, e.route)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("Error when retrieving cluster data. Cluster metrics won't be scraped")
+		return
+	}
+	var cluster ClusterData
+	err = json.Unmarshal(body, &cluster)
+	if err != nil {
+		log.Error("Could not unmarshal cluster data")
 		return
 	}
 
-	flat := FlattenStruct(cluster, "")
-	for _, m := range e.metrics {
-		if value, ok := flat[m.id]; ok {
+	flat := FlattenStruct(cluster)
+	for id, metric := range e.metrics {
+		if value, ok := flat[id]; ok {
 			switch value.(type) {
 			case bool:
 				var v float64
 				if value.(bool) {
 					v = 1
 				}
-				m.gaugeVec.With(p.Labels{}).Set(v)
+				ch <- p.MustNewConstMetric(metric, p.GaugeValue, v)
 			case string:
 				var v float64
 				if value.(string) != "none" {
 					v = 1
 				}
-				m.gaugeVec.With(p.Labels{}).Set(v)
+				ch <- p.MustNewConstMetric(metric, p.GaugeValue, v)
 			case float64:
-				m.gaugeVec.With(p.Labels{}).Set(value.(float64))
+				ch <- p.MustNewConstMetric(metric, p.GaugeValue, value.(float64))
 			}
 		}
 	}
-
-	for _, m := range e.metrics {
-		m.gaugeVec.Collect(ch)
-	}
-	mutex.Unlock()
 }
