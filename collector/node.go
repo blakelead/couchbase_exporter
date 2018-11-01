@@ -7,7 +7,6 @@ package collector
 import (
 	"encoding/json"
 	"strconv"
-	"sync"
 
 	p "github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
@@ -65,53 +64,62 @@ type NodeData struct {
 type NodeExporter struct {
 	context Context
 	route   string
-	up      *p.GaugeVec
-	metrics []*GaugeVecStruct
+	up      p.Gauge
+	metrics map[string]*p.Desc
 }
 
 // NewNodeExporter instantiates the Exporter with the URI and metrics.
 func NewNodeExporter(context Context) (*NodeExporter, error) {
-	nodeMetrics := GetMetricsFromFile("node", context)
-	var metrics []*GaugeVecStruct
-	for _, m := range nodeMetrics.List {
-		metrics = append(metrics, newGaugeVecStruct(m.Name, m.ID, m.Description, m.Labels))
+	nodeMetrics, err := GetMetricsFromFile("node", context.CouchbaseVersion)
+	if err != nil {
+		return &NodeExporter{}, err
+	}
+	metrics := make(map[string]*p.Desc, len(nodeMetrics.List))
+	for _, metric := range nodeMetrics.List {
+		fqName := p.BuildFQName("cb", nodeMetrics.Name, metric.Name)
+		metrics[metric.ID] = p.NewDesc(fqName, metric.Description, metric.Labels, nil)
 	}
 	return &NodeExporter{
 		context: context,
 		route:   nodeMetrics.Route,
-		up:      newGaugeVec("node_service_up", "Couchbase service healthcheck", []string{}),
+		up: p.NewGauge(p.GaugeOpts{
+			Name: p.BuildFQName("cb", nodeMetrics.Name, "service_up"),
+			Help: "Couchbase service healthcheck",
+		}),
 		metrics: metrics,
 	}, nil
 }
 
 // Describe describes exported metrics.
 func (e *NodeExporter) Describe(ch chan<- *p.Desc) {
-	e.up.Describe(ch)
-	for _, m := range e.metrics {
-		m.gaugeVec.Describe(ch)
+	ch <- e.up.Desc()
+	for _, metric := range e.metrics {
+		ch <- metric
 	}
 }
 
 // Collect fetches data for each exported metric.
 func (e *NodeExporter) Collect(ch chan<- p.Metric) {
-	var mutex sync.RWMutex
-	mutex.Lock()
-	e.up.With(p.Labels{}).Set(0)
-
-	body := Fetch(e.context, e.route)
-	var node NodeData
-	err := json.Unmarshal(body, &node)
+	e.up.Set(0)
+	defer func() { ch <- e.up }()
+	body, err := Fetch(e.context, e.route)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("Error when retrieving node data. Node metrics won't be scraped")
+		return
+	}
+	var node NodeData
+	err = json.Unmarshal(body, &node)
+	if err != nil {
+		log.Error("Could not unmarshal node data")
 		return
 	}
 
 	statusValues := map[string]float64{"healthy": 1, "active": 1, "warmup": 2, "inactiveHealthy": 2, "inactiveFailed": 3}
 
-	e.up.With(p.Labels{}).Set(1)
-	flat := FlattenStruct(node, "")
-	for _, m := range e.metrics {
-		if value, ok := flat[m.id]; ok {
+	e.up.Set(1)
+	flat := FlattenStruct(node)
+	for id, metric := range e.metrics {
+		if value, ok := flat[id]; ok {
 			switch value.(type) {
 			case string:
 				var v float64
@@ -121,15 +129,10 @@ func (e *NodeExporter) Collect(ch chan<- p.Metric) {
 				} else {
 					v = statusValues[value.(string)]
 				}
-				m.gaugeVec.With(p.Labels{}).Set(v)
+				ch <- p.MustNewConstMetric(metric, p.GaugeValue, v)
 			case float64:
-				m.gaugeVec.With(p.Labels{}).Set(value.(float64))
+				ch <- p.MustNewConstMetric(metric, p.GaugeValue, value.(float64))
 			}
 		}
 	}
-
-	for _, m := range e.metrics {
-		m.gaugeVec.Collect(ch)
-	}
-	mutex.Unlock()
 }

@@ -6,7 +6,6 @@ package collector
 
 import (
 	"encoding/json"
-	"sync"
 
 	p "github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
@@ -30,15 +29,19 @@ type BucketData struct {
 type BucketExporter struct {
 	context Context
 	route   string
-	metrics []*GaugeVecStruct
+	metrics map[string]*p.Desc
 }
 
 // NewBucketExporter instantiates the Exporter with the URI and metrics.
 func NewBucketExporter(context Context) (*BucketExporter, error) {
-	bucketMetrics := GetMetricsFromFile("bucket", context)
-	var metrics []*GaugeVecStruct
-	for _, m := range bucketMetrics.List {
-		metrics = append(metrics, newGaugeVecStruct(m.Name, m.ID, m.Description, m.Labels))
+	bucketMetrics, err := GetMetricsFromFile("bucket", context.CouchbaseVersion)
+	if err != nil {
+		return &BucketExporter{}, err
+	}
+	metrics := make(map[string]*p.Desc, len(bucketMetrics.List))
+	for _, metric := range bucketMetrics.List {
+		fqName := p.BuildFQName("cb", bucketMetrics.Name, metric.Name)
+		metrics[metric.ID] = p.NewDesc(fqName, metric.Description, metric.Labels, nil)
 	}
 	return &BucketExporter{
 		context: context,
@@ -49,35 +52,31 @@ func NewBucketExporter(context Context) (*BucketExporter, error) {
 
 // Describe describes exported metrics.
 func (e *BucketExporter) Describe(ch chan<- *p.Desc) {
-	for _, m := range e.metrics {
-		m.gaugeVec.Describe(ch)
+	for _, metric := range e.metrics {
+		ch <- metric
 	}
 }
 
 // Collect fetches data for each exported metric.
 func (e *BucketExporter) Collect(ch chan<- p.Metric) {
-	var mutex sync.RWMutex
-	mutex.Lock()
-
-	body := Fetch(e.context, e.route)
-	var buckets []BucketData
-	err := json.Unmarshal(body, &buckets)
+	body, err := Fetch(e.context, e.route)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("Error when retrieving buckets data. Buckets metrics won't be scraped")
+		return
+	}
+	var buckets []BucketData
+	err = json.Unmarshal(body, &buckets)
+	if err != nil {
+		log.Error("Could not unmarshal buckets data")
 		return
 	}
 
 	for _, bucket := range buckets {
-		flat := FlattenStruct(bucket, "")
-		for _, m := range e.metrics {
-			if value, ok := flat[m.id].(float64); ok {
-				m.gaugeVec.With(p.Labels{"bucket": bucket.Name}).Set(value)
+		flat := FlattenStruct(bucket)
+		for id, metric := range e.metrics {
+			if value, ok := flat[id].(float64); ok {
+				ch <- p.MustNewConstMetric(metric, p.GaugeValue, value, bucket.Name)
 			}
 		}
 	}
-	for _, m := range e.metrics {
-		m.gaugeVec.Collect(ch)
-	}
-
-	mutex.Unlock()
 }
