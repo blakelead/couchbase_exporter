@@ -21,4 +21,4 @@ after_success:
   - export REPO=$DOCKER_HUB_ID/couchbase-exporter
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; elif [ "$TRAVIS_BRANCH" == "develop" ]; then echo "devel"; else echo $TRAVIS_TAG; fi`
   - echo $REPO:$TAG
-  - if [ ! -z "$TAG"]; then docker build -f Dockerfile -t $REPO:$TAG .; docker push $REPO; fi
+  - if [ ! -z "$TAG" ]; then docker build -f Dockerfile -t $REPO:$TAG .; docker push $REPO; fi
