@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"reflect"
 	"sync"
 	"time"
@@ -97,7 +98,6 @@ func InitExporters(context Context, scrapeCluster, scrapeNode, scrapeBucket, scr
 // Fetch is a helper function that fetches data from Couchbase API
 func Fetch(context Context, route string) ([]byte, error) {
 	start := time.Now()
-	defer log.Debug("Get " + context.URI + route + " (" + time.Since(start).String() + ")")
 	req, err := http.NewRequest("GET", context.URI+route, nil)
 	if err != nil {
 		log.Error(err.Error())
@@ -114,6 +114,8 @@ func Fetch(context Context, route string) ([]byte, error) {
 		log.Error(req.Method + " " + req.URL.Path + ": " + res.Status)
 		return []byte{}, err
 	}
+
+	log.Debug("Get " + context.URI + route + " (" + time.Since(start).String() + ")")
 
 	body, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
@@ -158,7 +160,12 @@ func MultiFetch(context Context, routes []string) map[string][]byte {
 
 // GetMetricsFromFile checks if metric file exist and convert it to Metrics structure
 func GetMetricsFromFile(metricType string, cbVersion string) (Metrics, error) {
-	filename := "metrics/" + metricType + "-"
+	ex, err := os.Executable()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	exPath := filepath.Dir(ex)
+	filename := exPath + "/metrics/" + metricType + "-"
 	if _, err := os.Stat(filename + cbVersion + ".json"); err == nil {
 		filename = filename + cbVersion + ".json"
 	} else {

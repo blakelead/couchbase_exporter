@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -140,27 +141,33 @@ func loadConfFile() {
 		} `json:"scrape" yaml:"scrape"`
 	}
 
+	ex, err := os.Executable()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	exPath := filepath.Dir(ex)
+
 	var conf confStruct
-	if _, err := os.Stat("config.json"); err == nil {
-		rawConf, err := ioutil.ReadFile("config.json")
+	if _, err := os.Stat(exPath + "/config.json"); err == nil {
+		rawConf, err := ioutil.ReadFile(exPath + "/config.json")
 		if err != nil {
-			log.Fatal("Could not red file config.json")
+			log.Fatal("Could not read file config.json in directory " + exPath)
 		}
 		err = json.Unmarshal(rawConf, &conf)
 		if err != nil {
 			log.Fatal("Could not unmarshal file config.json")
 		}
-	} else if _, err := os.Stat("config.yml"); err == nil {
-		rawConf, err := ioutil.ReadFile("config.yml")
+	} else if _, err := os.Stat(exPath + "/config.yml"); err == nil {
+		rawConf, err := ioutil.ReadFile(exPath + "/config.yml")
 		if err != nil {
-			log.Fatal("Could not red file config.yaml")
+			log.Fatal("Could not read file config.yaml" + exPath)
 		}
 		err = yaml.Unmarshal(rawConf, &conf)
 		if err != nil {
 			log.Fatal("Could not unmarshal file config.yaml")
 		}
 	} else {
-		log.Info("No configuration file was found in the working directory")
+		log.Info("No configuration file was found in the working directory " + exPath)
 		return
 	}
 
