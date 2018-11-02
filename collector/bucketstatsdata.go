@@ -6,7 +6,6 @@ package collector
 
 import (
 	"encoding/json"
-	"sync"
 
 	p "github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
@@ -240,24 +239,23 @@ type BucketStatsData struct {
 	} `json:"op"`
 }
 
-// BucketName (/pools/default/buckets)
-type BucketName struct {
-	Name string `json:"name"`
-}
-
 // BucketStatsExporter describes the exporter object.
 type BucketStatsExporter struct {
 	context Context
 	route   string
-	metrics []*GaugeVecStruct
+	metrics map[string]*p.Desc
 }
 
 // NewBucketStatsExporter instantiates the Exporter with the URI and metrics.
 func NewBucketStatsExporter(context Context) (*BucketStatsExporter, error) {
-	bucketStatsMetrics := GetMetricsFromFile("bucketstats", context)
-	var metrics []*GaugeVecStruct
-	for _, m := range bucketStatsMetrics.List {
-		metrics = append(metrics, newGaugeVecStruct(m.Name, m.ID, m.Description, m.Labels))
+	bucketStatsMetrics, err := GetMetricsFromFile("bucketstats", context.CouchbaseVersion)
+	if err != nil {
+		return &BucketStatsExporter{}, err
+	}
+	metrics := make(map[string]*p.Desc, len(bucketStatsMetrics.List))
+	for _, metric := range bucketStatsMetrics.List {
+		fqName := p.BuildFQName("cb", bucketStatsMetrics.Name, metric.Name)
+		metrics[metric.ID] = p.NewDesc(fqName, metric.Description, metric.Labels, nil)
 	}
 	return &BucketStatsExporter{
 		context: context,
@@ -268,21 +266,23 @@ func NewBucketStatsExporter(context Context) (*BucketStatsExporter, error) {
 
 // Describe describes exported metrics.
 func (e *BucketStatsExporter) Describe(ch chan<- *p.Desc) {
-	for _, m := range e.metrics {
-		m.gaugeVec.Describe(ch)
+	for _, metric := range e.metrics {
+		ch <- metric
 	}
 }
 
 // Collect fetches data for each exported metric.
 func (e *BucketStatsExporter) Collect(ch chan<- p.Metric) {
-	var mutex sync.RWMutex
-	mutex.Lock()
-
-	body := Fetch(e.context, e.route)
-	var buckets []BucketName
-	err := json.Unmarshal(body, &buckets)
+	body, err := Fetch(e.context, e.route)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("Error when retrieving bucketstats data. Bucketstats metrics won't be scraped")
+		return
+	}
+	var buckets []BucketData
+	err = json.Unmarshal(body, &buckets)
+	if err != nil {
+		log.Error("Could not unmarshal buckets data")
+		return
 	}
 
 	var routes []string
@@ -296,22 +296,17 @@ func (e *BucketStatsExporter) Collect(ch chan<- p.Metric) {
 		var bucketStats BucketStatsData
 		err = json.Unmarshal(bodies[e.route+"/"+bucket.Name+"/stats"], &bucketStats)
 		if err != nil {
-			log.Error(err.Error())
+			log.Error("Could not unmarshal bucketstats data for bucket " + bucket.Name)
 			return
 		}
-		flat := FlattenStruct(bucketStats, "")
-		for _, m := range e.metrics {
-			if array, ok := flat[m.id].([]float64); ok {
+		flat := FlattenStruct(bucketStats)
+		for id, metric := range e.metrics {
+			if array, ok := flat[id].([]float64); ok {
 				lenArray := len(array)
 				if lenArray != 0 {
-					m.gaugeVec.With(p.Labels{"bucket": bucket.Name}).Set(array[lenArray-1])
+					ch <- p.MustNewConstMetric(metric, p.GaugeValue, array[lenArray-1], bucket.Name)
 				}
 			}
 		}
 	}
-
-	for _, m := range e.metrics {
-		m.gaugeVec.Collect(ch)
-	}
-	mutex.Unlock()
 }

@@ -13,8 +13,8 @@
         "format": "text"
     },
     "scrape": {
-        "node": true,
         "cluster": true,
+        "node": true,
         "bucket": true,
         "xdcr": true
     }
