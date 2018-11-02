@@ -13,9 +13,9 @@
         "format": "text"
     },
     "scrape": {
-        "cluster": false,
-        "node": false,
-        "bucket": false,
-        "xdcr": false
+        "cluster": true,
+        "node": true,
+        "bucket": true,
+        "xdcr": true
     }
 }
