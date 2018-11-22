@@ -105,8 +105,16 @@ func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
 					break
 				}
 			}
-			v := list[len(list)-1].(float64)
-			ch <- p.MustNewConstMetric(metric, p.GaugeValue, v, node, uuid, src, dest)
+
+			var value float64
+			switch v := list[len(list)-1].(type) {
+			case float64:
+				value = v
+			case int:
+				value = float64(v)
+			}
+
+			ch <- p.MustNewConstMetric(metric, p.GaugeValue, value, node, uuid, src, dest)
 		}
 	}
 }
