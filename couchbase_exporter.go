@@ -25,6 +25,8 @@ import (
 )
 
 var (
+	version = "0.5.1-5-g9bf7fc4"
+
 	dbUser        = ""
 	dbPwd         = ""
 	listenAddr    = flag.String("web.listen-address", ":9191", "The address to listen on for HTTP requests.")
@@ -42,14 +44,16 @@ var (
 
 func main() {
 
+	log.SetFormatter(setLogFormat())
+	log.SetOutput(os.Stdout)
+	log.SetLevel(setLogLevel())
+
+	log.Info("Couchbase Exporter Version ", version)
+
 	loadConfFile()
 	lookupEnv()
 	flag.Parse()
 	checkCredentials()
-
-	log.SetFormatter(setLogFormat())
-	log.SetOutput(os.Stdout)
-	log.SetLevel(setLogLevel())
 
 	context := collector.Context{URI: *dbURI, Username: dbUser, Password: dbPwd}
 
@@ -167,7 +171,7 @@ func loadConfFile() {
 			log.Fatal("Could not unmarshal file config.yaml")
 		}
 	} else {
-		log.Info("No configuration file was found in the working directory " + exPath)
+		log.Info("No configuration file was found in the working directory ", exPath, ". Working with command-line arguments and/or environment variables")
 		return
 	}
 
@@ -249,14 +253,8 @@ func getCouchbaseVersion(context *collector.Context) {
 	}
 
 	rawVersion := data["implementationVersion"].(string)
-	isCommunity := strings.Contains(rawVersion, "community")
 
-	log.Info("Couchbase version: " + rawVersion)
-	log.Info("Community version: " + strconv.FormatBool(isCommunity))
-
-	if !isCommunity {
-		log.Warn("This exporter was not tested for Couchbase Enterprise versions")
-	}
+	log.Info("Couchbase version ", rawVersion)
 
 	for _, v := range validVersions {
 		if strings.HasPrefix(rawVersion, v) {
@@ -265,5 +263,5 @@ func getCouchbaseVersion(context *collector.Context) {
 		}
 	}
 
-	log.Warn("Version " + rawVersion + " may not be supported by this exporter")
+	log.Warn("Version ", rawVersion, " may not be supported by this exporter")
 }
