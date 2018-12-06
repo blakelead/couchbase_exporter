@@ -3,11 +3,13 @@
 web:
   listenAddress: :9191
   telemetryPath: /metrics
+  timeout: 10
 
 db:
   user: admin
   password: password
   uri: http://localhost:8091
+  timeout: 10
 
 log:
   level: info
