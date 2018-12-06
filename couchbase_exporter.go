@@ -25,13 +25,16 @@ import (
 )
 
 var (
-	version = "0.5.1-5-g9bf7fc4"
+	// git describe
+	version = "0.5.1-6-g84368db"
 
 	dbUser        = ""
 	dbPwd         = ""
-	listenAddr    = flag.String("web.listen-address", ":9191", "The address to listen on for HTTP requests.")
+	listenAddr    = flag.String("web.listen-address", "127.0.0.1:9191", "The address to listen on for HTTP requests.")
 	metricsPath   = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
+	serverTimeout = flag.Duration("web.timeout", 10, "Server read timeout in seconds.")
 	dbURI         = flag.String("db.uri", "http://localhost:8091", "The address of Couchbase cluster.")
+	dbTimeout     = flag.Duration("db.timeout", 10, "Couchbase client timeout in seconds.")
 	logLevel      = flag.String("log.level", "info", "Log level: info, debug, warn, error, fatal.")
 	logFormat     = flag.String("log.format", "text", "Log format: text or json.")
 	scrapeCluster = flag.Bool("scrape.cluster", true, "If false, cluster metrics wont be scraped.")
@@ -55,7 +58,19 @@ func main() {
 	flag.Parse()
 	checkCredentials()
 
-	context := collector.Context{URI: *dbURI, Username: dbUser, Password: dbPwd}
+	log.Info("web.listen-address=", *listenAddr)
+	log.Info("web.telemetry-path=", *metricsPath)
+	log.Info("web.timeout=", *serverTimeout)
+	log.Info("db.uri=", *dbURI)
+	log.Info("db.timeout=", *dbTimeout)
+	log.Info("log.level=", *logLevel)
+	log.Info("log.format=", *logFormat)
+	log.Info("scrape.cluster=", *scrapeCluster)
+	log.Info("scrape.node=", *scrapeNode)
+	log.Info("scrape.bucket=", *scrapeBucket)
+	log.Info("scrape.xdcr=", *scrapeXDCR)
+
+	context := collector.Context{URI: *dbURI, Username: dbUser, Password: dbPwd, Timeout: *dbTimeout}
 
 	getCouchbaseVersion(&context)
 
@@ -79,14 +94,13 @@ func main() {
 	systemdSettings()
 
 	// custom server used to set timeouts
-	httpSrv := &http.Server{
-		Addr:         *listenAddr,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
+	s := &http.Server{
+		Addr:        *listenAddr,
+		ReadTimeout: *serverTimeout,
 	}
 
-	log.Info("Listening at ", *listenAddr)
-	log.Fatal(httpSrv.ListenAndServe())
+	log.Info("Started listening at ", *listenAddr)
+	log.Fatal(s.ListenAndServe())
 }
 
 func lookupEnv() {
@@ -96,8 +110,16 @@ func lookupEnv() {
 	if val, ok := os.LookupEnv("CB_EXPORTER_TELEMETRY_PATH"); ok {
 		*metricsPath = val
 	}
+	if val, ok := os.LookupEnv("CB_EXPORTER_SERVER_TIMEOUT"); ok {
+		*serverTimeout, _ = time.ParseDuration(val)
+		*serverTimeout = *serverTimeout * time.Second
+	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_DB_URI"); ok {
 		*dbURI = val
+	}
+	if val, ok := os.LookupEnv("CB_EXPORTER_DB_TIMEOUT"); ok {
+		*dbTimeout, _ = time.ParseDuration(val)
+		*dbTimeout = *dbTimeout * time.Second
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_DB_USER"); ok {
 		dbUser = val
@@ -125,13 +147,15 @@ func lookupEnv() {
 func loadConfFile() {
 	type confStruct struct {
 		Web struct {
-			ListenAddress string `json:"listenAddress" yaml:"listenAddress"`
-			TelemetryPath string `json:"telemetryPath" yaml:"telemetryPath"`
+			ListenAddress string        `json:"listenAddress" yaml:"listenAddress"`
+			TelemetryPath string        `json:"telemetryPath" yaml:"telemetryPath"`
+			Timeout       time.Duration `json:"timeout" yaml:"timeout"`
 		} `json:"web" yaml:"web"`
 		DB struct {
-			User     string `json:"user" yaml:"user"`
-			Password string `json:"password" yaml:"password"`
-			URI      string `json:"uri" yaml:"uri"`
+			User     string        `json:"user" yaml:"user"`
+			Password string        `json:"password" yaml:"password"`
+			URI      string        `json:"uri" yaml:"uri"`
+			Timeout  time.Duration `json:"timeout" yaml:"timeout"`
 		} `json:"db" yaml:"db"`
 		Log struct {
 			Level  string `json:"level" yaml:"level"`
@@ -177,7 +201,9 @@ func loadConfFile() {
 
 	*listenAddr = conf.Web.ListenAddress
 	*metricsPath = conf.Web.TelemetryPath
+	*serverTimeout = conf.Web.Timeout * time.Second
 	*dbURI = conf.DB.URI
+	*dbTimeout = conf.DB.Timeout * time.Second
 	dbUser = conf.DB.User
 	dbPwd = conf.DB.Password
 	*logLevel = conf.Log.Level

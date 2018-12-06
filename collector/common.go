@@ -36,6 +36,7 @@ type Context struct {
 	URI              string
 	Username         string
 	Password         string
+	Timeout          time.Duration
 	CouchbaseVersion string
 }
 
@@ -104,7 +105,7 @@ func Fetch(context Context, route string) ([]byte, error) {
 		return []byte{}, err
 	}
 	req.SetBasicAuth(context.Username, context.Password)
-	client := http.Client{Timeout: 10 * time.Second}
+	client := http.Client{Timeout: context.Timeout}
 	res, err := client.Do(req)
 	if err != nil {
 		log.Error(err.Error())
