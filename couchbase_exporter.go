@@ -5,7 +5,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"net/http"
 	"os"
@@ -50,7 +49,8 @@ func main() {
 	initParams()
 	initLogger()
 
-	log.Info("Couchbase Exporter Version ", version)
+	log.Info("Couchbase Exporter Version: ", version)
+	log.Info("Supported Couchbase versions: ", strings.Join(validVersions, ", "))
 	log.Info("config.file=", configFile)
 	log.Info("web.listen-address=", webListenAddr)
 	log.Info("web.telemetry-path=", webMetricsPath)
@@ -65,8 +65,6 @@ func main() {
 	log.Info("scrape.xdcr=", scrapeXDCR)
 
 	context := collector.Context{URI: dbURI, Username: dbUser, Password: dbPwd, Timeout: dbTimeout}
-
-	getCouchbaseVersion(&context)
 
 	collector.InitExporters(context, scrapeCluster, scrapeNode, scrapeBucket, scrapeXDCR)
 
@@ -210,33 +208,6 @@ func initLogger() {
 		})
 	}
 	log.SetOutput(os.Stdout)
-}
-
-func getCouchbaseVersion(context *collector.Context) {
-	body, err := collector.Fetch(*context, "/pools")
-	if err != nil {
-		log.Error("Error when retrieving Couchbase version informations")
-		return
-	}
-	var data map[string]interface{}
-	err = json.Unmarshal(body, &data)
-	if err != nil {
-		log.Error("Error when retrieving Couchbase version informations")
-		return
-	}
-
-	rawVersion := data["implementationVersion"].(string)
-
-	log.Info("Couchbase version ", rawVersion)
-
-	for _, v := range validVersions {
-		if strings.HasPrefix(rawVersion, v) {
-			context.CouchbaseVersion = v
-			return
-		}
-	}
-
-	log.Warn("Version ", rawVersion, " may not be supported by this exporter")
 }
 
 func systemdSettings() {

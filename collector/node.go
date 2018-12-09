@@ -70,7 +70,7 @@ type NodeExporter struct {
 
 // NewNodeExporter instantiates the Exporter with the URI and metrics.
 func NewNodeExporter(context Context) (*NodeExporter, error) {
-	nodeMetrics, err := GetMetricsFromFile("node", context.CouchbaseVersion)
+	nodeMetrics, err := GetMetricsFromFile("node")
 	if err != nil {
 		return &NodeExporter{}, err
 	}

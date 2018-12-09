@@ -34,7 +34,7 @@ type BucketExporter struct {
 
 // NewBucketExporter instantiates the Exporter with the URI and metrics.
 func NewBucketExporter(context Context) (*BucketExporter, error) {
-	bucketMetrics, err := GetMetricsFromFile("bucket", context.CouchbaseVersion)
+	bucketMetrics, err := GetMetricsFromFile("bucket")
 	if err != nil {
 		return &BucketExporter{}, err
 	}

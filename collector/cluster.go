@@ -53,7 +53,7 @@ type ClusterExporter struct {
 
 // NewClusterExporter instantiates the Exporter with the URI and metrics.
 func NewClusterExporter(context Context) (*ClusterExporter, error) {
-	clusterMetrics, err := GetMetricsFromFile("cluster", context.CouchbaseVersion)
+	clusterMetrics, err := GetMetricsFromFile("cluster")
 	if err != nil {
 		return &ClusterExporter{}, err
 	}
