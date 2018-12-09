@@ -33,10 +33,10 @@ type Metrics struct {
 
 // Context is a custom url wrapper with credentials
 type Context struct {
-	URI              string
-	Username         string
-	Password         string
-	CouchbaseVersion string
+	URI      string
+	Username string
+	Password string
+	Timeout  time.Duration
 }
 
 // Exporters regroups all exporters structs
@@ -104,7 +104,7 @@ func Fetch(context Context, route string) ([]byte, error) {
 		return []byte{}, err
 	}
 	req.SetBasicAuth(context.Username, context.Password)
-	client := http.Client{Timeout: 10 * time.Second}
+	client := http.Client{Timeout: context.Timeout}
 	res, err := client.Do(req)
 	if err != nil {
 		log.Error(err.Error())
@@ -159,30 +159,29 @@ func MultiFetch(context Context, routes []string) map[string][]byte {
 }
 
 // GetMetricsFromFile checks if metric file exist and convert it to Metrics structure
-func GetMetricsFromFile(metricType string, cbVersion string) (Metrics, error) {
-	ex, err := os.Executable()
+func GetMetricsFromFile(metricType string) (Metrics, error) {
+	absPath, err := os.Executable()
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Error("An unknown error occurred: ", err)
+		return Metrics{}, err
 	}
-	exPath := filepath.Dir(ex)
-	filename := exPath + "/metrics/" + metricType + "-"
-	if _, err := os.Stat(filename + cbVersion + ".json"); err == nil {
-		filename = filename + cbVersion + ".json"
-	} else {
-		filename = filename + "default.json"
+	filename := filepath.Dir(absPath) + string(os.PathSeparator) + "metrics" + string(os.PathSeparator) + metricType + ".json"
+	if _, err := os.Stat(filename); err != nil {
+		log.Error("Could not find metrics file ", filename)
+		return Metrics{}, err
 	}
 	rawMetrics, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Error("Could not read file " + filename)
+		log.Error("Could not read file ", filename)
 		return Metrics{}, err
 	}
 	var metrics Metrics
 	err = json.Unmarshal(rawMetrics, &metrics)
 	if err != nil {
-		log.Error("Could not unmarshal file " + filename)
+		log.Error("Could not unmarshal file ", filename)
 		return Metrics{}, err
 	}
-	log.Debug(filename + " loaded")
+	log.Debug(filename, " loaded")
 	return metrics, nil
 }
 

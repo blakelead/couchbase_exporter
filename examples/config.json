@@ -1,12 +1,14 @@
 {
     "web": {
         "listenAddress": ":9191",
-        "telemetryPath": "/metrics"
+        "telemetryPath": "/metrics",
+        "timeout": "10s"
     },
     "db": {
         "user": "admin",
         "password": "password",
-        "uri": "http://localhost:8091"
+        "uri": "http://localhost:8091",
+        "timeout": "10s"
     },
     "log": {
         "level": "info",

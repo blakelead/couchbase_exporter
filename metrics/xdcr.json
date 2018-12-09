@@ -19,6 +19,7 @@
         { "name": "size_rep_queue",         "id": "size_rep_queue",         "description": "Size of replication queue in bytes",                                                                                  "labels": ["node", "remote_cluster_id", "source_bucket", "destination_bucket"] },
         { "name": "time_committing",        "id": "time_committing",        "description": "Seconds elapsed during replication",                                                                                  "labels": ["node", "remote_cluster_id", "source_bucket", "destination_bucket"] },
         { "name": "wtavg_docs_latency",     "id": "wtavg_docs_latency",     "description": "Weighted average latency for sending replicated changes to destination cluster",                                      "labels": ["node", "remote_cluster_id", "source_bucket", "destination_bucket"] },
-        { "name": "wtavg_meta_latency",     "id": "wtavg_meta_latency",     "description": "Weighted average time for requesting document metadata",                                                              "labels": ["node", "remote_cluster_id", "source_bucket", "destination_bucket"] }
+        { "name": "wtavg_meta_latency",     "id": "wtavg_meta_latency",     "description": "Weighted average time for requesting document metadata",                                                              "labels": ["node", "remote_cluster_id", "source_bucket", "destination_bucket"] },
+        { "name": "percent_completeness",   "id": "percent_completeness",   "description": "Percentage of checked items out of all checked and to-be-replicated items",                                           "labels": ["node", "remote_cluster_id", "source_bucket", "destination_bucket"] }
     ]
 }

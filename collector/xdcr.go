@@ -29,7 +29,7 @@ type XDCRExporter struct {
 
 // NewXDCRExporter instantiates the Exporter with the URI and metrics.
 func NewXDCRExporter(context Context) (*XDCRExporter, error) {
-	xdcrMetrics, err := GetMetricsFromFile("xdcr", context.CouchbaseVersion)
+	xdcrMetrics, err := GetMetricsFromFile("xdcr")
 	if err != nil {
 		return &XDCRExporter{}, err
 	}
