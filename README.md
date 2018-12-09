@@ -4,11 +4,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/blakelead/couchbase_exporter/badge.svg?branch=master)](https://coveralls.io/github/blakelead/couchbase_exporter?branch=master)
 [![Software License](https://img.shields.io/badge/license-MIT-green.svg)](/LICENSE.txt)
 
-Expose metrics from *Couchbase Community 4.5.1 and 5.1.1* cluster for consumption by Prometheus.
-
-## Disclaimer
-
-Couchbase exporter is in its early stage. I'll add new features constantly at the cost of breaking things often. Your are welcome to contribute by creating issues or making pull requests.
+Expose metrics from Couchbase cluster for consumption by Prometheus.
 
 ## Getting Started
 

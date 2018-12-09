@@ -27,7 +27,7 @@ var (
 	version = "0.5.1-8-g795d467"
 
 	// supported Couchbase versions
-	validVersions = []string{"4.5.1", "5.1.1"}
+	validVersions = []string{"4.5.1", "4.6.5", "5.1.1"}
 
 	configFile       string
 	webListenAddr    string
