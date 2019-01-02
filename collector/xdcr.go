@@ -83,8 +83,21 @@ func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
 				routes = append(routes, route)
 			}
 			errorsCount[uuid] = len(task.Errors)
-		}
-	}
+			body, err = Fetch(e.context, "/pools/default/remoteClusters")
+			if err != nil {
+				log.Error("Could not retrieve remote clusters data")
+			}
+			var tmpRemoteClusters []struct {
+				Name string `json:"name"`
+				UUID string `json:"uuid"`
+			}
+			err = json.Unmarshal(body, &tmpRemoteClusters)
+			if err != nil {
+				log.Error("Could not unmarshal remote clusters data")
+			}
+			for _, rc := range tmpRemoteClusters {
+				remoteClusters[rc.UUID] = rc.Name
+			}
 
 	// fetch all bodies from urls created above
 	bodies := MultiFetch(e.context, routes)
@@ -127,5 +140,7 @@ func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
 			e.errorCount.WithLabelValues(uuid, remoteClusters[uuid], src, dest).Set(float64(errorsCount[uuid]))
 			e.errorCount.Collect(ch)
 		}
+
+		ch <- p.MustNewConstMetric(e.metrics[metricID], p.GaugeValue, value, uuid, remoteClusters[uuid], src, dest)
 	}
 }
