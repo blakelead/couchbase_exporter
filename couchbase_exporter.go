@@ -167,6 +167,9 @@ func initParams() {
 	if val, ok := os.LookupEnv("CB_EXPORTER_SCRAPE_BUCKET"); ok {
 		scrapeBucket, _ = strconv.ParseBool(val)
 	}
+	if val, ok := os.LookupEnv("CB_EXPORTER_SCRAPE_XDCR"); ok {
+		scrapeXDCR, _ = strconv.ParseBool(val)
+	}
 
 	// get command-line values
 	flag.StringVar(&webListenAddr, "web.listen-address", webListenAddr, "The address to listen on for HTTP requests.")
