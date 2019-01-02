@@ -362,6 +362,7 @@ As for available flags and equivalent environment variables, here is a list:
 | cb_xdcr_wtavg_docs_latency     | Weighted average latency for sending replicated changes to destination cluster                                      |
 | cb_xdcr_wtavg_meta_latency     | Weighted average time for requesting document metadata                                                              |
 | cb_xdcr_percent_completeness   | Percentage of checked items out of all checked and to-be-replicated items                                           |
+| cb_xdcr_error_count            | Number of XDCR errors                                                                                               |
 
 ## Docker
 
