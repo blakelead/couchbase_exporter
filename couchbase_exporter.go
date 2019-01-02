@@ -9,93 +9,79 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
+	"github.com/blakelead/couchbase_exporter/collector"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	cl "github.com/blakelead/confloader"
-	"github.com/blakelead/couchbase_exporter/collector"
-
 	d "github.com/coreos/go-systemd/daemon"
 	log "github.com/sirupsen/logrus"
 )
 
 var (
 	// git describe
-	version = "0.6.0"
+	version = "0.5.1-19-g20aaf96"
 
-	// supported Couchbase versions
-	validVersions = []string{"4.5.1", "4.6.5", "5.1.1"}
-
-	configFile       string
-	webListenAddr    string
-	webMetricsPath   string
-	webServerTimeout time.Duration
-	dbUser           string
-	dbPwd            string
-	dbURI            string
-	dbTimeout        time.Duration
-	logLevel         string
-	logFormat        string
-	scrapeCluster    bool
-	scrapeNode       bool
-	scrapeBucket     bool
-	scrapeXDCR       bool
+	serverListenAddress string
+	serverMetricsPath   string
+	serverTimeout       time.Duration
+	dbUsername          string
+	dbPassword          string
+	dbURI               string
+	dbTimeout           time.Duration
+	logLevel            string
+	logFormat           string
+	scrapeCluster       bool
+	scrapeNode          bool
+	scrapeBucket        bool
+	scrapeXDCR          bool
+	configFile          string
 )
 
 func main() {
 
-	initParams()
+	initEnv()
 	initLogger()
+	displayInfo()
 
-	log.Info("Couchbase Exporter Version: ", version)
-	log.Info("Supported Couchbase versions: ", strings.Join(validVersions, ", "))
-	log.Info("config.file=", configFile)
-	log.Info("web.listen-address=", webListenAddr)
-	log.Info("web.telemetry-path=", webMetricsPath)
-	log.Info("web.timeout=", webServerTimeout)
-	log.Info("db.uri=", dbURI)
-	log.Info("db.timeout=", dbTimeout)
-	log.Info("log.level=", logLevel)
-	log.Info("log.format=", logFormat)
-	log.Info("scrape.cluster=", scrapeCluster)
-	log.Info("scrape.node=", scrapeNode)
-	log.Info("scrape.bucket=", scrapeBucket)
-	log.Info("scrape.xdcr=", scrapeXDCR)
+	context := collector.Context{
+		URI:           dbURI,
+		Username:      dbUsername,
+		Password:      dbPassword,
+		Timeout:       dbTimeout,
+		ScrapeCluster: scrapeCluster,
+		ScrapeNode:    scrapeNode,
+		ScrapeBucket:  scrapeBucket,
+		ScrapeXDCR:    scrapeXDCR,
+	}
 
-	context := collector.Context{URI: dbURI, Username: dbUser, Password: dbPwd, Timeout: dbTimeout}
+	collector.InitExporters(context)
 
-	collector.InitExporters(context, scrapeCluster, scrapeNode, scrapeBucket, scrapeXDCR)
+	http.Handle(serverMetricsPath, promhttp.Handler())
 
-	http.Handle(webMetricsPath, promhttp.Handler())
-	if webMetricsPath != "/" {
+	if serverMetricsPath != "/" {
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte(`
-			<html>
-			<head><title>Couchbase Exporter</title></head>
-			<body>
-			<h1>Couchbase Exporter</h1>
-			<p><i>by blakelead</i></p><br>
-			<p>See <a href="` + webMetricsPath + `">Metrics</a></p>
-			</body>
-			</html>`))
+			w.Write([]byte(`<body><p>See <a href="` + serverMetricsPath + `">Metrics</a></p></body>`))
 		})
 	}
 
 	systemdSettings()
 
-	s := &http.Server{Addr: webListenAddr, ReadTimeout: webServerTimeout}
-	log.Info("Started listening at ", webListenAddr)
+	s := &http.Server{
+		Addr:        serverListenAddress,
+		ReadTimeout: serverTimeout,
+	}
+
+	log.Info("Started listening at ", serverListenAddress)
 	log.Fatal(s.ListenAndServe())
 }
 
-func initParams() {
+func initEnv() {
 	// default parameters
-	configFile = "config.json"
-	webListenAddr = "127.0.0.1:9191"
-	webMetricsPath = "/metrics"
-	webServerTimeout = 10 * time.Second
+	serverListenAddress = "127.0.0.1:9191"
+	serverMetricsPath = "/metrics"
+	serverTimeout = 10 * time.Second
 	dbURI = "http://localhost:8091"
 	dbTimeout = 10 * time.Second
 	logLevel = "info"
@@ -103,9 +89,10 @@ func initParams() {
 	scrapeCluster = true
 	scrapeNode = true
 	scrapeBucket = true
-	scrapeXDCR = false
+	scrapeXDCR = true
 
 	// get configuration file values
+	configFile = "config.json"
 	config, err := cl.Load(configFile)
 	if err != nil {
 		configFile = "config.yml"
@@ -115,11 +102,11 @@ func initParams() {
 		}
 	}
 	if err == nil {
-		webListenAddr = config.GetString("web.listenAddress")
-		webMetricsPath = config.GetString("web.telemetryPath")
-		webServerTimeout = config.GetDuration("web.timeout")
-		dbUser = config.GetString("db.user")
-		dbPwd = config.GetString("db.password")
+		serverListenAddress = config.GetString("web.listenAddress")
+		serverMetricsPath = config.GetString("web.telemetryPath")
+		serverTimeout = config.GetDuration("web.timeout")
+		dbUsername = config.GetString("db.user")
+		dbPassword = config.GetString("db.password")
 		dbURI = config.GetString("db.uri")
 		dbTimeout = config.GetDuration("db.timeout")
 		logLevel = config.GetString("log.level")
@@ -132,19 +119,19 @@ func initParams() {
 
 	// get environment variables values
 	if val, ok := os.LookupEnv("CB_EXPORTER_LISTEN_ADDR"); ok {
-		webListenAddr = val
+		serverListenAddress = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_TELEMETRY_PATH"); ok {
-		webMetricsPath = val
+		serverMetricsPath = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_SERVER_TIMEOUT"); ok {
-		webServerTimeout, _ = time.ParseDuration(val)
+		serverTimeout, _ = time.ParseDuration(val)
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_DB_USER"); ok {
-		dbUser = val
+		dbUsername = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_DB_PASSWORD"); ok {
-		dbPwd = val
+		dbPassword = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_DB_URI"); ok {
 		dbURI = val
@@ -167,19 +154,22 @@ func initParams() {
 	if val, ok := os.LookupEnv("CB_EXPORTER_SCRAPE_BUCKET"); ok {
 		scrapeBucket, _ = strconv.ParseBool(val)
 	}
+	if val, ok := os.LookupEnv("CB_EXPORTER_SCRAPE_XDCR"); ok {
+		scrapeXDCR, _ = strconv.ParseBool(val)
+	}
 
 	// get command-line values
-	flag.StringVar(&webListenAddr, "web.listen-address", webListenAddr, "The address to listen on for HTTP requests.")
-	flag.StringVar(&webMetricsPath, "web.telemetry-path", webMetricsPath, "Path under which to expose metrics.")
-	flag.DurationVar(&webServerTimeout, "web.timeout", webServerTimeout, "Server read timeout in seconds.")
-	flag.StringVar(&dbURI, "db.uri", dbURI, "The address of Couchbase cluster.")
+	flag.StringVar(&serverListenAddress, "web.listen-address", serverListenAddress, "Address to listen on for HTTP requests.")
+	flag.StringVar(&serverMetricsPath, "web.telemetry-path", serverMetricsPath, "Path under which to expose metrics.")
+	flag.DurationVar(&serverTimeout, "web.timeout", serverTimeout, "Server read timeout in seconds.")
+	flag.StringVar(&dbURI, "db.uri", dbURI, "Couchbase node URI with port.")
 	flag.DurationVar(&dbTimeout, "db.timeout", dbTimeout, "Couchbase client timeout in seconds.")
 	flag.StringVar(&logLevel, "log.level", logLevel, "Log level: info, debug, warn, error, fatal.")
 	flag.StringVar(&logFormat, "log.format", logFormat, "Log format: text or json.")
-	flag.BoolVar(&scrapeCluster, "scrape.cluster", scrapeCluster, "If false, cluster metrics wont be scraped.")
-	flag.BoolVar(&scrapeNode, "scrape.node", scrapeNode, "If false, node metrics wont be scraped.")
-	flag.BoolVar(&scrapeBucket, "scrape.bucket", scrapeBucket, "If false, bucket metrics wont be scraped.")
-	flag.BoolVar(&scrapeXDCR, "scrape.xdcr", scrapeXDCR, "If false, XDCR metrics wont be scraped.")
+	flag.BoolVar(&scrapeCluster, "scrape.cluster", scrapeCluster, "If false, cluster metrics won't be scraped.")
+	flag.BoolVar(&scrapeNode, "scrape.node", scrapeNode, "If false, node metrics won't be scraped.")
+	flag.BoolVar(&scrapeBucket, "scrape.bucket", scrapeBucket, "If false, bucket metrics won't be scraped.")
+	flag.BoolVar(&scrapeXDCR, "scrape.xdcr", scrapeXDCR, "If false, XDCR metrics won't be scraped.")
 	flag.Parse()
 }
 
@@ -208,6 +198,22 @@ func initLogger() {
 		})
 	}
 	log.SetOutput(os.Stdout)
+}
+
+func displayInfo() {
+	log.Info("Couchbase Exporter Version: ", version)
+	log.Info("config.file=", configFile)
+	log.Info("web.listen-address=", serverListenAddress)
+	log.Info("web.telemetry-path=", serverMetricsPath)
+	log.Info("web.timeout=", serverTimeout)
+	log.Info("db.uri=", dbURI)
+	log.Info("db.timeout=", dbTimeout)
+	log.Info("log.level=", logLevel)
+	log.Info("log.format=", logFormat)
+	log.Info("scrape.cluster=", scrapeCluster)
+	log.Info("scrape.node=", scrapeNode)
+	log.Info("scrape.bucket=", scrapeBucket)
+	log.Info("scrape.xdcr=", scrapeXDCR)
 }
 
 func systemdSettings() {
