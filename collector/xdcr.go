@@ -24,7 +24,7 @@ type Task struct {
 type XDCRExporter struct {
 	context Context
 	route   string
-	metrics map[string]*p.Desc
+	errorCount *p.GaugeVec
 }
 
 // NewXDCRExporter instantiates the Exporter with the URI and metrics.
@@ -41,12 +41,17 @@ func NewXDCRExporter(context Context) (*XDCRExporter, error) {
 	return &XDCRExporter{
 		context: context,
 		route:   xdcrMetrics.Route,
+		errorCount: p.NewGaugeVec(p.GaugeOpts{
+			Name: p.BuildFQName("cb", xdcrMetrics.Name, "error_count"),
+			Help: "Number of XDCR errors",
+		}, []string{"remote_cluster_id", "remote_cluster_name", "source_bucket", "destination_bucket"}),
 		metrics: metrics,
 	}, nil
 }
 
 // Describe describes exported metrics.
 func (e *XDCRExporter) Describe(ch chan<- *p.Desc) {
+	e.errorCount.Describe(ch)
 	for _, metric := range e.metrics {
 		ch <- metric
 	}
@@ -69,6 +74,7 @@ func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
 
 	// create urls from task list for each xdcr metric
 	var routes []string
+	errorsCount := make(map[string]int, 0)
 	for _, task := range tasks {
 		if task.Type == "xdcr" {
 			longID := strings.Split(task.ID, "/") // id is in the form uuid/src/dest
@@ -76,12 +82,14 @@ func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
 				route := fmt.Sprintf("%s/%s/stats/replications%%2F%s%%2F%s%%2F%s%%2F%s", e.route, longID[1], longID[0], longID[1], longID[2], id)
 				routes = append(routes, route)
 			}
+			errorsCount[uuid] = len(task.Errors)
 		}
 	}
 
 	// fetch all bodies from urls created above
 	bodies := MultiFetch(e.context, routes)
 
+	var currentUUID string
 	for route, body := range bodies {
 		longID := strings.Split(route, "%2F")
 		uuid, src, dest, id := longID[1], longID[2], longID[3], longID[4]
@@ -114,7 +122,10 @@ func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
 				value = float64(v)
 			}
 
-			ch <- p.MustNewConstMetric(metric, p.GaugeValue, value, node, uuid, src, dest)
+		if currentUUID != uuid {
+			currentUUID = uuid
+			e.errorCount.WithLabelValues(uuid, remoteClusters[uuid], src, dest).Set(float64(errorsCount[uuid]))
+			e.errorCount.Collect(ch)
 		}
 	}
 }
