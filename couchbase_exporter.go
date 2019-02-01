@@ -15,7 +15,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	cl "github.com/blakelead/confloader"
-	d "github.com/coreos/go-systemd/daemon"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -65,8 +64,6 @@ func main() {
 			w.Write([]byte(`<body><p>See <a href="` + serverMetricsPath + `">Metrics</a></p></body>`))
 		})
 	}
-
-	systemdSettings()
 
 	s := &http.Server{
 		Addr:        serverListenAddress,
@@ -214,21 +211,4 @@ func displayInfo() {
 	log.Info("scrape.node=", scrapeNode)
 	log.Info("scrape.bucket=", scrapeBucket)
 	log.Info("scrape.xdcr=", scrapeXDCR)
-}
-
-func systemdSettings() {
-	d.SdNotify(false, "READY=1")
-	go func() {
-		interval, err := d.SdWatchdogEnabled(false)
-		if err != nil || interval == 0 {
-			return
-		}
-		for {
-			_, err := http.Head(dbURI)
-			if err == nil {
-				d.SdNotify(false, "WATCHDOG=1")
-			}
-			time.Sleep(interval / 3)
-		}
-	}()
 }
