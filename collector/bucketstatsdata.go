@@ -239,19 +239,20 @@ type BucketStatsData struct {
 	} `json:"op"`
 }
 
-// BucketStatsExporter describes the exporter object.
+// BucketStatsExporter encapsulates bucket stats and context.
 type BucketStatsExporter struct {
 	context Context
 	route   string
 	metrics map[string]*p.Desc
 }
 
-// NewBucketStatsExporter instantiates the Exporter with the URI and metrics.
+// NewBucketStatsExporter creates the BucketStatsExporter and fill it with metrics metadata from the metrics file.
 func NewBucketStatsExporter(context Context) (*BucketStatsExporter, error) {
 	bucketStatsMetrics, err := GetMetricsFromFile("bucketstats")
 	if err != nil {
 		return &BucketStatsExporter{}, err
 	}
+	// metrics is a map where the key is the metric ID and the value is a Prometheus Descriptor for that metric.
 	metrics := make(map[string]*p.Desc, len(bucketStatsMetrics.List))
 	for _, metric := range bucketStatsMetrics.List {
 		fqName := p.BuildFQName("cb", bucketStatsMetrics.Name, metric.Name)
@@ -285,6 +286,7 @@ func (e *BucketStatsExporter) Collect(ch chan<- p.Metric) {
 		return
 	}
 
+	// Each bucket has its own API route.
 	var routes []string
 	for _, bucket := range buckets {
 		routes = append(routes, e.route+"/"+bucket.Name+"/stats")
