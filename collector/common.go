@@ -91,12 +91,12 @@ func InitExporters(c Context) {
 		}
 	}
 	if c.ScrapeXDCR {
-		XDCRExporter, err := NewXDCRExporter(c)
+		xdcrExporter, err := NewXDCRExporter(c)
 		if err != nil {
 			log.Error("Error during creation of XDCR exporter. XDCR metrics won't be scraped")
 		} else {
-			p.MustRegister(XDCRExporter)
-			log.Debug("XDCR exporter registered")
+			p.MustRegister(xdcrExporter)
+			log.Info("XDCR exporter registered")
 		}
 	}
 }

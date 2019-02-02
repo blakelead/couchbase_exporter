@@ -13,7 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// XDCRExporter describes the exporter object
+// XDCRExporter encapsulates XDCR metrics and context.
 type XDCRExporter struct {
 	context    Context
 	route      string
@@ -21,12 +21,13 @@ type XDCRExporter struct {
 	metrics    map[string]*p.Desc
 }
 
-// NewXDCRExporter instantiates the Exporter with the URI and metrics
+// NewXDCRExporter creates the XDCRExporter and fill it with metrics metadata from the metrics file.
 func NewXDCRExporter(c Context) (*XDCRExporter, error) {
 	xdcrMetrics, err := GetMetricsFromFile("xdcr")
 	if err != nil {
 		return &XDCRExporter{}, err
 	}
+	// metrics is a map where the key is the metric ID and the value is a Prometheus Descriptor for that metric.
 	metrics := make(map[string]*p.Desc, len(xdcrMetrics.List))
 	for _, metric := range xdcrMetrics.List {
 		fqName := p.BuildFQName("cb", xdcrMetrics.Name, metric.Name)
@@ -53,7 +54,7 @@ func (e *XDCRExporter) Describe(ch chan<- *p.Desc) {
 
 // Collect fetches data for each exported metric
 func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
-	// get task list to retrieve active XDCR links
+	// Get task list to retrieve active XDCR links.
 	body, err := Fetch(e.context, "/pools/default/tasks")
 	if err != nil {
 		log.Error("Could not retrieve tasks data: XDCR metrics won't be scraped")
@@ -76,7 +77,7 @@ func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
 	errorsCount := make(map[string]int, 0)
 	for _, task := range tasks {
 		if task.Type == "xdcr" {
-			// create url for each xdcr metric
+			// Create URL for each XDCR metric.
 			taskID := strings.Split(task.ID, "/")
 			if len(taskID) < 3 {
 				log.Error("Task ID doesn't have the expected format (uuid/src/dest): ", taskID)
@@ -88,10 +89,10 @@ func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
 				routes = append(routes, route)
 			}
 
-			// get error count based on number of error messages in tasks endpoint
+			// Get error count based on number of error messages in tasks endpoint.
 			errorsCount[uuid] = len(task.Errors)
 
-			// associate remote clusters names with uuid for labelling
+			// Associate remote clusters names with uuid for labelling.
 			body, err = Fetch(e.context, "/pools/default/remoteClusters")
 			if err != nil {
 				log.Error("Could not retrieve remote clusters data")
@@ -110,7 +111,7 @@ func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
 		}
 	}
 
-	// get hostname of the node
+	// Get hostname of the node.
 	body, err = Fetch(e.context, "/nodes/self")
 	if err != nil {
 		log.Error("Could not retrieve node data: XDCR metrics won't be scraped")
@@ -125,16 +126,16 @@ func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
 		return
 	}
 
-	// fetch all bodies from urls created above
+	// Fetch all bodies from urls created above.
 	bodies := MultiFetch(e.context, routes)
 
 	var currentUUID string
 	for route, body := range bodies {
-		// split back url to get uuid src & dest buckets and metric name
+		// Split back url to get uuid src & dest buckets and metric name.
 		longID := strings.Split(route, "%2F")
 		uuid, src, dest, metricID := longID[1], longID[2], longID[3], longID[4]
 
-		// get node stats object
+		// Get node stats object.
 		var xdcr struct {
 			NodeStats map[string]interface{} `json:"nodeStats"`
 		}

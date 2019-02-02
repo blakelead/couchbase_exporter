@@ -15,13 +15,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	cl "github.com/blakelead/confloader"
-	d "github.com/coreos/go-systemd/daemon"
 	log "github.com/sirupsen/logrus"
 )
 
 var (
 	// git describe
-	version = "0.7.0"
+	version = "0.5.1-26-g1aec22a"
 
 	serverListenAddress string
 	serverMetricsPath   string
@@ -41,10 +40,12 @@ var (
 
 func main() {
 
+	// Initialize global variables, initialize logger and display user defined values.
 	initEnv()
 	initLogger()
 	displayInfo()
 
+	// Context encapsulates connection and scraping details for the exporters.
 	context := collector.Context{
 		URI:           dbURI,
 		Username:      dbUsername,
@@ -56,29 +57,33 @@ func main() {
 		ScrapeXDCR:    scrapeXDCR,
 	}
 
+	// Exporters are initialized, meaning that metrics files are loaded and
+	// Exporter objects are created and filled with metrics metadata.
 	collector.InitExporters(context)
 
+	// Handle metrics path with the prometheus handler.
 	http.Handle(serverMetricsPath, promhttp.Handler())
 
+	// Handle paths other than given metrics path.
 	if serverMetricsPath != "/" {
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(`<body><p>See <a href="` + serverMetricsPath + `">Metrics</a></p></body>`))
 		})
 	}
 
-	systemdSettings()
-
+	// Create the server with provided listen address and server timeout.
 	s := &http.Server{
 		Addr:        serverListenAddress,
 		ReadTimeout: serverTimeout,
 	}
 
+	// Start the server.
 	log.Info("Started listening at ", serverListenAddress)
 	log.Fatal(s.ListenAndServe())
 }
 
 func initEnv() {
-	// default parameters
+	// Default parameters.
 	serverListenAddress = "127.0.0.1:9191"
 	serverMetricsPath = "/metrics"
 	serverTimeout = 10 * time.Second
@@ -91,7 +96,7 @@ func initEnv() {
 	scrapeBucket = true
 	scrapeXDCR = true
 
-	// get configuration file values
+	// Get configuration file values if a configuration file is found (either json or yml).
 	configFile = "config.json"
 	config, err := cl.Load(configFile)
 	if err != nil {
@@ -117,7 +122,7 @@ func initEnv() {
 		scrapeXDCR = config.GetBool("scrape.xdcr")
 	}
 
-	// get environment variables values
+	// Get environment variables values.
 	if val, ok := os.LookupEnv("CB_EXPORTER_LISTEN_ADDR"); ok {
 		serverListenAddress = val
 	}
@@ -158,7 +163,7 @@ func initEnv() {
 		scrapeXDCR, _ = strconv.ParseBool(val)
 	}
 
-	// get command-line values
+	// Get command-line values.
 	flag.StringVar(&serverListenAddress, "web.listen-address", serverListenAddress, "Address to listen on for HTTP requests.")
 	flag.StringVar(&serverMetricsPath, "web.telemetry-path", serverMetricsPath, "Path under which to expose metrics.")
 	flag.DurationVar(&serverTimeout, "web.timeout", serverTimeout, "Server read timeout in seconds.")
@@ -214,21 +219,4 @@ func displayInfo() {
 	log.Info("scrape.node=", scrapeNode)
 	log.Info("scrape.bucket=", scrapeBucket)
 	log.Info("scrape.xdcr=", scrapeXDCR)
-}
-
-func systemdSettings() {
-	d.SdNotify(false, "READY=1")
-	go func() {
-		interval, err := d.SdWatchdogEnabled(false)
-		if err != nil || interval == 0 {
-			return
-		}
-		for {
-			_, err := http.Head(dbURI)
-			if err == nil {
-				d.SdNotify(false, "WATCHDOG=1")
-			}
-			time.Sleep(interval / 3)
-		}
-	}()
 }
