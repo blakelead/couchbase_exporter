@@ -94,7 +94,7 @@
         "tableColumn": "",
         "targets": [
           {
-            "expr": "cb_node_service_up",
+            "expr": "cb_node_service_up{instance=\"$node\"}",
             "format": "time_series",
             "instant": true,
             "intervalFactor": 1,
@@ -188,7 +188,7 @@
         "tableColumn": "",
         "targets": [
           {
-            "expr": "cb_cluster_rebalance_status",
+            "expr": "cb_cluster_rebalance_status{instance=\"$node\"}",
             "format": "time_series",
             "instant": true,
             "intervalFactor": 1,
@@ -229,7 +229,7 @@
         "id": 4,
         "panels": [],
         "repeat": null,
-        "title": "Memory Quota",
+        "title": "Memory Consumption By Bucket",
         "type": "row"
       },
       {
@@ -326,7 +326,7 @@
         },
         "id": 6,
         "panels": [],
-        "title": "Item Count",
+        "title": "Item Count By Bucket",
         "type": "row"
       },
       {
@@ -422,7 +422,7 @@
         "description": "A low value means that the bucket needs more memory",
         "fill": 1,
         "gridPos": {
-          "h": 9,
+          "h": 5,
           "w": 12,
           "x": 12,
           "y": 11
@@ -464,7 +464,7 @@
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Memory headroom by bucket",
+        "title": "Memory Headroom",
         "tooltip": {
           "shared": true,
           "sort": 2,
@@ -510,7 +510,7 @@
         "description": "Number of items waiting to be written to disk. Consistently high values may be a sign of cluster issues.",
         "fill": 1,
         "gridPos": {
-          "h": 9,
+          "h": 5,
           "w": 12,
           "x": 0,
           "y": 15
@@ -598,7 +598,7 @@
         "description": "Percentage of reads per seconds to disk as opposed to RAM. Values above zero may be a warning of memory exhaustion.",
         "fill": 1,
         "gridPos": {
-          "h": 9,
+          "h": 5,
           "w": 12,
           "x": 12,
           "y": 20
@@ -685,7 +685,7 @@
         "datasource": "Prometheus",
         "fill": 1,
         "gridPos": {
-          "h": 9,
+          "h": 5,
           "w": 12,
           "x": 0,
           "y": 24
@@ -807,12 +807,12 @@
           "datasource": "Prometheus",
           "definition": "label_values(instance)",
           "hide": 2,
-          "includeAll": false,
+          "includeAll": true,
           "label": "Node",
-          "multi": false,
+          "multi": true,
           "name": "node",
           "options": [],
-          "query": "label_values(instance)",
+          "query": "label_values(cb_node_service_up,instance)",
           "refresh": 2,
           "regex": "",
           "skipUrlSync": false,

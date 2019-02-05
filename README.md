@@ -390,6 +390,8 @@ Some alerting rules that can be used in Prometheus configuration for alert manag
 
 Minimal dashboard that shows how to use the exporter metrics.
 
+<p align="center"><img src="examples/grafana.png" width="1000"></p>
+
 ### Systemd
 
 You can adapt and use the service template to run **couchbase_exporter** with systemd.
