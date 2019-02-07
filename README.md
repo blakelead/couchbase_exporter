@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/blakelead/couchbase_exporter.svg?branch=master)](https://travis-ci.org/blakelead/couchbase_exporter)
 [![Coverage Status](https://coveralls.io/repos/github/blakelead/couchbase_exporter/badge.svg?branch=master)](https://coveralls.io/github/blakelead/couchbase_exporter?branch=master)
-[![Software License](https://img.shields.io/badge/license-MIT-green.svg)](/LICENSE.txt)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](/LICENSE.txt)
 
 Expose metrics from Couchbase cluster for consumption by Prometheus.
 
