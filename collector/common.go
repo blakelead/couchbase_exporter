@@ -6,6 +6,7 @@ package collector
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -36,6 +37,7 @@ type Metrics struct {
 // booleans about which metrics types should be scraped
 type Context struct {
 	URI           string
+	URI2          string
 	Username      string
 	Password      string
 	Timeout       time.Duration
@@ -111,13 +113,41 @@ func Fetch(c Context, route string) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	req.SetBasicAuth(c.Username, c.Password)
-	client := http.Client{Timeout: c.Timeout}
-	res, err := client.Do(req)
+	req2, err := http.NewRequest("GET", c.URI2+route, nil)
 	if err != nil {
 		log.Error(err.Error())
 		return []byte{}, err
 	}
+
+	tlc := &tls.Config{
+		InsecureSkipVerify: true,
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: tlc,
+	}
+
+	req.SetBasicAuth(c.Username, c.Password)
+	req2.SetBasicAuth(c.Username, c.Password)
+	client := http.Client{Transport: tr, Timeout: c.Timeout}
+
+	//var res1 *http.Response
+
+	res1, err := client.Do(req)
+
+	if err != nil {
+		log.Error(err.Error())
+		// return []byte{}, err
+		res1, err = client.Do(req2)
+		if err != nil {
+			log.Error(err.Error())
+			return []byte{}, err
+		}
+	}
+
+	var res *http.Response
+	res = res1
+
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {

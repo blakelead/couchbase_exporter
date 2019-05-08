@@ -25,7 +25,8 @@ As for available flags and equivalent environment variables, here is a list:
 | CB_EXPORTER_LISTEN_ADDR    | -web.listen-address | Address to listen on for HTTP requests | :9191                 |
 | CB_EXPORTER_TELEMETRY_PATH | -web.telemetry-path | Path under which to expose metrics     | /metrics              |
 | CB_EXPORTER_SERVER_TIMEOUT | -web.timeout        | Server read timeout in seconds         | 10s                   |
-| CB_EXPORTER_DB_URI         | -db.uri             | Address of Couchbase cluster           | http://127.0.0.1:8091 |
+| CB_EXPORTER_DB_URI         | -db.uri             | Address of Couchbase cluster           | https://127.0.0.1:18091 |
+| CB_EXPORTER_DB_URI2        | -db2.uri            | Secondary connection to Couchbase clust| https://127.0.0.1:18091
 | CB_EXPORTER_DB_TIMEOUT     | -db.timeout         | Couchbase client timeout in seconds    | 10s                   |
 | CB_EXPORTER_DB_USER        | *not allowed*       | Administrator username                 |                       |
 | CB_EXPORTER_DB_PASSWORD    | *not allowed*       | Administrator password                 |                       |
