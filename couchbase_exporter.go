@@ -84,8 +84,8 @@ func initEnv() {
 	serverListenAddress = "127.0.0.1:9191"
 	serverMetricsPath = "/metrics"
 	serverTimeout = 10 * time.Second
-	dbURI = "https://couch3:18091"
-	db2URI = "https://couch2:18091"
+	dbURI = "https://127.0.0.1:18091"
+	db2URI = "https://127.0.0.1:18091"
 	dbTimeout = 10 * time.Second
 	logLevel = "debug"
 	logFormat = "text"
