@@ -45,6 +45,7 @@ type Context struct {
 	ScrapeNode    bool
 	ScrapeBucket  bool
 	ScrapeXDCR    bool
+	TLSSetting    bool
 }
 
 // Exporters structure contains all exporters
@@ -120,7 +121,7 @@ func Fetch(c Context, route string) ([]byte, error) {
 	}
 
 	tlc := &tls.Config{
-		InsecureSkipVerify: true,
+		InsecureSkipVerify: c.TLSSetting,
 	}
 
 	tr := &http.Transport{

@@ -36,6 +36,7 @@ As for available flags and equivalent environment variables, here is a list:
 | CB_EXPORTER_SCRAPE_NODE    | -scrape.node        | If false, wont scrape node metrics     | true                  |
 | CB_EXPORTER_SCRAPE_BUCKET  | -scrape.bucket      | If false, wont scrape bucket metrics   | true                  |
 | CB_EXPORTER_SCRAPE_XDCR    | -scrape.xdcr        | If false, wont scrape xdcr metrics     | false                 |
+| CB_EXPORTER_TLS_SETTING    | -tls.setting        | If true, will ignore Self Signed Certs | false                 |
 |                            | -help               | Command line help                      |                       |
 
 > Important: for security reasons credentials cannot be set with command line arguments.
@@ -404,3 +405,4 @@ sudo systemctl start couchbase-exporter.service
 ## Author Information
 
 Adel Abdelhak
+Additions Don Thomson
