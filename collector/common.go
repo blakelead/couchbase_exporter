@@ -150,6 +150,7 @@ func Fetch(c Context, route string) ([]byte, error) {
 	res = res1
 
 	defer res.Body.Close()
+	defer res1.Body.Close()
 
 	if res.StatusCode != 200 {
 		log.Error(req.Method + " " + req.URL.Path + ": " + res.Status)

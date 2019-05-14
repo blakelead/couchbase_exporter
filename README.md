@@ -30,7 +30,7 @@ As for available flags and equivalent environment variables, here is a list:
 | CB_EXPORTER_DB_TIMEOUT     | -db.timeout         | Couchbase client timeout in seconds    | 10s                   |
 | CB_EXPORTER_DB_USER        | *not allowed*       | Administrator username                 |                       |
 | CB_EXPORTER_DB_PASSWORD    | *not allowed*       | Administrator password                 |                       |
-| CB_EXPORTER_LOG_LEVEL      | -log.level          | Log level: info,debug,warn,error,fatal | info                  |
+| CB_EXPORTER_LOG_LEVEL      | -log.level          | Log level: info,debug,warn,error,fatal | error                 |
 | CB_EXPORTER_LOG_FORMAT     | -log.format         | Log format: text, json                 | text                  |
 | CB_EXPORTER_SCRAPE_CLUSTER | -scrape.cluster     | If false, wont scrape cluster metrics  | true                  |
 | CB_EXPORTER_SCRAPE_NODE    | -scrape.node        | If false, wont scrape node metrics     | true                  |

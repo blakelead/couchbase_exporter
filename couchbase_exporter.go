@@ -89,7 +89,7 @@ func initEnv() {
 	dbURI = "https://127.0.0.1:18091"
 	db2URI = "https://127.0.0.1:18091"
 	dbTimeout = 10 * time.Second
-	logLevel = "debug"
+	logLevel = "error"
 	logFormat = "text"
 	scrapeCluster = true
 	scrapeNode = true
