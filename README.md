@@ -8,6 +8,8 @@ Expose metrics from Couchbase cluster for consumption by Prometheus.
 
 ## Getting Started
 
+You can build the binaries from the project or download the binaries.  To run first gunzip the file and rename to couchbase_exporter.
+
 Run from command line:
 
 ```bash
