@@ -37,7 +37,6 @@ type Metrics struct {
 // booleans about which metrics types should be scraped
 type Context struct {
 	URI           string
-	URI2          string
 	Username      string
 	Password      string
 	Timeout       time.Duration
@@ -114,12 +113,6 @@ func Fetch(c Context, route string) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	req2, err := http.NewRequest("GET", c.URI2+route, nil)
-	if err != nil {
-		log.Error(err.Error())
-		return []byte{}, err
-	}
-
 	tlc := &tls.Config{
 		InsecureSkipVerify: c.TLSSetting,
 	}
@@ -129,28 +122,16 @@ func Fetch(c Context, route string) ([]byte, error) {
 	}
 
 	req.SetBasicAuth(c.Username, c.Password)
-	req2.SetBasicAuth(c.Username, c.Password)
 	client := http.Client{Transport: tr, Timeout: c.Timeout}
 
-	//var res1 *http.Response
-
-	res1, err := client.Do(req)
+	res, err := client.Do(req)
 
 	if err != nil {
 		log.Error(err.Error())
-		// return []byte{}, err
-		res1, err = client.Do(req2)
-		if err != nil {
-			log.Error(err.Error())
-			return []byte{}, err
-		}
+		return []byte{}, err
 	}
 
-	var res *http.Response
-	res = res1
-
 	defer res.Body.Close()
-	defer res1.Body.Close()
 
 	if res.StatusCode != 200 {
 		log.Error(req.Method + " " + req.URL.Path + ": " + res.Status)

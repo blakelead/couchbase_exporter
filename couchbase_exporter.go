@@ -29,7 +29,6 @@ var (
 	dbUsername          string
 	dbPassword          string
 	dbURI               string
-	db2URI              string
 	dbTimeout           time.Duration
 	logLevel            string
 	logFormat           string
@@ -49,7 +48,6 @@ func main() {
 
 	context := collector.Context{
 		URI:           dbURI,
-		URI2:          db2URI,
 		Username:      dbUsername,
 		Password:      dbPassword,
 		Timeout:       dbTimeout,
@@ -87,7 +85,6 @@ func initEnv() {
 	serverMetricsPath = "/metrics"
 	serverTimeout = 10 * time.Second
 	dbURI = "https://127.0.0.1:18091"
-	db2URI = "https://127.0.0.1:18091"
 	dbTimeout = 10 * time.Second
 	logLevel = "error"
 	logFormat = "text"
@@ -114,7 +111,6 @@ func initEnv() {
 		dbUsername = config.GetString("db.user")
 		dbPassword = config.GetString("db.password")
 		dbURI = config.GetString("db.uri")
-		db2URI = config.GetString("db.uri2")
 		dbTimeout = config.GetDuration("db.timeout")
 		logLevel = config.GetString("log.level")
 		logFormat = config.GetString("log.format")
@@ -143,9 +139,6 @@ func initEnv() {
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_DB_URI"); ok {
 		dbURI = val
-	}
-	if val, ok := os.LookupEnv("CB_EXPORTER_DB_URI2"); ok {
-		db2URI = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_DB_TIMEOUT"); ok {
 		dbTimeout, _ = time.ParseDuration(val)
@@ -177,7 +170,6 @@ func initEnv() {
 	flag.StringVar(&serverMetricsPath, "web.telemetry-path", serverMetricsPath, "Path under which to expose metrics.")
 	flag.DurationVar(&serverTimeout, "web.timeout", serverTimeout, "Server read timeout in seconds.")
 	flag.StringVar(&dbURI, "db.uri", dbURI, "Couchbase node URI with port.")
-	flag.StringVar(&dbURI, "db2.uri", db2URI, "Couchbase 2nd node URI with port.")
 	flag.DurationVar(&dbTimeout, "db.timeout", dbTimeout, "Couchbase client timeout in seconds.")
 	flag.StringVar(&logLevel, "log.level", logLevel, "Log level: info, debug, warn, error, fatal.")
 	flag.StringVar(&logFormat, "log.format", logFormat, "Log format: text or json.")
@@ -223,7 +215,6 @@ func displayInfo() {
 	log.Info("web.telemetry-path=", serverMetricsPath)
 	log.Info("web.timeout=", serverTimeout)
 	log.Info("db.uri=", dbURI)
-	log.Info("db.uri2=", db2URI)
 	log.Info("db.timeout=", dbTimeout)
 	log.Info("log.level=", logLevel)
 	log.Info("log.format=", logFormat)
