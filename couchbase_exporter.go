@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bitdba88/couchbase_exporter/collector"
+	"github.com/blakelead/couchbase_exporter/collector"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	cl "github.com/blakelead/confloader"
