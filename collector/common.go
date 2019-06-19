@@ -1,5 +1,5 @@
-// Copyright 2018 Adel Abdelhak.
-// Use of this source code is governed by the MIT
+// Copyright 2019 Adel Abdelhak.
+// Use of this source code is governed by the Apache
 // license that can be found in the LICENSE.txt file.
 
 package collector
@@ -91,12 +91,12 @@ func InitExporters(c Context) {
 		}
 	}
 	if c.ScrapeXDCR {
-		XDCRExporter, err := NewXDCRExporter(c)
+		xdcrExporter, err := NewXDCRExporter(c)
 		if err != nil {
 			log.Error("Error during creation of XDCR exporter. XDCR metrics won't be scraped")
 		} else {
-			p.MustRegister(XDCRExporter)
-			log.Debug("XDCR exporter registered")
+			p.MustRegister(xdcrExporter)
+			log.Info("XDCR exporter registered")
 		}
 	}
 }

@@ -1,5 +1,5 @@
-// Copyright 2018 Adel Abdelhak.
-// Use of this source code is governed by the MIT
+// Copyright 2019 Adel Abdelhak.
+// Use of this source code is governed by the Apache
 // license that can be found in the LICENSE.txt file.
 
 package collector
@@ -43,7 +43,7 @@ type ClusterData struct {
 	Balanced bool `json:"balanced"` // couchbase 5.1.1
 }
 
-// ClusterExporter describes the exporter object.
+// ClusterExporter encapsulates cluster metrics and context.
 type ClusterExporter struct {
 	context      Context
 	route        string
@@ -51,12 +51,13 @@ type ClusterExporter struct {
 	metrics      map[string]*p.Desc
 }
 
-// NewClusterExporter instantiates the Exporter with the URI and metrics.
+// NewClusterExporter creates the ClusterExporter and fill it with metrics metadata from the metrics file.
 func NewClusterExporter(context Context) (*ClusterExporter, error) {
 	clusterMetrics, err := GetMetricsFromFile("cluster")
 	if err != nil {
 		return &ClusterExporter{}, err
 	}
+	// metrics is a map where the key is the metric ID and the value is a Prometheus Descriptor for that metric.
 	metrics := make(map[string]*p.Desc, len(clusterMetrics.List))
 	for _, metric := range clusterMetrics.List {
 		fqName := p.BuildFQName("cb", clusterMetrics.Name, metric.Name)
@@ -104,6 +105,7 @@ func (e *ClusterExporter) Collect(ch chan<- p.Metric) {
 			switch value.(type) {
 			case bool:
 				var v float64
+				// Rebalance status
 				if value.(bool) {
 					v = 1
 				}

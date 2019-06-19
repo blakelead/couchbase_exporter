@@ -1,5 +1,5 @@
-// Copyright 2018 Adel Abdelhak.
-// Use of this source code is governed by the MIT
+// Copyright 2019 Adel Abdelhak.
+// Use of this source code is governed by the Apache
 // license that can be found in the LICENSE.txt file.
 
 package collector
@@ -60,7 +60,7 @@ type NodeData struct {
 	MemoryQuota       float64 `json:"memoryQuota"`
 }
 
-// NodeExporter describes the exporter object.
+// NodeExporter encapsulates node metrics and context.
 type NodeExporter struct {
 	context Context
 	route   string
@@ -68,12 +68,13 @@ type NodeExporter struct {
 	metrics map[string]*p.Desc
 }
 
-// NewNodeExporter instantiates the Exporter with the URI and metrics.
+// NewNodeExporter creates the NodeExporter and fill it with metrics metadata from the metrics file.
 func NewNodeExporter(context Context) (*NodeExporter, error) {
 	nodeMetrics, err := GetMetricsFromFile("node")
 	if err != nil {
 		return &NodeExporter{}, err
 	}
+	// metrics is a map where the key is the metric ID and the value is a Prometheus Descriptor for that metric.
 	metrics := make(map[string]*p.Desc, len(nodeMetrics.List))
 	for _, metric := range nodeMetrics.List {
 		fqName := p.BuildFQName("cb", nodeMetrics.Name, metric.Name)

@@ -1,54 +1,6 @@
 {
     "title": "Couchbase Monitoring",
-    "version": 1,
-    "editable": true,
-    "timezone": "browser",
-    "style": "dark",
-    "refresh": "5s",
-    "schemaVersion": 16,
-    "graphTooltip": 1,
-    "__inputs": [
-      {
-        "name": "DS_PROMETHEUS",
-        "label": "Prometheus",
-        "description": "",
-        "type": "datasource",
-        "pluginId": "prometheus",
-        "pluginName": "Prometheus"
-      }
-    ],
-    "__requires": [
-      {
-        "type": "grafana",
-        "id": "grafana",
-        "name": "Grafana",
-        "version": "5.2.2"
-      },
-      {
-        "type": "panel",
-        "id": "graph",
-        "name": "Graph",
-        "version": "5.0.0"
-      },
-      {
-        "type": "datasource",
-        "id": "prometheus",
-        "name": "Prometheus",
-        "version": "5.0.0"
-      },
-      {
-        "type": "panel",
-        "id": "singlestat",
-        "name": "Singlestat",
-        "version": "5.0.0"
-      },
-      {
-        "type": "panel",
-        "id": "table",
-        "name": "Table",
-        "version": "5.0.0"
-      }
-    ],
+    "description": "Grafana dashboard for Couchbase made by Adel Abdelhak",
     "annotations": {
       "list": [
         {
@@ -61,499 +13,22 @@
           "type": "dashboard"
         }
       ]
-    },   
+    },
+    "editable": true,
+    "graphTooltip": 0,
     "panels": [
       {
-        "cacheTimeout": null,
-        "colorBackground": false,
-        "colorValue": false,
-        "colors": [
-          "#299c46",
-          "rgba(237, 129, 40, 0.89)",
-          "#d44a3a"
-        ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "percent",
-        "gauge": {
-          "maxValue": 100,
-          "minValue": 0,
-          "show": true,
-          "thresholdLabels": false,
-          "thresholdMarkers": true
-        },
+        "collapsed": false,
         "gridPos": {
-          "h": 4,
-          "w": 4,
+          "h": 1,
+          "w": 24,
           "x": 0,
           "y": 0
         },
-        "id": 24,
-        "interval": null,
-        "links": [],
-        "mappingType": 1,
-        "mappingTypes": [
-          {
-            "name": "value to text",
-            "value": 1
-          },
-          {
-            "name": "range to text",
-            "value": 2
-          }
-        ],
-        "maxDataPoints": 100,
-        "nullPointMode": "connected",
-        "nullText": null,
-        "postfix": "",
-        "postfixFontSize": "50%",
-        "prefix": "",
-        "prefixFontSize": "50%",
-        "rangeMaps": [
-          {
-            "from": "null",
-            "text": "N/A",
-            "to": "null"
-          }
-        ],
-        "sparkline": {
-          "fillColor": "rgba(31, 118, 189, 0.18)",
-          "full": false,
-          "lineColor": "rgb(31, 120, 193)",
-          "show": false
-        },
-        "tableColumn": "",
-        "targets": [
-          {
-            "expr": "avg(cb_bucket_ram_quota_percent_used{bucket=\"sites\"})",
-            "format": "time_series",
-            "instant": true,
-            "intervalFactor": 1,
-            "legendFormat": "",
-            "refId": "A"
-          }
-        ],
-        "thresholds": "50,80",
-        "title": "Sites RAM Quota",
-        "type": "singlestat",
-        "valueFontSize": "80%",
-        "valueMaps": [
-          {
-            "op": "=",
-            "text": "N/A",
-            "value": "null"
-          }
-        ],
-        "valueName": "current"
-      },
-      {
-        "cacheTimeout": null,
-        "colorBackground": false,
-        "colorValue": false,
-        "colors": [
-          "#299c46",
-          "rgba(237, 129, 40, 0.89)",
-          "#d44a3a"
-        ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "percent",
-        "gauge": {
-          "maxValue": 100,
-          "minValue": 0,
-          "show": true,
-          "thresholdLabels": false,
-          "thresholdMarkers": true
-        },
-        "gridPos": {
-          "h": 4,
-          "w": 4,
-          "x": 4,
-          "y": 0
-        },
-        "id": 25,
-        "interval": null,
-        "links": [],
-        "mappingType": 1,
-        "mappingTypes": [
-          {
-            "name": "value to text",
-            "value": 1
-          },
-          {
-            "name": "range to text",
-            "value": 2
-          }
-        ],
-        "maxDataPoints": 100,
-        "nullPointMode": "connected",
-        "nullText": null,
-        "postfix": "",
-        "postfixFontSize": "50%",
-        "prefix": "",
-        "prefixFontSize": "50%",
-        "rangeMaps": [
-          {
-            "from": "null",
-            "text": "N/A",
-            "to": "null"
-          }
-        ],
-        "sparkline": {
-          "fillColor": "rgba(31, 118, 189, 0.18)",
-          "full": false,
-          "lineColor": "rgb(31, 120, 193)",
-          "show": false
-        },
-        "tableColumn": "",
-        "targets": [
-          {
-            "expr": "avg(cb_bucket_ram_quota_percent_used{bucket=\"functional-settings\"})",
-            "format": "time_series",
-            "instant": true,
-            "intervalFactor": 1,
-            "legendFormat": "",
-            "refId": "A"
-          }
-        ],
-        "thresholds": "50,80",
-        "title": "Functional Settings RAM Quota",
-        "type": "singlestat",
-        "valueFontSize": "80%",
-        "valueMaps": [
-          {
-            "op": "=",
-            "text": "N/A",
-            "value": "null"
-          }
-        ],
-        "valueName": "current"
-      },
-      {
-        "cacheTimeout": null,
-        "colorBackground": false,
-        "colorValue": false,
-        "colors": [
-          "#299c46",
-          "rgba(237, 129, 40, 0.89)",
-          "#d44a3a"
-        ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "percent",
-        "gauge": {
-          "maxValue": 100,
-          "minValue": 0,
-          "show": true,
-          "thresholdLabels": false,
-          "thresholdMarkers": true
-        },
-        "gridPos": {
-          "h": 4,
-          "w": 4,
-          "x": 8,
-          "y": 0
-        },
-        "id": 26,
-        "interval": null,
-        "links": [],
-        "mappingType": 1,
-        "mappingTypes": [
-          {
-            "name": "value to text",
-            "value": 1
-          },
-          {
-            "name": "range to text",
-            "value": 2
-          }
-        ],
-        "maxDataPoints": 100,
-        "nullPointMode": "connected",
-        "nullText": null,
-        "postfix": "",
-        "postfixFontSize": "50%",
-        "prefix": "",
-        "prefixFontSize": "50%",
-        "rangeMaps": [
-          {
-            "from": "null",
-            "text": "N/A",
-            "to": "null"
-          }
-        ],
-        "sparkline": {
-          "fillColor": "rgba(31, 118, 189, 0.18)",
-          "full": false,
-          "lineColor": "rgb(31, 120, 193)",
-          "show": false
-        },
-        "tableColumn": "",
-        "targets": [
-          {
-            "expr": "avg(cb_bucket_ram_quota_percent_used{bucket=\"products\"})",
-            "format": "time_series",
-            "instant": true,
-            "intervalFactor": 1,
-            "legendFormat": "",
-            "refId": "A"
-          }
-        ],
-        "thresholds": "50,80",
-        "title": "Products RAM Quota",
-        "type": "singlestat",
-        "valueFontSize": "80%",
-        "valueMaps": [
-          {
-            "op": "=",
-            "text": "N/A",
-            "value": "null"
-          }
-        ],
-        "valueName": "current"
-      },
-      {
-        "cacheTimeout": null,
-        "colorBackground": false,
-        "colorValue": false,
-        "colors": [
-          "#299c46",
-          "rgba(237, 129, 40, 0.89)",
-          "#d44a3a"
-        ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "percent",
-        "gauge": {
-          "maxValue": 100,
-          "minValue": 0,
-          "show": true,
-          "thresholdLabels": false,
-          "thresholdMarkers": true
-        },
-        "gridPos": {
-          "h": 4,
-          "w": 4,
-          "x": 12,
-          "y": 0
-        },
-        "id": 27,
-        "interval": null,
-        "links": [],
-        "mappingType": 1,
-        "mappingTypes": [
-          {
-            "name": "value to text",
-            "value": 1
-          },
-          {
-            "name": "range to text",
-            "value": 2
-          }
-        ],
-        "maxDataPoints": 100,
-        "nullPointMode": "connected",
-        "nullText": null,
-        "postfix": "",
-        "postfixFontSize": "50%",
-        "prefix": "",
-        "prefixFontSize": "50%",
-        "rangeMaps": [
-          {
-            "from": "null",
-            "text": "N/A",
-            "to": "null"
-          }
-        ],
-        "sparkline": {
-          "fillColor": "rgba(31, 118, 189, 0.18)",
-          "full": false,
-          "lineColor": "rgb(31, 120, 193)",
-          "show": false
-        },
-        "tableColumn": "",
-        "targets": [
-          {
-            "expr": "avg(cb_bucket_ram_quota_percent_used{bucket=\"selling-prices\"})",
-            "format": "time_series",
-            "instant": true,
-            "intervalFactor": 1,
-            "legendFormat": "",
-            "refId": "A"
-          }
-        ],
-        "thresholds": "50,80",
-        "title": "Selling Prices RAM Quota",
-        "type": "singlestat",
-        "valueFontSize": "80%",
-        "valueMaps": [
-          {
-            "op": "=",
-            "text": "N/A",
-            "value": "null"
-          }
-        ],
-        "valueName": "current"
-      },
-      {
-        "cacheTimeout": null,
-        "colorBackground": false,
-        "colorValue": false,
-        "colors": [
-          "#299c46",
-          "rgba(237, 129, 40, 0.89)",
-          "#d44a3a"
-        ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "percent",
-        "gauge": {
-          "maxValue": 100,
-          "minValue": 0,
-          "show": true,
-          "thresholdLabels": false,
-          "thresholdMarkers": true
-        },
-        "gridPos": {
-          "h": 4,
-          "w": 4,
-          "x": 16,
-          "y": 0
-        },
-        "id": 28,
-        "interval": null,
-        "links": [],
-        "mappingType": 1,
-        "mappingTypes": [
-          {
-            "name": "value to text",
-            "value": 1
-          },
-          {
-            "name": "range to text",
-            "value": 2
-          }
-        ],
-        "maxDataPoints": 100,
-        "nullPointMode": "connected",
-        "nullText": null,
-        "postfix": "",
-        "postfixFontSize": "50%",
-        "prefix": "",
-        "prefixFontSize": "50%",
-        "rangeMaps": [
-          {
-            "from": "null",
-            "text": "N/A",
-            "to": "null"
-          }
-        ],
-        "sparkline": {
-          "fillColor": "rgba(31, 118, 189, 0.18)",
-          "full": false,
-          "lineColor": "rgb(31, 120, 193)",
-          "show": false
-        },
-        "tableColumn": "",
-        "targets": [
-          {
-            "expr": "avg(cb_bucket_ram_quota_percent_used{bucket=\"nomenclatures\"})",
-            "format": "time_series",
-            "instant": true,
-            "intervalFactor": 1,
-            "legendFormat": "",
-            "refId": "A"
-          }
-        ],
-        "thresholds": "50,80",
-        "title": "Nomenclatures RAM Quota",
-        "type": "singlestat",
-        "valueFontSize": "80%",
-        "valueMaps": [
-          {
-            "op": "=",
-            "text": "N/A",
-            "value": "null"
-          }
-        ],
-        "valueName": "current"
-      },
-      {
-        "cacheTimeout": null,
-        "colorBackground": false,
-        "colorValue": false,
-        "colors": [
-          "#299c46",
-          "rgba(237, 129, 40, 0.89)",
-          "#d44a3a"
-        ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "percent",
-        "gauge": {
-          "maxValue": 100,
-          "minValue": 0,
-          "show": true,
-          "thresholdLabels": false,
-          "thresholdMarkers": true
-        },
-        "gridPos": {
-          "h": 4,
-          "w": 4,
-          "x": 20,
-          "y": 0
-        },
-        "id": 29,
-        "interval": null,
-        "links": [],
-        "mappingType": 1,
-        "mappingTypes": [
-          {
-            "name": "value to text",
-            "value": 1
-          },
-          {
-            "name": "range to text",
-            "value": 2
-          }
-        ],
-        "maxDataPoints": 100,
-        "nullPointMode": "connected",
-        "nullText": null,
-        "postfix": "",
-        "postfixFontSize": "50%",
-        "prefix": "",
-        "prefixFontSize": "50%",
-        "rangeMaps": [
-          {
-            "from": "null",
-            "text": "N/A",
-            "to": "null"
-          }
-        ],
-        "sparkline": {
-          "fillColor": "rgba(31, 118, 189, 0.18)",
-          "full": false,
-          "lineColor": "rgb(31, 120, 193)",
-          "show": false
-        },
-        "tableColumn": "",
-        "targets": [
-          {
-            "expr": "avg(cb_bucket_ram_quota_percent_used{bucket=\"companies\"})",
-            "format": "time_series",
-            "instant": true,
-            "intervalFactor": 1,
-            "legendFormat": "",
-            "refId": "A"
-          }
-        ],
-        "thresholds": "50,80",
-        "title": "Companies RAM Quota",
-        "type": "singlestat",
-        "valueFontSize": "80%",
-        "valueMaps": [
-          {
-            "op": "=",
-            "text": "N/A",
-            "value": "null"
-          }
-        ],
-        "valueName": "current"
+        "id": 20,
+        "panels": [],
+        "title": "Nodes Status",
+        "type": "row"
       },
       {
         "cacheTimeout": null,
@@ -561,11 +36,11 @@
         "colorValue": true,
         "colors": [
           "#d44a3a",
-          "#1f78c1",
+          "rgba(237, 129, 40, 0.89)",
           "#299c46"
         ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "locale",
+        "datasource": "Prometheus",
+        "format": "none",
         "gauge": {
           "maxValue": 100,
           "minValue": 0,
@@ -574,174 +49,10 @@
           "thresholdMarkers": true
         },
         "gridPos": {
-          "h": 4,
-          "w": 4,
+          "h": 2,
+          "w": 24,
           "x": 0,
-          "y": 4
-        },
-        "id": 30,
-        "interval": null,
-        "links": [],
-        "mappingType": 1,
-        "mappingTypes": [
-          {
-            "name": "value to text",
-            "value": 1
-          },
-          {
-            "name": "range to text",
-            "value": 2
-          }
-        ],
-        "maxDataPoints": 100,
-        "nullPointMode": "connected",
-        "nullText": null,
-        "postfix": "",
-        "postfixFontSize": "50%",
-        "prefix": "",
-        "prefixFontSize": "50%",
-        "rangeMaps": [
-          {
-            "from": "null",
-            "text": "N/A",
-            "to": "null"
-          }
-        ],
-        "sparkline": {
-          "fillColor": "rgba(31, 118, 189, 0.18)",
-          "full": false,
-          "lineColor": "rgb(31, 120, 193)",
-          "show": false
-        },
-        "tableColumn": "",
-        "targets": [
-          {
-            "expr": "avg(cb_bucket_item_count{bucket=\"sites\"})",
-            "format": "time_series",
-            "instant": true,
-            "intervalFactor": 1,
-            "legendFormat": "",
-            "refId": "A"
-          }
-        ],
-        "thresholds": "0",
-        "title": "Sites Item Count",
-        "type": "singlestat",
-        "valueFontSize": "100%",
-        "valueMaps": [
-          {
-            "op": "=",
-            "text": "N/A",
-            "value": "null"
-          }
-        ],
-        "valueName": "current"
-      },
-      {
-        "cacheTimeout": null,
-        "colorBackground": false,
-        "colorValue": true,
-        "colors": [
-          "#d44a3a",
-          "#1f78c1",
-          "#299c46"
-        ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "locale",
-        "gauge": {
-          "maxValue": 100,
-          "minValue": 0,
-          "show": false,
-          "thresholdLabels": false,
-          "thresholdMarkers": true
-        },
-        "gridPos": {
-          "h": 4,
-          "w": 4,
-          "x": 4,
-          "y": 4
-        },
-        "id": 31,
-        "interval": null,
-        "links": [],
-        "mappingType": 1,
-        "mappingTypes": [
-          {
-            "name": "value to text",
-            "value": 1
-          },
-          {
-            "name": "range to text",
-            "value": 2
-          }
-        ],
-        "maxDataPoints": 100,
-        "nullPointMode": "connected",
-        "nullText": null,
-        "postfix": "",
-        "postfixFontSize": "50%",
-        "prefix": "",
-        "prefixFontSize": "50%",
-        "rangeMaps": [
-          {
-            "from": "null",
-            "text": "N/A",
-            "to": "null"
-          }
-        ],
-        "sparkline": {
-          "fillColor": "rgba(31, 118, 189, 0.18)",
-          "full": false,
-          "lineColor": "rgb(31, 120, 193)",
-          "show": false
-        },
-        "tableColumn": "",
-        "targets": [
-          {
-            "expr": "avg(cb_bucket_item_count{bucket=\"functional-settings\"})",
-            "format": "time_series",
-            "instant": true,
-            "intervalFactor": 1,
-            "legendFormat": "",
-            "refId": "A"
-          }
-        ],
-        "thresholds": "0",
-        "title": "Functional Settings Item Count",
-        "type": "singlestat",
-        "valueFontSize": "100%",
-        "valueMaps": [
-          {
-            "op": "=",
-            "text": "N/A",
-            "value": "null"
-          }
-        ],
-        "valueName": "current"
-      },
-      {
-        "cacheTimeout": null,
-        "colorBackground": false,
-        "colorValue": true,
-        "colors": [
-          "#d44a3a",
-          "#1f78c1",
-          "#299c46"
-        ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "locale",
-        "gauge": {
-          "maxValue": 100,
-          "minValue": 0,
-          "show": false,
-          "thresholdLabels": false,
-          "thresholdMarkers": true
-        },
-        "gridPos": {
-          "h": 4,
-          "w": 4,
-          "x": 8,
-          "y": 4
+          "y": 1
         },
         "id": 32,
         "interval": null,
@@ -758,6 +69,7 @@
           }
         ],
         "maxDataPoints": 100,
+        "minSpan": 1,
         "nullPointMode": "connected",
         "nullText": null,
         "postfix": "",
@@ -771,6 +83,8 @@
             "to": "null"
           }
         ],
+        "repeat": "node",
+        "repeatDirection": "h",
         "sparkline": {
           "fillColor": "rgba(31, 118, 189, 0.18)",
           "full": false,
@@ -780,7 +94,7 @@
         "tableColumn": "",
         "targets": [
           {
-            "expr": "avg(cb_bucket_item_count{bucket=\"products\"})",
+            "expr": "cb_node_service_up{instance=\"$node\"}",
             "format": "time_series",
             "instant": true,
             "intervalFactor": 1,
@@ -788,15 +102,25 @@
             "refId": "A"
           }
         ],
-        "thresholds": "0",
-        "title": "Products Item Count",
+        "thresholds": "0.5,0.5",
+        "title": "$node",
         "type": "singlestat",
-        "valueFontSize": "100%",
+        "valueFontSize": "80%",
         "valueMaps": [
           {
             "op": "=",
-            "text": "N/A",
+            "text": "no data",
             "value": "null"
+          },
+          {
+            "op": "=",
+            "text": "down",
+            "value": "0"
+          },
+          {
+            "op": "=",
+            "text": "up",
+            "value": "1"
           }
         ],
         "valueName": "current"
@@ -806,12 +130,12 @@
         "colorBackground": false,
         "colorValue": true,
         "colors": [
-          "#d44a3a",
-          "#1f78c1",
-          "#299c46"
+          "#299c46",
+          "rgba(237, 129, 40, 0.89)",
+          "#ef843c"
         ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "locale",
+        "datasource": "Prometheus",
+        "format": "none",
         "gauge": {
           "maxValue": 100,
           "minValue": 0,
@@ -820,12 +144,12 @@
           "thresholdMarkers": true
         },
         "gridPos": {
-          "h": 4,
-          "w": 4,
-          "x": 12,
-          "y": 4
+          "h": 2,
+          "w": 24,
+          "x": 0,
+          "y": 3
         },
-        "id": 33,
+        "id": 54,
         "interval": null,
         "links": [],
         "mappingType": 1,
@@ -853,6 +177,8 @@
             "to": "null"
           }
         ],
+        "repeat": "node",
+        "repeatDirection": "h",
         "sparkline": {
           "fillColor": "rgba(31, 118, 189, 0.18)",
           "full": false,
@@ -862,217 +188,75 @@
         "tableColumn": "",
         "targets": [
           {
-            "expr": "avg(cb_bucket_item_count{bucket=\"selling-prices\"})",
+            "expr": "cb_cluster_rebalance_status{instance=\"$node\"}",
             "format": "time_series",
             "instant": true,
             "intervalFactor": 1,
-            "legendFormat": "",
             "refId": "A"
           }
         ],
-        "thresholds": "0",
-        "title": "Selling Prices Item Count",
+        "thresholds": "0.5,0.5",
+        "title": "$node",
         "type": "singlestat",
-        "valueFontSize": "100%",
+        "valueFontSize": "80%",
         "valueMaps": [
           {
             "op": "=",
             "text": "N/A",
             "value": "null"
-          }
-        ],
-        "valueName": "current"
-      },
-      {
-        "cacheTimeout": null,
-        "colorBackground": false,
-        "colorValue": true,
-        "colors": [
-          "#d44a3a",
-          "#1f78c1",
-          "#299c46"
-        ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "locale",
-        "gauge": {
-          "maxValue": 100,
-          "minValue": 0,
-          "show": false,
-          "thresholdLabels": false,
-          "thresholdMarkers": true
-        },
-        "gridPos": {
-          "h": 4,
-          "w": 4,
-          "x": 16,
-          "y": 4
-        },
-        "id": 34,
-        "interval": null,
-        "links": [],
-        "mappingType": 1,
-        "mappingTypes": [
-          {
-            "name": "value to text",
-            "value": 1
           },
           {
-            "name": "range to text",
-            "value": 2
-          }
-        ],
-        "maxDataPoints": 100,
-        "nullPointMode": "connected",
-        "nullText": null,
-        "postfix": "",
-        "postfixFontSize": "50%",
-        "prefix": "",
-        "prefixFontSize": "50%",
-        "rangeMaps": [
-          {
-            "from": "null",
-            "text": "N/A",
-            "to": "null"
-          }
-        ],
-        "sparkline": {
-          "fillColor": "rgba(31, 118, 189, 0.18)",
-          "full": false,
-          "lineColor": "rgb(31, 120, 193)",
-          "show": false
-        },
-        "tableColumn": "",
-        "targets": [
-          {
-            "expr": "avg(cb_bucket_item_count{bucket=\"nomenclatures\"})",
-            "format": "time_series",
-            "instant": true,
-            "intervalFactor": 1,
-            "legendFormat": "",
-            "refId": "A"
-          }
-        ],
-        "thresholds": "0",
-        "title": "Nomenclatures Item Count",
-        "type": "singlestat",
-        "valueFontSize": "100%",
-        "valueMaps": [
-          {
             "op": "=",
-            "text": "N/A",
-            "value": "null"
-          }
-        ],
-        "valueName": "current"
-      },
-      {
-        "cacheTimeout": null,
-        "colorBackground": false,
-        "colorValue": true,
-        "colors": [
-          "#d44a3a",
-          "#1f78c1",
-          "#299c46"
-        ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "locale",
-        "gauge": {
-          "maxValue": 100,
-          "minValue": 0,
-          "show": false,
-          "thresholdLabels": false,
-          "thresholdMarkers": true
-        },
-        "gridPos": {
-          "h": 4,
-          "w": 4,
-          "x": 20,
-          "y": 4
-        },
-        "id": 35,
-        "interval": null,
-        "links": [],
-        "mappingType": 1,
-        "mappingTypes": [
-          {
-            "name": "value to text",
-            "value": 1
+            "text": "balanced",
+            "value": "0"
           },
           {
-            "name": "range to text",
-            "value": 2
-          }
-        ],
-        "maxDataPoints": 100,
-        "nullPointMode": "connected",
-        "nullText": null,
-        "postfix": "",
-        "postfixFontSize": "50%",
-        "prefix": "",
-        "prefixFontSize": "50%",
-        "rangeMaps": [
-          {
-            "from": "null",
-            "text": "N/A",
-            "to": "null"
-          }
-        ],
-        "sparkline": {
-          "fillColor": "rgba(31, 118, 189, 0.18)",
-          "full": false,
-          "lineColor": "rgb(31, 120, 193)",
-          "show": false
-        },
-        "tableColumn": "",
-        "targets": [
-          {
-            "expr": "avg(cb_bucket_item_count{bucket=\"companies\"})",
-            "format": "time_series",
-            "instant": true,
-            "intervalFactor": 1,
-            "legendFormat": "",
-            "refId": "A"
-          }
-        ],
-        "thresholds": "0",
-        "title": "Companies Item Count",
-        "type": "singlestat",
-        "valueFontSize": "100%",
-        "valueMaps": [
-          {
             "op": "=",
-            "text": "N/A",
-            "value": "null"
+            "text": "rebalancing",
+            "value": "1"
           }
         ],
         "valueName": "current"
       },
       {
+        "collapsed": false,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 5
+        },
+        "id": 4,
+        "panels": [],
+        "repeat": null,
+        "title": "Memory Consumption By Bucket",
+        "type": "row"
+      },
+      {
         "cacheTimeout": null,
         "colorBackground": false,
-        "colorValue": true,
+        "colorValue": false,
         "colors": [
-          "#447ebc",
-          "#447ebc",
-          "#447ebc"
+          "#299c46",
+          "rgba(237, 129, 40, 0.89)",
+          "#d44a3a"
         ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "percent",
+        "datasource": "Prometheus",
+        "format": "none",
         "gauge": {
           "maxValue": 100,
           "minValue": 0,
           "show": true,
           "thresholdLabels": false,
-          "thresholdMarkers": false
+          "thresholdMarkers": true
         },
         "gridPos": {
           "h": 4,
           "w": 4,
           "x": 0,
-          "y": 8
+          "y": 6
         },
-        "hideTimeOverride": true,
-        "id": 37,
+        "id": 2,
         "interval": null,
         "links": [],
         "mappingType": 1,
@@ -1087,6 +271,7 @@
           }
         ],
         "maxDataPoints": 100,
+        "minSpan": 1,
         "nullPointMode": "connected",
         "nullText": null,
         "postfix": "",
@@ -1100,26 +285,26 @@
             "to": "null"
           }
         ],
+        "repeat": "bucket",
+        "repeatDirection": "h",
         "sparkline": {
           "fillColor": "rgba(31, 118, 189, 0.18)",
-          "full": true,
+          "full": false,
           "lineColor": "rgb(31, 120, 193)",
           "show": false
         },
-        "tableColumn": "Value",
+        "tableColumn": "",
         "targets": [
           {
-            "expr": "avg(cb_xdcr_percent_completeness{source_bucket=\"sites\",remote_cluster_id=\"9b557b754ba539c981f490a0a36f1f4d\"})",
+            "expr": "avg(cb_bucket_ram_quota_percent_used{bucket=\"$bucket\"})",
             "format": "time_series",
             "instant": true,
-            "interval": "",
             "intervalFactor": 1,
             "refId": "A"
           }
         ],
-        "thresholds": "0,0",
-        "timeFrom": null,
-        "title": "Sites Replication Completeness",
+        "thresholds": "50,80",
+        "title": "$bucket",
         "type": "singlestat",
         "valueFontSize": "80%",
         "valueMaps": [
@@ -1132,115 +317,43 @@
         "valueName": "avg"
       },
       {
-        "cacheTimeout": null,
-        "colorBackground": false,
-        "colorValue": true,
-        "colors": [
-          "#447ebc",
-          "#447ebc",
-          "#447ebc"
-        ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "percent",
-        "gauge": {
-          "maxValue": 100,
-          "minValue": 0,
-          "show": true,
-          "thresholdLabels": false,
-          "thresholdMarkers": false
-        },
+        "collapsed": false,
         "gridPos": {
-          "h": 4,
-          "w": 4,
-          "x": 4,
-          "y": 8
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 10
         },
-        "hideTimeOverride": true,
-        "id": 43,
-        "interval": null,
-        "links": [],
-        "mappingType": 1,
-        "mappingTypes": [
-          {
-            "name": "value to text",
-            "value": 1
-          },
-          {
-            "name": "range to text",
-            "value": 2
-          }
-        ],
-        "maxDataPoints": 100,
-        "nullPointMode": "connected",
-        "nullText": null,
-        "postfix": "",
-        "postfixFontSize": "50%",
-        "prefix": "",
-        "prefixFontSize": "50%",
-        "rangeMaps": [
-          {
-            "from": "null",
-            "text": "N/A",
-            "to": "null"
-          }
-        ],
-        "sparkline": {
-          "fillColor": "rgba(31, 118, 189, 0.18)",
-          "full": true,
-          "lineColor": "rgb(31, 120, 193)",
-          "show": false
-        },
-        "tableColumn": "Value",
-        "targets": [
-          {
-            "expr": "avg(cb_xdcr_percent_completeness{source_bucket=\"functional-settings\",remote_cluster_id=\"9b557b754ba539c981f490a0a36f1f4d\"})",
-            "format": "time_series",
-            "instant": true,
-            "interval": "",
-            "intervalFactor": 1,
-            "refId": "A"
-          }
-        ],
-        "thresholds": "0,0",
-        "timeFrom": null,
-        "title": "Functional Settings Replication Completeness",
-        "type": "singlestat",
-        "valueFontSize": "80%",
-        "valueMaps": [
-          {
-            "op": "=",
-            "text": "N/A",
-            "value": "null"
-          }
-        ],
-        "valueName": "avg"
+        "id": 6,
+        "panels": [],
+        "title": "Item Count By Bucket",
+        "type": "row"
       },
       {
         "cacheTimeout": null,
         "colorBackground": false,
         "colorValue": true,
         "colors": [
-          "#447ebc",
-          "#447ebc",
-          "#447ebc"
+          "#299c46",
+          "#1f78c1",
+          "#d44a3a"
         ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "percent",
+        "datasource": "Prometheus",
+        "format": "locale",
         "gauge": {
           "maxValue": 100,
           "minValue": 0,
-          "show": true,
+          "show": false,
           "thresholdLabels": false,
-          "thresholdMarkers": false
+          "thresholdMarkers": true
         },
         "gridPos": {
           "h": 4,
           "w": 4,
-          "x": 8,
-          "y": 8
+          "x": 0,
+          "y": 11
         },
-        "hideTimeOverride": true,
-        "id": 44,
+        "id": 8,
         "interval": null,
         "links": [],
         "mappingType": 1,
@@ -1255,6 +368,7 @@
           }
         ],
         "maxDataPoints": 100,
+        "minSpan": 1,
         "nullPointMode": "connected",
         "nullText": null,
         "postfix": "",
@@ -1268,28 +382,28 @@
             "to": "null"
           }
         ],
+        "repeat": "bucket",
+        "repeatDirection": "h",
         "sparkline": {
           "fillColor": "rgba(31, 118, 189, 0.18)",
-          "full": true,
+          "full": false,
           "lineColor": "rgb(31, 120, 193)",
           "show": false
         },
-        "tableColumn": "Value",
+        "tableColumn": "",
         "targets": [
           {
-            "expr": "avg(cb_xdcr_percent_completeness{source_bucket=\"products\",remote_cluster_id=\"9b557b754ba539c981f490a0a36f1f4d\"})",
+            "expr": "avg(cb_bucket_item_count{bucket=\"$bucket\"})",
             "format": "time_series",
             "instant": true,
-            "interval": "",
             "intervalFactor": 1,
             "refId": "A"
           }
         ],
-        "thresholds": "0,0",
-        "timeFrom": null,
-        "title": "Products Replication Completeness",
+        "thresholds": "0",
+        "title": "$bucket",
         "type": "singlestat",
-        "valueFontSize": "80%",
+        "valueFontSize": "100%",
         "valueMaps": [
           {
             "op": "=",
@@ -1298,352 +412,295 @@
           }
         ],
         "valueName": "current"
-      },
-      {
-        "cacheTimeout": null,
-        "colorBackground": false,
-        "colorValue": true,
-        "colors": [
-          "#447ebc",
-          "#447ebc",
-          "#447ebc"
-        ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "percent",
-        "gauge": {
-          "maxValue": 100,
-          "minValue": 0,
-          "show": true,
-          "thresholdLabels": false,
-          "thresholdMarkers": false
-        },
-        "gridPos": {
-          "h": 4,
-          "w": 4,
-          "x": 12,
-          "y": 8
-        },
-        "hideTimeOverride": true,
-        "id": 45,
-        "interval": null,
-        "links": [],
-        "mappingType": 1,
-        "mappingTypes": [
-          {
-            "name": "value to text",
-            "value": 1
-          },
-          {
-            "name": "range to text",
-            "value": 2
-          }
-        ],
-        "maxDataPoints": 100,
-        "nullPointMode": "connected",
-        "nullText": null,
-        "postfix": "",
-        "postfixFontSize": "50%",
-        "prefix": "",
-        "prefixFontSize": "50%",
-        "rangeMaps": [
-          {
-            "from": "null",
-            "text": "N/A",
-            "to": "null"
-          }
-        ],
-        "sparkline": {
-          "fillColor": "rgba(31, 118, 189, 0.18)",
-          "full": true,
-          "lineColor": "rgb(31, 120, 193)",
-          "show": false
-        },
-        "tableColumn": "Value",
-        "targets": [
-          {
-            "expr": "avg(cb_xdcr_percent_completeness{source_bucket=\"selling-prices\",remote_cluster_id=\"9b557b754ba539c981f490a0a36f1f4d\"})",
-            "format": "time_series",
-            "instant": true,
-            "interval": "",
-            "intervalFactor": 1,
-            "refId": "A"
-          }
-        ],
-        "thresholds": "0,0",
-        "timeFrom": null,
-        "title": "Selling Prices Replication Completeness",
-        "type": "singlestat",
-        "valueFontSize": "80%",
-        "valueMaps": [
-          {
-            "op": "=",
-            "text": "N/A",
-            "value": "null"
-          }
-        ],
-        "valueName": "avg"
-      },
-      {
-        "cacheTimeout": null,
-        "colorBackground": false,
-        "colorValue": true,
-        "colors": [
-          "#447ebc",
-          "#447ebc",
-          "#447ebc"
-        ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "percent",
-        "gauge": {
-          "maxValue": 100,
-          "minValue": 0,
-          "show": true,
-          "thresholdLabels": false,
-          "thresholdMarkers": false
-        },
-        "gridPos": {
-          "h": 4,
-          "w": 4,
-          "x": 16,
-          "y": 8
-        },
-        "hideTimeOverride": true,
-        "id": 46,
-        "interval": null,
-        "links": [],
-        "mappingType": 1,
-        "mappingTypes": [
-          {
-            "name": "value to text",
-            "value": 1
-          },
-          {
-            "name": "range to text",
-            "value": 2
-          }
-        ],
-        "maxDataPoints": 100,
-        "nullPointMode": "connected",
-        "nullText": null,
-        "postfix": "",
-        "postfixFontSize": "50%",
-        "prefix": "",
-        "prefixFontSize": "50%",
-        "rangeMaps": [
-          {
-            "from": "null",
-            "text": "N/A",
-            "to": "null"
-          }
-        ],
-        "sparkline": {
-          "fillColor": "rgba(31, 118, 189, 0.18)",
-          "full": true,
-          "lineColor": "rgb(31, 120, 193)",
-          "show": false
-        },
-        "tableColumn": "Value",
-        "targets": [
-          {
-            "expr": "avg(cb_xdcr_percent_completeness{source_bucket=\"nomenclatures\",remote_cluster_id=\"9b557b754ba539c981f490a0a36f1f4d\"})",
-            "format": "time_series",
-            "instant": true,
-            "interval": "",
-            "intervalFactor": 1,
-            "refId": "A"
-          }
-        ],
-        "thresholds": "0,0",
-        "timeFrom": null,
-        "title": "Nomenclatures Replication Completeness",
-        "type": "singlestat",
-        "valueFontSize": "80%",
-        "valueMaps": [
-          {
-            "op": "=",
-            "text": "N/A",
-            "value": "null"
-          }
-        ],
-        "valueName": "avg"
-      },
-      {
-        "cacheTimeout": null,
-        "colorBackground": false,
-        "colorValue": true,
-        "colors": [
-          "#447ebc",
-          "#447ebc",
-          "#447ebc"
-        ],
-        "datasource": "${DS_PROMETHEUS}",
-        "format": "percent",
-        "gauge": {
-          "maxValue": 100,
-          "minValue": 0,
-          "show": true,
-          "thresholdLabels": false,
-          "thresholdMarkers": false
-        },
-        "gridPos": {
-          "h": 4,
-          "w": 4,
-          "x": 20,
-          "y": 8
-        },
-        "hideTimeOverride": true,
-        "id": 47,
-        "interval": null,
-        "links": [],
-        "mappingType": 1,
-        "mappingTypes": [
-          {
-            "name": "value to text",
-            "value": 1
-          },
-          {
-            "name": "range to text",
-            "value": 2
-          }
-        ],
-        "maxDataPoints": 100,
-        "nullPointMode": "connected",
-        "nullText": null,
-        "postfix": "",
-        "postfixFontSize": "50%",
-        "prefix": "",
-        "prefixFontSize": "50%",
-        "rangeMaps": [
-          {
-            "from": "null",
-            "text": "N/A",
-            "to": "null"
-          }
-        ],
-        "sparkline": {
-          "fillColor": "rgba(31, 118, 189, 0.18)",
-          "full": true,
-          "lineColor": "rgb(31, 120, 193)",
-          "show": false
-        },
-        "tableColumn": "Value",
-        "targets": [
-          {
-            "expr": "avg(cb_xdcr_percent_completeness{source_bucket=\"companies\",remote_cluster_id=\"9b557b754ba539c981f490a0a36f1f4d\"})",
-            "format": "time_series",
-            "instant": true,
-            "interval": "",
-            "intervalFactor": 1,
-            "refId": "A"
-          }
-        ],
-        "thresholds": "0,0",
-        "timeFrom": null,
-        "title": "Companies Replication Completeness",
-        "type": "singlestat",
-        "valueFontSize": "80%",
-        "valueMaps": [
-          {
-            "op": "=",
-            "text": "N/A",
-            "value": "null"
-          }
-        ],
-        "valueName": "avg"
-      },
-      {
-        "columns": [],
-        "datasource": "${DS_PROMETHEUS}",
-        "fontSize": "100%",
-        "gridPos": {
-          "h": 6,
-          "w": 12,
-          "x": 0,
-          "y": 12
-        },
-        "id": 22,
-        "links": [],
-        "pageSize": null,
-        "scroll": true,
-        "showHeader": true,
-        "sort": {
-          "col": 0,
-          "desc": true
-        },
-        "styles": [
-          {
-            "alias": "Time",
-            "dateFormat": "YYYY-MM-DD HH:mm:ss",
-            "pattern": "Time",
-            "type": "date"
-          },
-          {
-            "alias": "Couchbase node $1",
-            "colorMode": "value",
-            "colors": [
-              "rgba(245, 54, 54, 0.9)",
-              "rgba(237, 129, 40, 0.89)",
-              "rgba(50, 172, 45, 0.97)"
-            ],
-            "decimals": 2,
-            "mappingType": 1,
-            "pattern": "/.*-couchbase-(.*)/",
-            "thresholds": [
-              "0.5",
-              "1"
-            ],
-            "type": "string",
-            "unit": "short",
-            "valueMaps": [
-              {
-                "text": "down",
-                "value": "0"
-              },
-              {
-                "text": "up",
-                "value": "1"
-              }
-            ]
-          }
-        ],
-        "targets": [
-          {
-            "expr": "cb_node_service_up",
-            "format": "time_series",
-            "intervalFactor": 1,
-            "legendFormat": "{{ instance }}",
-            "refId": "A"
-          }
-        ],
-        "title": "Status",
-        "transform": "timeseries_to_columns",
-        "type": "table"
       },
       {
         "aliasColors": {},
         "bars": false,
         "dashLength": 10,
         "dashes": false,
-        "datasource": "${DS_PROMETHEUS}",
-        "description": "Operations per second",
+        "datasource": "Prometheus",
+        "description": "A low value means that the bucket needs more memory",
         "fill": 1,
         "gridPos": {
-          "h": 6,
+          "h": 5,
           "w": 12,
           "x": 12,
-          "y": 12
+          "y": 11
         },
-        "id": 2,
+        "id": 90,
         "legend": {
           "alignAsTable": true,
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
+          "avg": true,
+          "current": true,
+          "max": true,
+          "min": true,
           "rightSide": true,
           "show": true,
           "total": false,
-          "values": false
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "avg(cb_bucketstats_ep_mem_high_wat) by (bucket) - avg(cb_bucketstats_mem_used) by (bucket)",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "{{ bucket }}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Memory Headroom",
+        "tooltip": {
+          "shared": true,
+          "sort": 2,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "decbytes",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": false
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "Prometheus",
+        "description": "Number of items waiting to be written to disk. Consistently high values may be a sign of cluster issues.",
+        "fill": 1,
+        "gridPos": {
+          "h": 5,
+          "w": 12,
+          "x": 0,
+          "y": 15
+        },
+        "id": 92,
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": true,
+          "max": true,
+          "min": true,
+          "rightSide": true,
+          "show": true,
+          "total": false,
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "avg(cb_bucketstats_disk_write_queue) by (bucket)",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "{{ bucket }}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Disk Write Queue",
+        "tooltip": {
+          "shared": true,
+          "sort": 2,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": false
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "Prometheus",
+        "description": "Percentage of reads per seconds to disk as opposed to RAM. Values above zero may be a warning of memory exhaustion.",
+        "fill": 1,
+        "gridPos": {
+          "h": 5,
+          "w": 12,
+          "x": 12,
+          "y": 20
+        },
+        "id": 94,
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": true,
+          "max": true,
+          "min": true,
+          "rightSide": true,
+          "show": true,
+          "total": false,
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "avg(cb_bucketstats_ep_bg_fetched) by (bucket) / (avg(cb_bucketstats_cmd_get) by (bucket) * 100)",
+            "format": "time_series",
+            "intervalFactor": 1,
+            "legendFormat": "{{ bucket }}",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Cache Miss Ratio",
+        "tooltip": {
+          "shared": true,
+          "sort": 2,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "Prometheus",
+        "fill": 1,
+        "gridPos": {
+          "h": 5,
+          "w": 12,
+          "x": 0,
+          "y": 24
+        },
+        "id": 88,
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": true,
+          "max": true,
+          "min": true,
+          "rightSide": true,
+          "show": true,
+          "total": false,
+          "values": true
         },
         "lines": true,
         "linewidth": 1,
@@ -1668,11 +725,12 @@
         ],
         "thresholds": [],
         "timeFrom": null,
+        "timeRegions": [],
         "timeShift": null,
-        "title": "Ops per second by bucket",
+        "title": "Ops Per Second",
         "tooltip": {
           "shared": true,
-          "sort": 0,
+          "sort": 2,
           "value_type": "individual"
         },
         "type": "graph",
@@ -1698,704 +756,7 @@
             "logBase": 1,
             "max": null,
             "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": "${DS_PROMETHEUS}",
-        "description": "Current number of items in memory",
-        "fill": 1,
-        "gridPos": {
-          "h": 5,
-          "w": 12,
-          "x": 0,
-          "y": 18
-        },
-        "id": 6,
-        "legend": {
-          "alignAsTable": true,
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "rightSide": true,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "links": [],
-        "nullPointMode": "connected",
-        "percentage": false,
-        "pointradius": 5,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "expr": "floor(avg(cb_bucketstats_curr_items) by (bucket))",
-            "format": "time_series",
-            "intervalFactor": 1,
-            "legendFormat": "{{ bucket }}",
-            "refId": "A"
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeShift": null,
-        "title": "Current Items by bucket",
-        "tooltip": {
-          "shared": false,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": "0",
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": "${DS_PROMETHEUS}",
-        "description": "Write queue to disk",
-        "fill": 1,
-        "gridPos": {
-          "h": 5,
-          "w": 12,
-          "x": 12,
-          "y": 18
-        },
-        "id": 16,
-        "legend": {
-          "alignAsTable": true,
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "rightSide": true,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "links": [],
-        "nullPointMode": "null as zero",
-        "percentage": false,
-        "pointradius": 5,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "expr": "avg(cb_bucketstats_disk_write_queue) by (bucket)",
-            "format": "time_series",
-            "intervalFactor": 1,
-            "legendFormat": "{{ bucket }}",
-            "refId": "A"
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeShift": null,
-        "title": "Disk write queue by bucket",
-        "tooltip": {
-          "shared": false,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": "0",
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": "${DS_PROMETHEUS}",
-        "description": "A low value means that the bucket needs more memory",
-        "fill": 1,
-        "gridPos": {
-          "h": 5,
-          "w": 12,
-          "x": 0,
-          "y": 23
-        },
-        "id": 10,
-        "legend": {
-          "alignAsTable": true,
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "rightSide": true,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "links": [],
-        "nullPointMode": "connected",
-        "percentage": false,
-        "pointradius": 5,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "expr": "avg(cb_bucketstats_ep_mem_high_wat) by (bucket) - avg(cb_bucketstats_mem_used) by (bucket)",
-            "format": "time_series",
-            "intervalFactor": 1,
-            "legendFormat": "{{ bucket }}",
-            "refId": "A"
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeShift": null,
-        "title": "Memory headroom by bucket",
-        "tooltip": {
-          "shared": false,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": "0",
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": "${DS_PROMETHEUS}",
-        "description": "Number of items on memory over number of items on disk",
-        "fill": 1,
-        "gridPos": {
-          "h": 5,
-          "w": 12,
-          "x": 12,
-          "y": 23
-        },
-        "id": 8,
-        "legend": {
-          "alignAsTable": true,
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "rightSide": true,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "links": [],
-        "nullPointMode": "connected",
-        "percentage": false,
-        "pointradius": 5,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "expr": "avg(cb_bucketstats_vb_active_resident_items_ratio) by (bucket)",
-            "format": "time_series",
-            "intervalFactor": 1,
-            "legendFormat": "{{ bucket }}",
-            "refId": "A"
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeShift": null,
-        "title": "Resident item ratio by bucket",
-        "tooltip": {
-          "shared": false,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": "100",
-            "min": "0",
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": "${DS_PROMETHEUS}",
-        "description": "Number of items sent through XDCR",
-        "fill": 1,
-        "gridPos": {
-          "h": 5,
-          "w": 12,
-          "x": 0,
-          "y": 28
-        },
-        "id": 20,
-        "legend": {
-          "alignAsTable": true,
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "rightSide": true,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "links": [],
-        "nullPointMode": "null as zero",
-        "percentage": false,
-        "pointradius": 5,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "expr": "avg(cb_bucketstats_ep_dcp_xdcr_items_sent) by (bucket)",
-            "format": "time_series",
-            "intervalFactor": 1,
-            "legendFormat": "{{ bucket }}",
-            "refId": "A"
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeShift": null,
-        "title": "XDCR items sent by bucket",
-        "tooltip": {
-          "shared": false,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": "0",
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": "${DS_PROMETHEUS}",
-        "description": "Ratio of disk fetch instead of memory. If not zero, should be investigated",
-        "fill": 1,
-        "gridPos": {
-          "h": 5,
-          "w": 12,
-          "x": 12,
-          "y": 28
-        },
-        "id": 12,
-        "legend": {
-          "alignAsTable": true,
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "rightSide": true,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "links": [],
-        "nullPointMode": "null as zero",
-        "percentage": false,
-        "pointradius": 5,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "expr": "avg(cb_bucketstats_ep_bg_fetched) by (bucket) / (avg(cb_bucketstats_cmd_get) by (bucket) * 100)",
-            "format": "time_series",
-            "intervalFactor": 1,
-            "legendFormat": "{{ bucket }}",
-            "refId": "A"
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeShift": null,
-        "title": "Cache miss ratio by bucket",
-        "tooltip": {
-          "shared": false,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": "100",
-            "min": "0",
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": "${DS_PROMETHEUS}",
-        "description": "Number of object ejections from memory. Should be zero",
-        "fill": 1,
-        "gridPos": {
-          "h": 5,
-          "w": 12,
-          "x": 0,
-          "y": 33
-        },
-        "id": 14,
-        "legend": {
-          "alignAsTable": true,
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "rightSide": true,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "links": [],
-        "nullPointMode": "null as zero",
-        "percentage": false,
-        "pointradius": 5,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "expr": "avg(cb_bucketstats_ep_num_value_ejects) by (bucket)",
-            "format": "time_series",
-            "intervalFactor": 1,
-            "legendFormat": "{{ bucket }}",
-            "refId": "A"
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeShift": null,
-        "title": "Ejections by bucket",
-        "tooltip": {
-          "shared": false,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "transparent": false,
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": "0",
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
-          }
-        ],
-        "yaxis": {
-          "align": false,
-          "alignLevel": null
-        }
-      },
-      {
-        "aliasColors": {},
-        "bars": false,
-        "dashLength": 10,
-        "dashes": false,
-        "datasource": "${DS_PROMETHEUS}",
-        "description": "Number of unrecoverable out of memory errors due to memory exhaustion",
-        "fill": 1,
-        "gridPos": {
-          "h": 5,
-          "w": 12,
-          "x": 12,
-          "y": 33
-        },
-        "id": 18,
-        "legend": {
-          "alignAsTable": true,
-          "avg": false,
-          "current": false,
-          "max": false,
-          "min": false,
-          "rightSide": true,
-          "show": true,
-          "total": false,
-          "values": false
-        },
-        "lines": true,
-        "linewidth": 1,
-        "links": [],
-        "nullPointMode": "null as zero",
-        "percentage": false,
-        "pointradius": 5,
-        "points": false,
-        "renderer": "flot",
-        "seriesOverrides": [],
-        "spaceLength": 10,
-        "stack": false,
-        "steppedLine": false,
-        "targets": [
-          {
-            "expr": "avg(cb_bucketstats_ep_oom_errors) by (bucket)",
-            "format": "time_series",
-            "intervalFactor": 1,
-            "legendFormat": "{{ bucket }}",
-            "refId": "A"
-          }
-        ],
-        "thresholds": [],
-        "timeFrom": null,
-        "timeShift": null,
-        "title": "OOM errors by bucket",
-        "tooltip": {
-          "shared": false,
-          "sort": 0,
-          "value_type": "individual"
-        },
-        "type": "graph",
-        "xaxis": {
-          "buckets": null,
-          "mode": "time",
-          "name": null,
-          "show": true,
-          "values": []
-        },
-        "yaxes": [
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": "0",
-            "show": true
-          },
-          {
-            "format": "short",
-            "label": null,
-            "logBase": 1,
-            "max": null,
-            "min": null,
-            "show": true
+            "show": false
           }
         ],
         "yaxis": {
@@ -2404,22 +765,58 @@
         }
       }
     ],
+    "refresh": "5s",
+    "style": "dark",
     "templating": {
       "list": [
         {
           "allValue": null,
-          "current": {},
-          "datasource": "${DS_PROMETHEUS}",
+          "current": {
+            "text": "All",
+            "value": [
+              "$__all"
+            ]
+          },
+          "datasource": "Prometheus",
+          "definition": "label_values(bucket)",
           "hide": 2,
-          "includeAll": false,
-          "label": "Server",
-          "multi": false,
-          "name": "server",
+          "includeAll": true,
+          "label": "Bucket",
+          "multi": true,
+          "name": "bucket",
           "options": [],
-          "query": "label_values(cb_node_service_up, instance)",
-          "refresh": 1,
+          "query": "label_values(bucket)",
+          "refresh": 2,
           "regex": "",
+          "skipUrlSync": false,
           "sort": 1,
+          "tagValuesQuery": "",
+          "tags": [],
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        },
+        {
+          "allValue": null,
+          "current": {
+            "text": "All",
+            "value": [
+              "$__all"
+            ]
+          },
+          "datasource": "Prometheus",
+          "definition": "label_values(instance)",
+          "hide": 2,
+          "includeAll": true,
+          "label": "Node",
+          "multi": true,
+          "name": "node",
+          "options": [],
+          "query": "label_values(cb_node_service_up,instance)",
+          "refresh": 2,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
           "tagValuesQuery": "",
           "tags": [],
           "tagsQuery": "",
@@ -2429,7 +826,7 @@
       ]
     },
     "time": {
-      "from": "now-24h",
+      "from": "now-6h",
       "to": "now"
     },
     "timepicker": {
@@ -2456,5 +853,6 @@
         "7d",
         "30d"
       ]
-    }
+    },
+    "timezone": "browser"
   }
