@@ -6,6 +6,7 @@ package collector
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -43,6 +44,7 @@ type Context struct {
 	ScrapeNode    bool
 	ScrapeBucket  bool
 	ScrapeXDCR    bool
+	TLSSetting    bool
 }
 
 // Exporters structure contains all exporters
@@ -111,13 +113,24 @@ func Fetch(c Context, route string) ([]byte, error) {
 		return []byte{}, err
 	}
 
+	tlc := &tls.Config{
+		InsecureSkipVerify: c.TLSSetting,
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: tlc,
+	}
+
 	req.SetBasicAuth(c.Username, c.Password)
-	client := http.Client{Timeout: c.Timeout}
+	client := http.Client{Transport: tr, Timeout: c.Timeout}
+
 	res, err := client.Do(req)
+
 	if err != nil {
 		log.Error(err.Error())
 		return []byte{}, err
 	}
+
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {

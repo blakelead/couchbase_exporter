@@ -36,6 +36,7 @@ var (
 	scrapeBucket        bool
 	scrapeXDCR          bool
 	configFile          string
+	tlsSetting          bool
 )
 
 func main() {
@@ -55,6 +56,7 @@ func main() {
 		ScrapeNode:    scrapeNode,
 		ScrapeBucket:  scrapeBucket,
 		ScrapeXDCR:    scrapeXDCR,
+		TLSSetting:    tlsSetting,
 	}
 
 	// Exporters are initialized, meaning that metrics files are loaded and
@@ -87,14 +89,15 @@ func initEnv() {
 	serverListenAddress = "127.0.0.1:9191"
 	serverMetricsPath = "/metrics"
 	serverTimeout = 10 * time.Second
-	dbURI = "http://localhost:8091"
+	dbURI = "https://127.0.0.1:18091"
 	dbTimeout = 10 * time.Second
-	logLevel = "info"
+	logLevel = "error"
 	logFormat = "text"
 	scrapeCluster = true
 	scrapeNode = true
 	scrapeBucket = true
 	scrapeXDCR = true
+	tlsSetting = false
 
 	// Get configuration file values if a configuration file is found (either json or yml).
 	configFile = "config.json"
@@ -120,6 +123,7 @@ func initEnv() {
 		scrapeNode = config.GetBool("scrape.node")
 		scrapeBucket = config.GetBool("scrape.bucket")
 		scrapeXDCR = config.GetBool("scrape.xdcr")
+		tlsSetting = config.GetBool("tls.setting")
 	}
 
 	// Get environment variables values.
@@ -162,6 +166,9 @@ func initEnv() {
 	if val, ok := os.LookupEnv("CB_EXPORTER_SCRAPE_XDCR"); ok {
 		scrapeXDCR, _ = strconv.ParseBool(val)
 	}
+	if val, ok := os.LookupEnv("CB_EXPORTER_TLS_SETTING"); ok {
+		tlsSetting, _ = strconv.ParseBool(val)
+	}
 
 	// Get command-line values.
 	flag.StringVar(&serverListenAddress, "web.listen-address", serverListenAddress, "Address to listen on for HTTP requests.")
@@ -175,6 +182,7 @@ func initEnv() {
 	flag.BoolVar(&scrapeNode, "scrape.node", scrapeNode, "If false, node metrics won't be scraped.")
 	flag.BoolVar(&scrapeBucket, "scrape.bucket", scrapeBucket, "If false, bucket metrics won't be scraped.")
 	flag.BoolVar(&scrapeXDCR, "scrape.xdcr", scrapeXDCR, "If false, XDCR metrics won't be scraped.")
+	flag.BoolVar(&tlsSetting, "tls.setting", tlsSetting, "If true TLS will ignore self signed certificates.")
 	flag.Parse()
 }
 
@@ -219,4 +227,5 @@ func displayInfo() {
 	log.Info("scrape.node=", scrapeNode)
 	log.Info("scrape.bucket=", scrapeBucket)
 	log.Info("scrape.xdcr=", scrapeXDCR)
+	log.Info("tls.setting=", tlsSetting)
 }
