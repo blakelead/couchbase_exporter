@@ -20,7 +20,7 @@ import (
 
 var (
 	// git describe
-	version = "0.5.1-26-g1aec22a"
+	version = "0.8.0"
 
 	serverListenAddress string
 	serverMetricsPath   string
