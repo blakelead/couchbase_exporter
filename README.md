@@ -16,7 +16,7 @@ Run from command line:
 
 The exporter supports various configuration ways: command line arguments takes precedence over environment variables that take precedence over configuration file.
 
-Configuration file can be provided on the command line. They must be written in json or yaml. If none is provided using the command line `--config.file` options, it will look for a file named `config.json` or `config.yml`. Those files must be placed in the same directory that the exporter binary. You can find complete examples of configuation files in the sources (directory `examples`).
+Configuration file can be provided on the command line. It must be written in json or yaml. If none is provided using the command line `--config.file` option, it will look for a file named `config.json` or `config.yml` in the same directory that the exporter binary. You can find complete examples of configuation files in the sources (directory `examples`).
 
 As for available flags and equivalent environment variables, here is a list:
 
