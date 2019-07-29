@@ -16,12 +16,13 @@ Run from command line:
 
 The exporter supports various configuration ways: command line arguments takes precedence over environment variables that take precedence over configuration file.
 
-Configuration file can be written in json or yaml, must be named `config.json` or `config.yml`, and must be placed in the same directory that the exporter binary. You can find complete examples of configuation files in the sources (directory `examples`).
+Configuration file can be provided on the command line. They must be written in json or yaml. If none is provided using the command line `--config.file` options, it will look for a file named `config.json` or `config.yml`. Those files must be placed in the same directory that the exporter binary. You can find complete examples of configuation files in the sources (directory `examples`).
 
 As for available flags and equivalent environment variables, here is a list:
 
 |    environment variable    |      argument       |              description               |        default        |
 | -------------------------- | ------------------- | -------------------------------------- | --------------------- |
+|                            | -config.file        | Configuration file to load data from   |                       |
 | CB_EXPORTER_LISTEN_ADDR    | -web.listen-address | Address to listen on for HTTP requests | :9191                 |
 | CB_EXPORTER_TELEMETRY_PATH | -web.telemetry-path | Path under which to expose metrics     | /metrics              |
 | CB_EXPORTER_SERVER_TIMEOUT | -web.timeout        | Server read timeout in seconds         | 10s                   |
