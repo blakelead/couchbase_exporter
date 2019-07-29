@@ -18,10 +18,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var (
-	// git describe
-	version = "0.8.0"
-
+type Options struct {
 	serverListenAddress string
 	serverMetricsPath   string
 	serverTimeout       time.Duration
@@ -36,6 +33,12 @@ var (
 	scrapeBucket        bool
 	scrapeXDCR          bool
 	configFile          string
+}
+
+var (
+	// git describe
+	version                  = "0.8.0"
+	runtime_options *Options = &Options{}
 )
 
 func main() {
@@ -47,14 +50,14 @@ func main() {
 
 	// Context encapsulates connection and scraping details for the exporters.
 	context := collector.Context{
-		URI:           dbURI,
-		Username:      dbUsername,
-		Password:      dbPassword,
-		Timeout:       dbTimeout,
-		ScrapeCluster: scrapeCluster,
-		ScrapeNode:    scrapeNode,
-		ScrapeBucket:  scrapeBucket,
-		ScrapeXDCR:    scrapeXDCR,
+		URI:           runtime_options.dbURI,
+		Username:      runtime_options.dbUsername,
+		Password:      runtime_options.dbPassword,
+		Timeout:       runtime_options.dbTimeout,
+		ScrapeCluster: runtime_options.scrapeCluster,
+		ScrapeNode:    runtime_options.scrapeNode,
+		ScrapeBucket:  runtime_options.scrapeBucket,
+		ScrapeXDCR:    runtime_options.scrapeXDCR,
 	}
 
 	// Exporters are initialized, meaning that metrics files are loaded and
@@ -62,124 +65,204 @@ func main() {
 	collector.InitExporters(context)
 
 	// Handle metrics path with the prometheus handler.
-	http.Handle(serverMetricsPath, promhttp.Handler())
+	http.Handle(runtime_options.serverMetricsPath, promhttp.Handler())
 
 	// Handle paths other than given metrics path.
-	if serverMetricsPath != "/" {
+	if runtime_options.serverMetricsPath != "/" {
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte(`<body><p>See <a href="` + serverMetricsPath + `">Metrics</a></p></body>`))
+			w.Write([]byte(`<body><p>See <a href="` + runtime_options.serverMetricsPath + `">Metrics</a></p></body>`))
 		})
 	}
 
 	// Create the server with provided listen address and server timeout.
 	s := &http.Server{
-		Addr:        serverListenAddress,
-		ReadTimeout: serverTimeout,
+		Addr:        runtime_options.serverListenAddress,
+		ReadTimeout: runtime_options.serverTimeout,
 	}
 
 	// Start the server.
-	log.Info("Started listening at ", serverListenAddress)
+	log.Info("Started listening at ", runtime_options.serverListenAddress)
 	log.Fatal(s.ListenAndServe())
+}
+
+func FlagPresent(name string) bool {
+	found := false
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == name {
+			found = true
+		}
+	})
+	return found
 }
 
 func initEnv() {
 	// Default parameters.
-	serverListenAddress = "127.0.0.1:9191"
-	serverMetricsPath = "/metrics"
-	serverTimeout = 10 * time.Second
-	dbURI = "http://localhost:8091"
-	dbTimeout = 10 * time.Second
-	logLevel = "info"
-	logFormat = "text"
-	scrapeCluster = true
-	scrapeNode = true
-	scrapeBucket = true
-	scrapeXDCR = true
+	runtime_options.serverListenAddress = "127.0.0.1:9191"
+	runtime_options.serverMetricsPath = "/metrics"
+	runtime_options.serverTimeout = 10 * time.Second
+	runtime_options.dbURI = "http://localhost:8091"
+	runtime_options.dbTimeout = 10 * time.Second
+	runtime_options.logLevel = "info"
+	runtime_options.logFormat = "text"
+	runtime_options.scrapeCluster = true
+	runtime_options.scrapeNode = true
+	runtime_options.scrapeBucket = true
+	runtime_options.scrapeXDCR = true
+	runtime_options.configFile = "config.json"
 
-	// Get configuration file values if a configuration file is found (either json or yml).
-	configFile = "config.json"
-	config, err := cl.Load(configFile)
-	if err != nil {
-		configFile = "config.yml"
-		config, err = cl.Load(configFile)
-		if err != nil {
-			log.Info(err, ": using command-line parameters and/or environment variables if provided")
+	// Get command-line values.
+	var cmd_line_options *Options = &Options{}
+	flag.StringVar(&cmd_line_options.configFile, "config.file", runtime_options.configFile, "Path to configuration file.")
+	flag.StringVar(&cmd_line_options.serverListenAddress, "web.listen-address", runtime_options.serverListenAddress, "Address to listen on for HTTP requests.")
+	flag.StringVar(&cmd_line_options.serverMetricsPath, "web.telemetry-path", runtime_options.serverMetricsPath, "Path under which to expose metrics.")
+	flag.DurationVar(&cmd_line_options.serverTimeout, "web.timeout", runtime_options.serverTimeout, "Server read timeout in seconds.")
+	flag.StringVar(&cmd_line_options.dbURI, "db.uri", runtime_options.dbURI, "Couchbase node URI with port.")
+	flag.DurationVar(&cmd_line_options.dbTimeout, "db.timeout", runtime_options.dbTimeout, "Couchbase client timeout in seconds.")
+	flag.StringVar(&cmd_line_options.logLevel, "log.level", runtime_options.logLevel, "Log level: info, debug, warn, error, fatal.")
+	flag.StringVar(&cmd_line_options.logFormat, "log.format", runtime_options.logFormat, "Log format: text or json.")
+	flag.BoolVar(&cmd_line_options.scrapeCluster, "scrape.cluster", runtime_options.scrapeCluster, "If false, cluster metrics won't be scraped.")
+	flag.BoolVar(&cmd_line_options.scrapeNode, "scrape.node", runtime_options.scrapeNode, "If false, node metrics won't be scraped.")
+	flag.BoolVar(&cmd_line_options.scrapeBucket, "scrape.bucket", runtime_options.scrapeBucket, "If false, bucket metrics won't be scraped.")
+	flag.BoolVar(&cmd_line_options.scrapeXDCR, "scrape.xdcr", runtime_options.scrapeXDCR, "If false, XDCR metrics won't be scraped.")
+	flag.Parse()
+
+	config_file_provided := FlagPresent("config.file")
+	config_locations := [3]string{cmd_line_options.configFile, "config.json", "config.yml"}
+	for idx, config_location := range config_locations {
+		config, err := cl.Load(config_location)
+		if err != nil && config_file_provided && idx == 0 {
+			log.Fatalf("Could not use provided configuration file (%s). Error: %s", config_location, err)
 		}
-	}
-	if err == nil {
-		serverListenAddress = config.GetString("web.listenAddress")
-		serverMetricsPath = config.GetString("web.telemetryPath")
-		serverTimeout = config.GetDuration("web.timeout")
-		dbUsername = config.GetString("db.user")
-		dbPassword = config.GetString("db.password")
-		dbURI = config.GetString("db.uri")
-		dbTimeout = config.GetDuration("db.timeout")
-		logLevel = config.GetString("log.level")
-		logFormat = config.GetString("log.format")
-		scrapeCluster = config.GetBool("scrape.cluster")
-		scrapeNode = config.GetBool("scrape.node")
-		scrapeBucket = config.GetBool("scrape.bucket")
-		scrapeXDCR = config.GetBool("scrape.xdcr")
+		if config.GetString("web.listenAddress") != "" {
+			runtime_options.serverListenAddress = config.GetString("web.listenAddress")
+		}
+		if config.GetString("web.telemetryPath") != "" {
+			runtime_options.serverMetricsPath = config.GetString("web.telemetryPath")
+		}
+		if config.GetDuration("web.timeout") != 0*time.Second {
+			runtime_options.serverTimeout = config.GetDuration("web.timeout")
+		}
+		if config.GetString("db.user") != "" {
+			runtime_options.dbUsername = config.GetString("db.user")
+		}
+		if config.GetString("db.password") != "" {
+			runtime_options.dbPassword = config.GetString("db.password")
+		}
+		if config.GetString("db.uri") != "" {
+			runtime_options.dbURI = config.GetString("db.uri")
+		}
+		if config.GetDuration("db.timeout") != 0*time.Second {
+			runtime_options.dbTimeout = config.GetDuration("db.timeout")
+		}
+		if config.GetString("log.level") != "" {
+			runtime_options.logLevel = config.GetString("log.level")
+		}
+		if config.GetString("log.format") != "" {
+			runtime_options.logFormat = config.GetString("log.format")
+		}
+		if config.GetBool("scrape.cluster") != runtime_options.scrapeCluster {
+			runtime_options.scrapeCluster = config.GetBool("scrape.cluster")
+		}
+		if config.GetBool("scrape.node") != runtime_options.scrapeNode {
+			runtime_options.scrapeNode = config.GetBool("scrape.node")
+		}
+		if config.GetBool("scrape.bucket") != runtime_options.scrapeBucket {
+			runtime_options.scrapeBucket = config.GetBool("scrape.bucket")
+		}
+		if config.GetBool("scrape.xdcr") != runtime_options.scrapeXDCR {
+			runtime_options.scrapeXDCR = config.GetBool("scrape.xdcr")
+		}
+
+		// Stop on first encounter
+		runtime_options.configFile = config_location
+		break
 	}
 
 	// Get environment variables values.
 	if val, ok := os.LookupEnv("CB_EXPORTER_LISTEN_ADDR"); ok {
-		serverListenAddress = val
+		runtime_options.serverListenAddress = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_TELEMETRY_PATH"); ok {
-		serverMetricsPath = val
+		runtime_options.serverMetricsPath = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_SERVER_TIMEOUT"); ok {
-		serverTimeout, _ = time.ParseDuration(val)
+		runtime_options.serverTimeout, _ = time.ParseDuration(val)
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_DB_USER"); ok {
-		dbUsername = val
+		runtime_options.dbUsername = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_DB_PASSWORD"); ok {
-		dbPassword = val
+		runtime_options.dbPassword = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_DB_URI"); ok {
-		dbURI = val
+		runtime_options.dbURI = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_DB_TIMEOUT"); ok {
-		dbTimeout, _ = time.ParseDuration(val)
+		runtime_options.dbTimeout, _ = time.ParseDuration(val)
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_LOG_LEVEL"); ok {
-		logLevel = val
+		runtime_options.logLevel = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_LOG_FORMAT"); ok {
-		logFormat = val
+		runtime_options.logFormat = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_SCRAPE_CLUSTER"); ok {
-		scrapeCluster, _ = strconv.ParseBool(val)
+		runtime_options.scrapeCluster, _ = strconv.ParseBool(val)
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_SCRAPE_NODE"); ok {
-		scrapeNode, _ = strconv.ParseBool(val)
+		runtime_options.scrapeNode, _ = strconv.ParseBool(val)
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_SCRAPE_BUCKET"); ok {
-		scrapeBucket, _ = strconv.ParseBool(val)
+		runtime_options.scrapeBucket, _ = strconv.ParseBool(val)
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_SCRAPE_XDCR"); ok {
-		scrapeXDCR, _ = strconv.ParseBool(val)
+		runtime_options.scrapeXDCR, _ = strconv.ParseBool(val)
 	}
 
-	// Get command-line values.
-	flag.StringVar(&serverListenAddress, "web.listen-address", serverListenAddress, "Address to listen on for HTTP requests.")
-	flag.StringVar(&serverMetricsPath, "web.telemetry-path", serverMetricsPath, "Path under which to expose metrics.")
-	flag.DurationVar(&serverTimeout, "web.timeout", serverTimeout, "Server read timeout in seconds.")
-	flag.StringVar(&dbURI, "db.uri", dbURI, "Couchbase node URI with port.")
-	flag.DurationVar(&dbTimeout, "db.timeout", dbTimeout, "Couchbase client timeout in seconds.")
-	flag.StringVar(&logLevel, "log.level", logLevel, "Log level: info, debug, warn, error, fatal.")
-	flag.StringVar(&logFormat, "log.format", logFormat, "Log format: text or json.")
-	flag.BoolVar(&scrapeCluster, "scrape.cluster", scrapeCluster, "If false, cluster metrics won't be scraped.")
-	flag.BoolVar(&scrapeNode, "scrape.node", scrapeNode, "If false, node metrics won't be scraped.")
-	flag.BoolVar(&scrapeBucket, "scrape.bucket", scrapeBucket, "If false, bucket metrics won't be scraped.")
-	flag.BoolVar(&scrapeXDCR, "scrape.xdcr", scrapeXDCR, "If false, XDCR metrics won't be scraped.")
-	flag.Parse()
+	// Command-line values
+	if FlagPresent("web.listen-address") {
+		runtime_options.serverListenAddress = cmd_line_options.serverListenAddress
+	}
+	if FlagPresent("web.telemetry-path") {
+		runtime_options.serverMetricsPath = cmd_line_options.serverMetricsPath
+	}
+	if FlagPresent("web.timeout") {
+		runtime_options.serverTimeout = cmd_line_options.serverTimeout
+	}
+	if FlagPresent("db.username") {
+		runtime_options.dbUsername = cmd_line_options.dbUsername
+	}
+	if FlagPresent("db.password") {
+		runtime_options.dbPassword = cmd_line_options.dbPassword
+	}
+	if FlagPresent("db.uri") {
+		runtime_options.dbURI = cmd_line_options.dbURI
+	}
+	if FlagPresent("db.timeout") {
+		runtime_options.dbTimeout = cmd_line_options.dbTimeout
+	}
+	if FlagPresent("log.level") {
+		runtime_options.logLevel = cmd_line_options.logLevel
+	}
+	if FlagPresent("log.format") {
+		runtime_options.logFormat = cmd_line_options.logFormat
+	}
+	if FlagPresent("scrape.cluster") {
+		runtime_options.scrapeCluster = cmd_line_options.scrapeCluster
+	}
+	if FlagPresent("scrape.node") {
+		runtime_options.scrapeNode = cmd_line_options.scrapeNode
+	}
+	if FlagPresent("scrape.bucket") {
+		runtime_options.scrapeBucket = cmd_line_options.scrapeBucket
+	}
+	if FlagPresent("scrape.xdcr") {
+		runtime_options.scrapeXDCR = cmd_line_options.scrapeXDCR
+	}
 }
 
 func initLogger() {
-	switch logLevel {
+	switch runtime_options.logLevel {
 	case "debug":
 		log.SetLevel(log.DebugLevel)
 	case "warn":
@@ -191,7 +274,7 @@ func initLogger() {
 	default:
 		log.SetLevel(log.InfoLevel)
 	}
-	switch logFormat {
+	switch runtime_options.logFormat {
 	case "json":
 		log.SetFormatter(&log.JSONFormatter{
 			PrettyPrint: true,
@@ -207,16 +290,16 @@ func initLogger() {
 
 func displayInfo() {
 	log.Info("Couchbase Exporter Version: ", version)
-	log.Info("config.file=", configFile)
-	log.Info("web.listen-address=", serverListenAddress)
-	log.Info("web.telemetry-path=", serverMetricsPath)
-	log.Info("web.timeout=", serverTimeout)
-	log.Info("db.uri=", dbURI)
-	log.Info("db.timeout=", dbTimeout)
-	log.Info("log.level=", logLevel)
-	log.Info("log.format=", logFormat)
-	log.Info("scrape.cluster=", scrapeCluster)
-	log.Info("scrape.node=", scrapeNode)
-	log.Info("scrape.bucket=", scrapeBucket)
-	log.Info("scrape.xdcr=", scrapeXDCR)
+	log.Info("config.file=", runtime_options.configFile)
+	log.Info("web.listen-address=", runtime_options.serverListenAddress)
+	log.Info("web.telemetry-path=", runtime_options.serverMetricsPath)
+	log.Info("web.timeout=", runtime_options.serverTimeout)
+	log.Info("db.uri=", runtime_options.dbURI)
+	log.Info("db.timeout=", runtime_options.dbTimeout)
+	log.Info("log.level=", runtime_options.logLevel)
+	log.Info("log.format=", runtime_options.logFormat)
+	log.Info("scrape.cluster=", runtime_options.scrapeCluster)
+	log.Info("scrape.node=", runtime_options.scrapeNode)
+	log.Info("scrape.bucket=", runtime_options.scrapeBucket)
+	log.Info("scrape.xdcr=", runtime_options.scrapeXDCR)
 }
