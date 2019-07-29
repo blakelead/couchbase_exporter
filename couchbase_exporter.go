@@ -108,7 +108,7 @@ func initEnv() {
 	runtime_options.scrapeNode = true
 	runtime_options.scrapeBucket = true
 	runtime_options.scrapeXDCR = true
-	runtime_options.configFile = "config.json"
+	runtime_options.configFile = ""
 
 	// Get command-line values.
 	var cmd_line_options *Options = &Options{}
