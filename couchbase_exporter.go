@@ -133,6 +133,9 @@ func initEnv() {
 		if err != nil && config_file_provided && idx == 0 {
 			log.Fatalf("Could not use provided configuration file (%s). Error: %s", config_location, err)
 		}
+		if err != nil {
+			continue
+		}
 		if config.GetString("web.listenAddress") != "" {
 			runtime_options.serverListenAddress = config.GetString("web.listenAddress")
 		}
