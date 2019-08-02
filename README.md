@@ -16,13 +16,14 @@ Run from command-line:
 
 The exporter supports various configuration ways: command-line arguments takes precedence over environment variables that take precedence over configuration file.
 
-Configuration file can be written in json or yaml, must be named `config.json` or `config.yml`, and must be placed in the same directory that the exporter binary. You can find complete examples of configuation files in the sources (directory `resources`).
+Configuration file can be provided on the command line. It must be written in json or yaml. If none is provided using the command line `--config.file` option, it will look for a file named `config.json` or `config.yml` in the same directory that the exporter binary. You can find complete examples of configuation files in the sources (directory `examples`).
 
 As for available flags and equivalent environment variables, here is a list:
 
 |    environment variable    |      argument       |              description               |        default        |
 | -------------------------- | ------------------- | -------------------------------------- | --------------------- |
-| CB_EXPORTER_LISTEN_ADDR    | -web.listen-address | Address to listen on for HTTP requests | 127.0.0.1:9191        |
+|                            | -config.file        | Configuration file to load data from   |                       |
+| CB_EXPORTER_LISTEN_ADDR    | -web.listen-address | Address to listen on for HTTP requests | :9191                 |
 | CB_EXPORTER_TELEMETRY_PATH | -web.telemetry-path | Path under which to expose metrics     | /metrics              |
 | CB_EXPORTER_SERVER_TIMEOUT | -web.timeout        | Server read timeout in seconds         | 10s                   |
 | CB_EXPORTER_DB_URI         | -db.uri             | Address of Couchbase cluster           | https://127.0.0.1:18091 |
