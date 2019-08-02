@@ -42,8 +42,7 @@ type Options struct {
 }
 
 var (
-	// git describe
-	version        = "0.8.0"
+	version        = "devel"
 	runtimeOptions = &Options{}
 )
 
@@ -56,19 +55,19 @@ func main() {
 
 	// Context encapsulates connection and scraping details for the exporters.
 	context := collector.Context{
-		TLSEnabled:      tlsEnabled,
-		TLSSkipInsecure: tlsSkipInsecure,
-		TLSCACert:       tlsCACert,
-		TLSClientCert:   tlsClientCert,
-		TLSClientKey:    tlsClientKey,
-		URI:           runtimeOptions.dbURI,
-		Username:      runtimeOptions.dbUsername,
-		Password:      runtimeOptions.dbPassword,
-		Timeout:       runtimeOptions.dbTimeout,
-		ScrapeCluster: runtimeOptions.scrapeCluster,
-		ScrapeNode:    runtimeOptions.scrapeNode,
-		ScrapeBucket:  runtimeOptions.scrapeBucket,
-		ScrapeXDCR:    runtimeOptions.scrapeXDCR,
+		URI:             runtimeOptions.dbURI,
+		Username:        runtimeOptions.dbUsername,
+		Password:        runtimeOptions.dbPassword,
+		Timeout:         runtimeOptions.dbTimeout,
+		TLSEnabled:      runtimeOptions.tlsEnabled,
+		TLSSkipInsecure: runtimeOptions.tlsSkipInsecure,
+		TLSCACert:       runtimeOptions.tlsCACert,
+		TLSClientCert:   runtimeOptions.tlsClientCert,
+		TLSClientKey:    runtimeOptions.tlsClientKey,
+		ScrapeCluster:   runtimeOptions.scrapeCluster,
+		ScrapeNode:      runtimeOptions.scrapeNode,
+		ScrapeBucket:    runtimeOptions.scrapeBucket,
+		ScrapeXDCR:      runtimeOptions.scrapeXDCR,
 	}
 
 	// Exporters are initialized, meaning that metrics files are loaded and
@@ -115,6 +114,11 @@ func initEnv() {
 	runtimeOptions.serverTimeout = 10 * time.Second
 	runtimeOptions.dbURI = "http://localhost:8091"
 	runtimeOptions.dbTimeout = 10 * time.Second
+	runtimeOptions.tlsEnabled = false
+	runtimeOptions.tlsSkipInsecure = false
+	runtimeOptions.tlsCACert = ""
+	runtimeOptions.tlsClientCert = ""
+	runtimeOptions.tlsClientKey = ""
 	runtimeOptions.logLevel = "info"
 	runtimeOptions.logFormat = "text"
 	runtimeOptions.scrapeCluster = true
@@ -122,11 +126,6 @@ func initEnv() {
 	runtimeOptions.scrapeBucket = true
 	runtimeOptions.scrapeXDCR = true
 	runtimeOptions.configFile = ""
-	tlsEnabled = false
-	tlsSkipInsecure = false
-	tlsCACert = ""
-	tlsClientCert = ""
-	tlsClientKey = ""
 
 	// Get command-line values.
 	var cmdlineOptions = &Options{}
@@ -136,6 +135,11 @@ func initEnv() {
 	flag.DurationVar(&cmdlineOptions.serverTimeout, "web.timeout", runtimeOptions.serverTimeout, "Server read timeout in seconds.")
 	flag.StringVar(&cmdlineOptions.dbURI, "db.uri", runtimeOptions.dbURI, "Couchbase node URI with port.")
 	flag.DurationVar(&cmdlineOptions.dbTimeout, "db.timeout", runtimeOptions.dbTimeout, "Couchbase client timeout in seconds.")
+	flag.BoolVar(&cmdlineOptions.tlsEnabled, "tls.enabled", runtimeOptions.tlsEnabled, "If true, TLS is used when communicating with cluster.")
+	flag.BoolVar(&cmdlineOptions.tlsSkipInsecure, "tls.skip-insecure", runtimeOptions.tlsSkipInsecure, "If true, certificate won't be verified.")
+	flag.StringVar(&cmdlineOptions.tlsCACert, "tls.ca-cert", runtimeOptions.tlsCACert, "Root certificate of the cluster.")
+	flag.StringVar(&cmdlineOptions.tlsClientCert, "tls.client-cert", runtimeOptions.tlsClientCert, "Client certificate.")
+	flag.StringVar(&cmdlineOptions.tlsClientKey, "tls.client-key", runtimeOptions.tlsClientKey, "Client private key.")
 	flag.StringVar(&cmdlineOptions.logLevel, "log.level", runtimeOptions.logLevel, "Log level: info, debug, warn, error, fatal.")
 	flag.StringVar(&cmdlineOptions.logFormat, "log.format", runtimeOptions.logFormat, "Log format: text or json.")
 	flag.BoolVar(&cmdlineOptions.scrapeCluster, "scrape.cluster", runtimeOptions.scrapeCluster, "If false, cluster metrics won't be scraped.")
@@ -174,6 +178,21 @@ func initEnv() {
 		}
 		if config.GetDuration("db.timeout") != 0*time.Second {
 			runtimeOptions.dbTimeout = config.GetDuration("db.timeout")
+		}
+		if config.GetBool("tls.enabled") != runtimeOptions.tlsEnabled {
+			runtimeOptions.tlsEnabled = config.GetBool("tls.enabled")
+		}
+		if config.GetBool("tls.skip-insecure") != runtimeOptions.tlsSkipInsecure {
+			runtimeOptions.tlsSkipInsecure = config.GetBool("tls.skip-insecure")
+		}
+		if config.GetString("tls.ca-cert") != "" {
+			runtimeOptions.tlsCACert = config.GetString("tls.ca-cert")
+		}
+		if config.GetString("tls.client-cert") != "" {
+			runtimeOptions.tlsClientCert = config.GetString("tls.client-cert")
+		}
+		if config.GetString("tls.client-key") != "" {
+			runtimeOptions.tlsClientKey = config.GetString("tls.client-key")
 		}
 		if config.GetString("log.level") != "" {
 			runtimeOptions.logLevel = config.GetString("log.level")
@@ -222,19 +241,19 @@ func initEnv() {
 		runtimeOptions.dbTimeout, _ = time.ParseDuration(val)
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_TLS_ENABLED"); ok {
-		tlsEnabled, _ = strconv.ParseBool(val)
+		runtimeOptions.tlsEnabled, _ = strconv.ParseBool(val)
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_TLS_SKIP_INSECURE"); ok {
-		tlsSkipInsecure, _ = strconv.ParseBool(val)
+		runtimeOptions.tlsSkipInsecure, _ = strconv.ParseBool(val)
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_TLS_CA_CERT"); ok {
-		tlsCACert = val
+		runtimeOptions.tlsCACert = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_TLS_CLIENT_CERT"); ok {
-		tlsClientCert = val
+		runtimeOptions.tlsClientCert = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_TLS_CLIENT_KEY"); ok {
-		tlsClientKey = val
+		runtimeOptions.tlsClientKey = val
 	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_LOG_LEVEL"); ok {
 		runtimeOptions.logLevel = val
@@ -276,6 +295,21 @@ func initEnv() {
 	}
 	if FlagPresent("db.timeout") {
 		runtimeOptions.dbTimeout = cmdlineOptions.dbTimeout
+	}
+	if FlagPresent("tls.enabled") {
+		runtimeOptions.tlsEnabled = cmdlineOptions.tlsEnabled
+	}
+	if FlagPresent("tls.skip-insecure") {
+		runtimeOptions.tlsSkipInsecure = cmdlineOptions.tlsSkipInsecure
+	}
+	if FlagPresent("tls.ca-cert") {
+		runtimeOptions.tlsCACert = cmdlineOptions.tlsCACert
+	}
+	if FlagPresent("tls.client-cert") {
+		runtimeOptions.tlsClientCert = cmdlineOptions.tlsClientCert
+	}
+	if FlagPresent("tls.client-key") {
+		runtimeOptions.tlsClientKey = cmdlineOptions.tlsClientKey
 	}
 	if FlagPresent("log.level") {
 		runtimeOptions.logLevel = cmdlineOptions.logLevel
@@ -332,15 +366,15 @@ func displayInfo() {
 	log.Info("web.timeout=", runtimeOptions.serverTimeout)
 	log.Info("db.uri=", runtimeOptions.dbURI)
 	log.Info("db.timeout=", runtimeOptions.dbTimeout)
+	log.Info("tls.skip-insecure=", runtimeOptions.tlsSkipInsecure)
+	log.Info("tls.ca-cert=", runtimeOptions.tlsCACert)
+	log.Info("tls.enabled=", runtimeOptions.tlsEnabled)
+	log.Info("tls.client-cert=", runtimeOptions.tlsClientCert)
+	log.Info("tls.client-key=", runtimeOptions.tlsClientKey)
 	log.Info("log.level=", runtimeOptions.logLevel)
 	log.Info("log.format=", runtimeOptions.logFormat)
 	log.Info("scrape.cluster=", runtimeOptions.scrapeCluster)
 	log.Info("scrape.node=", runtimeOptions.scrapeNode)
 	log.Info("scrape.bucket=", runtimeOptions.scrapeBucket)
 	log.Info("scrape.xdcr=", runtimeOptions.scrapeXDCR)
-	log.Info("tls.skip-insecure=", tlsSkipInsecure)
-	log.Info("tls.ca-cert=", tlsCACert)
-	log.Info("tls.enabled=", tlsEnabled)
-	log.Info("tls.client-cert=", tlsClientCert)
-	log.Info("tls.client-key=", tlsClientKey)
 }
