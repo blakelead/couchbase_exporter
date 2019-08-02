@@ -19,8 +19,7 @@ import (
 )
 
 var (
-	// git describe
-	version = "0.8.0"
+	version = "devel"
 
 	serverListenAddress string
 	serverMetricsPath   string
@@ -29,6 +28,11 @@ var (
 	dbPassword          string
 	dbURI               string
 	dbTimeout           time.Duration
+	tlsEnabled          bool
+	tlsSkipInsecure     bool
+	tlsCACert           string
+	tlsClientCert       string
+	tlsClientKey        string
 	logLevel            string
 	logFormat           string
 	scrapeCluster       bool
@@ -47,14 +51,19 @@ func main() {
 
 	// Context encapsulates connection and scraping details for the exporters.
 	context := collector.Context{
-		URI:           dbURI,
-		Username:      dbUsername,
-		Password:      dbPassword,
-		Timeout:       dbTimeout,
-		ScrapeCluster: scrapeCluster,
-		ScrapeNode:    scrapeNode,
-		ScrapeBucket:  scrapeBucket,
-		ScrapeXDCR:    scrapeXDCR,
+		URI:             dbURI,
+		Username:        dbUsername,
+		Password:        dbPassword,
+		Timeout:         dbTimeout,
+		TLSEnabled:      tlsEnabled,
+		TLSSkipInsecure: tlsSkipInsecure,
+		TLSCACert:       tlsCACert,
+		TLSClientCert:   tlsClientCert,
+		TLSClientKey:    tlsClientKey,
+		ScrapeCluster:   scrapeCluster,
+		ScrapeNode:      scrapeNode,
+		ScrapeBucket:    scrapeBucket,
+		ScrapeXDCR:      scrapeXDCR,
 	}
 
 	// Exporters are initialized, meaning that metrics files are loaded and
@@ -87,8 +96,13 @@ func initEnv() {
 	serverListenAddress = "127.0.0.1:9191"
 	serverMetricsPath = "/metrics"
 	serverTimeout = 10 * time.Second
-	dbURI = "http://localhost:8091"
+	dbURI = "http://127.0.0.1:8091"
 	dbTimeout = 10 * time.Second
+	tlsEnabled = false
+	tlsSkipInsecure = false
+	tlsCACert = ""
+	tlsClientCert = ""
+	tlsClientKey = ""
 	logLevel = "info"
 	logFormat = "text"
 	scrapeCluster = true
@@ -103,7 +117,7 @@ func initEnv() {
 		configFile = "config.yml"
 		config, err = cl.Load(configFile)
 		if err != nil {
-			log.Info(err, ": using command-line parameters and/or environment variables if provided")
+			configFile = ""
 		}
 	}
 	if err == nil {
@@ -114,6 +128,11 @@ func initEnv() {
 		dbPassword = config.GetString("db.password")
 		dbURI = config.GetString("db.uri")
 		dbTimeout = config.GetDuration("db.timeout")
+		tlsEnabled = config.GetBool("db.tls.enabled")
+		tlsSkipInsecure = config.GetBool("db.tls.skipInsecure")
+		tlsCACert = config.GetString("db.tls.caCert")
+		tlsClientCert = config.GetString("db.tls.clientCert")
+		tlsClientKey = config.GetString("db.tls.clientKey")
 		logLevel = config.GetString("log.level")
 		logFormat = config.GetString("log.format")
 		scrapeCluster = config.GetBool("scrape.cluster")
@@ -144,6 +163,21 @@ func initEnv() {
 	if val, ok := os.LookupEnv("CB_EXPORTER_DB_TIMEOUT"); ok {
 		dbTimeout, _ = time.ParseDuration(val)
 	}
+	if val, ok := os.LookupEnv("CB_EXPORTER_TLS_ENABLED"); ok {
+		tlsEnabled, _ = strconv.ParseBool(val)
+	}
+	if val, ok := os.LookupEnv("CB_EXPORTER_TLS_SKIP_INSECURE"); ok {
+		tlsSkipInsecure, _ = strconv.ParseBool(val)
+	}
+	if val, ok := os.LookupEnv("CB_EXPORTER_TLS_CA_CERT"); ok {
+		tlsCACert = val
+	}
+	if val, ok := os.LookupEnv("CB_EXPORTER_TLS_CLIENT_CERT"); ok {
+		tlsClientCert = val
+	}
+	if val, ok := os.LookupEnv("CB_EXPORTER_TLS_CLIENT_KEY"); ok {
+		tlsClientKey = val
+	}
 	if val, ok := os.LookupEnv("CB_EXPORTER_LOG_LEVEL"); ok {
 		logLevel = val
 	}
@@ -169,6 +203,11 @@ func initEnv() {
 	flag.DurationVar(&serverTimeout, "web.timeout", serverTimeout, "Server read timeout in seconds.")
 	flag.StringVar(&dbURI, "db.uri", dbURI, "Couchbase node URI with port.")
 	flag.DurationVar(&dbTimeout, "db.timeout", dbTimeout, "Couchbase client timeout in seconds.")
+	flag.BoolVar(&tlsEnabled, "tls.enabled", tlsEnabled, "If true, all TLS settings must be set.")
+	flag.BoolVar(&tlsSkipInsecure, "tls.skip-insecure", tlsSkipInsecure, "If true, self-signed certificate won't be verified.")
+	flag.StringVar(&tlsCACert, "tls.ca-cert", tlsCACert, "Path to the root certificate.")
+	flag.StringVar(&tlsClientCert, "tls.client-cert", tlsClientCert, "Path to the client certificate.")
+	flag.StringVar(&tlsClientKey, "tls.client-key", tlsClientKey, "Path to the client key.")
 	flag.StringVar(&logLevel, "log.level", logLevel, "Log level: info, debug, warn, error, fatal.")
 	flag.StringVar(&logFormat, "log.format", logFormat, "Log format: text or json.")
 	flag.BoolVar(&scrapeCluster, "scrape.cluster", scrapeCluster, "If false, cluster metrics won't be scraped.")
@@ -213,6 +252,11 @@ func displayInfo() {
 	log.Info("web.timeout=", serverTimeout)
 	log.Info("db.uri=", dbURI)
 	log.Info("db.timeout=", dbTimeout)
+	log.Info("tls.enabled=", tlsEnabled)
+	log.Info("tls.skip-insecure=", tlsSkipInsecure)
+	log.Info("tls.ca-cert=", tlsCACert)
+	log.Info("tls.client-cert=", tlsClientCert)
+	log.Info("tls.client-key=", tlsClientKey)
 	log.Info("log.level=", logLevel)
 	log.Info("log.format=", logFormat)
 	log.Info("scrape.cluster=", scrapeCluster)
