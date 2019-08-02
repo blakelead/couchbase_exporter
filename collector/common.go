@@ -7,6 +7,7 @@ package collector
 import (
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -36,15 +37,19 @@ type Metrics struct {
 // Context is a custom url wrapper with credentials and
 // booleans about which metrics types should be scraped
 type Context struct {
-	URI           string
-	Username      string
-	Password      string
-	Timeout       time.Duration
-	ScrapeCluster bool
-	ScrapeNode    bool
-	ScrapeBucket  bool
-	ScrapeXDCR    bool
-	TLSSetting    bool
+	URI             string
+	Username        string
+	Password        string
+	Timeout         time.Duration
+	ScrapeCluster   bool
+	ScrapeNode      bool
+	ScrapeBucket    bool
+	ScrapeXDCR      bool
+	TLSEnabled      bool
+	TLSSkipInsecure bool
+	TLSCACert       string
+	TLSClientCert   string
+	TLSClientKey    string
 }
 
 // Exporters structure contains all exporters
@@ -113,16 +118,21 @@ func Fetch(c Context, route string) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	tlc := &tls.Config{
-		InsecureSkipVerify: c.TLSSetting,
-	}
-
-	tr := &http.Transport{
-		TLSClientConfig: tlc,
+	tlsClientConfig := &tls.Config{}
+	if c.TLSEnabled {
+		tlsClientConfig, err = createTLSClientConfig(c)
+		if err != nil {
+			log.Error(err)
+		}
 	}
 
 	req.SetBasicAuth(c.Username, c.Password)
-	client := http.Client{Transport: tr, Timeout: c.Timeout}
+	client := http.Client{
+		Timeout: c.Timeout,
+		Transport: &http.Transport{
+			TLSClientConfig: tlsClientConfig,
+		},
+	}
 
 	res, err := client.Do(req)
 
@@ -253,4 +263,27 @@ func FlattenStruct(obj interface{}, def ...string) map[string]interface{} {
 		}
 	}
 	return fields
+}
+
+// createTLSClientConfig loads certificates and create TLS config
+func createTLSClientConfig(c Context) (*tls.Config, error) {
+	caCert, err := ioutil.ReadFile(c.TLSCACert)
+	if err != nil {
+		return nil, err
+	}
+	certPool := x509.NewCertPool()
+	certPool.AppendCertsFromPEM(caCert)
+
+	keyPair, err := tls.LoadX509KeyPair(c.TLSClientCert, c.TLSClientKey)
+	if err != nil {
+		return nil, err
+	}
+
+	config := tls.Config{
+		Certificates:       []tls.Certificate{keyPair},
+		ClientCAs:          certPool,
+		InsecureSkipVerify: c.TLSSkipInsecure,
+	}
+
+	return &config, nil
 }

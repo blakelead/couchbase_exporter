@@ -10,6 +10,12 @@ db:
   password: password
   uri: http://localhost:8091
   timeout: 10s
+  tls:
+    enabled: false
+    caCert: ca.pem
+    clientCert: client.pem
+    clientKey: client.key
+    skipInsecure: true
 
 log:
   level: info
