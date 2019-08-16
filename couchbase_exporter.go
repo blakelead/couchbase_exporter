@@ -42,7 +42,7 @@ type Options struct {
 }
 
 var (
-	version        = "devel"
+	version        = "0.9.0"
 	runtimeOptions = &Options{}
 )
 
