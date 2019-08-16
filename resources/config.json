@@ -7,8 +7,15 @@
     "db": {
         "user": "admin",
         "password": "password",
-        "uri": "http://localhost:8091",
-        "timeout": "10s"
+        "uri": "https://localhost:18091",
+        "timeout": "10s",
+        "tls": {
+            "enabled": true,
+            "caCert": "ca.pem",
+            "clientCert": "client.pem",
+            "clientKey": "client.key",
+            "skipInsecure": false
+        }
     },
     "log": {
         "level": "info",
