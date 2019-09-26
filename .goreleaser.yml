@@ -1,6 +1,8 @@
 builds:
 - main: couchbase_exporter.go
   binary: couchbase_exporter
+- env:
+    - CGO_ENABLED=0
   goos:
     - darwin
     - linux
