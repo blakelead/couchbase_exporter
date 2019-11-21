@@ -130,7 +130,8 @@ func Fetch(c Context, route string) ([]byte, error) {
 	client := http.Client{
 		Timeout: c.Timeout,
 		Transport: &http.Transport{
-			TLSClientConfig: tlsClientConfig,
+			DisableKeepAlives: true,
+			TLSClientConfig:   tlsClientConfig,
 		},
 	}
 
