@@ -79,7 +79,7 @@ func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
 		if task.Type == "xdcr" {
 			// Create URL for each XDCR metric.
 			taskID := strings.Split(task.ID, "/")
-			if len(taskID) < 3 {
+			if len(taskID) != 3 {
 				log.Error("Task ID doesn't have the expected format (uuid/src/dest): ", taskID)
 				continue
 			}
@@ -129,7 +129,9 @@ func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
 	// Fetch all bodies from urls created above.
 	bodies := MultiFetch(e.context, routes)
 
-	var currentUUID string
+	// will store uuids that are already used for errorCount
+	done := make(map[string]bool)
+
 	for route, body := range bodies {
 		// Split back url to get uuid src & dest buckets and metric name.
 		longID := strings.Split(route, "%2F")
@@ -162,12 +164,12 @@ func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
 			value = float64(v)
 		}
 
-		if currentUUID != uuid {
-			currentUUID = uuid
+		if _, ok := done[uuid]; !ok {
+			done[uuid] = true
 			e.errorCount.WithLabelValues(uuid, remoteClusters[uuid], src, dest).Set(float64(errorsCount[uuid]))
-			e.errorCount.Collect(ch)
 		}
 
 		ch <- p.MustNewConstMetric(e.metrics[metricID], p.GaugeValue, value, uuid, remoteClusters[uuid], src, dest)
 	}
+	e.errorCount.Collect(ch)
 }
