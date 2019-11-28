@@ -2,12 +2,12 @@
     "name": "bucket",
     "route": "/pools/default/buckets",
     "list": [
-        { "name": "ram_quota_percent_used", "id": "BasicStats.QuotaPercentUsed", "description": "Memory used by the bucket in percent",          "labels": ["bucket"] },
-        { "name": "ops_per_second",         "id": "BasicStats.OpsPerSec",        "description": "Number of operations per second in the bucket", "labels": ["bucket"] },
-        { "name": "disk_fetches",           "id": "BasicStats.DiskFetches",      "description": "Disk fetches for the bucket",                   "labels": ["bucket"] },
-        { "name": "item_count",             "id": "BasicStats.ItemCount",        "description": "Number of items in the bucket",                 "labels": ["bucket"] },
-        { "name": "disk_used_bytes",        "id": "BasicStats.DiskUsed",         "description": "Disk used by the bucket",                       "labels": ["bucket"] },
-        { "name": "data_used_bytes",        "id": "BasicStats.DataUsed",         "description": "Data loaded in memory",                         "labels": ["bucket"] },
-        { "name": "ram_used_bytes",         "id": "BasicStats.MemUsed",          "description": "Bucket RAM used",                               "labels": ["bucket"] }
+        { "name": "ram_quota_percent_used", "id": "BasicStats.QuotaPercentUsed", "description": "Memory used by the bucket in percent",          "labels": ["bucket"], "type": "gauge" },
+        { "name": "ops_per_second",         "id": "BasicStats.OpsPerSec",        "description": "Number of operations per second in the bucket", "labels": ["bucket"], "type": "gauge" },
+        { "name": "disk_fetches",           "id": "BasicStats.DiskFetches",      "description": "Disk fetches for the bucket",                   "labels": ["bucket"], "type": "gauge" },
+        { "name": "item_count",             "id": "BasicStats.ItemCount",        "description": "Number of items in the bucket",                 "labels": ["bucket"], "type": "gauge" },
+        { "name": "disk_used_bytes",        "id": "BasicStats.DiskUsed",         "description": "Disk used by the bucket",                       "labels": ["bucket"], "type": "gauge" },
+        { "name": "data_used_bytes",        "id": "BasicStats.DataUsed",         "description": "Data loaded in memory",                         "labels": ["bucket"], "type": "gauge" },
+        { "name": "ram_used_bytes",         "id": "BasicStats.MemUsed",          "description": "Bucket RAM used",                               "labels": ["bucket"], "type": "gauge" }
     ]
 }
