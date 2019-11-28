@@ -29,7 +29,7 @@ type BucketData struct {
 type BucketExporter struct {
 	context Context
 	route   string
-	metrics map[string]*p.Desc
+	metrics map[string]*CustomDesc
 }
 
 // NewBucketExporter creates the BucketExporter and fill it with metrics metadata from the metrics file.
@@ -39,10 +39,10 @@ func NewBucketExporter(context Context) (*BucketExporter, error) {
 		return &BucketExporter{}, err
 	}
 	// metrics is a map where the key is the metric ID and the value is a Prometheus Descriptor for that metric.
-	metrics := make(map[string]*p.Desc, len(bucketMetrics.List))
+	metrics := make(map[string]*CustomDesc, len(bucketMetrics.List))
 	for _, metric := range bucketMetrics.List {
 		fqName := p.BuildFQName("cb", bucketMetrics.Name, metric.Name)
-		metrics[metric.ID] = p.NewDesc(fqName, metric.Description, metric.Labels, nil)
+		metrics[metric.ID] = newCustomDesc(fqName, metric.Description, metric.Labels, metric.Type)
 	}
 	return &BucketExporter{
 		context: context,
@@ -54,7 +54,7 @@ func NewBucketExporter(context Context) (*BucketExporter, error) {
 // Describe describes exported metrics.
 func (e *BucketExporter) Describe(ch chan<- *p.Desc) {
 	for _, metric := range e.metrics {
-		ch <- metric
+		ch <- metric.pDesc
 	}
 }
 
@@ -76,7 +76,7 @@ func (e *BucketExporter) Collect(ch chan<- p.Metric) {
 		flat := FlattenStruct(bucket)
 		for id, metric := range e.metrics {
 			if value, ok := flat[id].(float64); ok {
-				ch <- p.MustNewConstMetric(metric, p.GaugeValue, value, bucket.Name)
+				ch <- p.MustNewConstMetric(metric.pDesc, getValueType(metric.mType), value, bucket.Name)
 			}
 		}
 	}

@@ -31,6 +31,7 @@ type Metrics struct {
 		ID          string   `json:"id"`
 		Description string   `json:"description"`
 		Labels      []string `json:"labels"`
+		Type        string   `json:"type"`
 	} `json:"list"`
 }
 
@@ -59,6 +60,35 @@ type Exporters struct {
 	Bucket      *BucketExporter
 	BucketStats *BucketStatsExporter
 	XDCR        *XDCRExporter
+}
+
+// CustomDesc adds metric type to prometheus Desc struct
+type CustomDesc struct {
+	pDesc *p.Desc
+	mType string
+}
+
+// create a new CustomDesc object
+func newCustomDesc(fqName, help string, labels []string, mType string) *CustomDesc {
+
+	d := &CustomDesc{
+		pDesc: p.NewDesc(fqName, help, labels, nil),
+		mType: mType,
+	}
+	return d
+}
+
+// getValueType returns metric type as ValueType
+func getValueType(mType string) p.ValueType {
+	var valueType p.ValueType
+	if mType == "gauge" {
+		valueType = p.GaugeValue
+	} else if mType == "counter" {
+		valueType = p.CounterValue
+	} else {
+		valueType = p.UntypedValue
+	}
+	return valueType
 }
 
 // InitExporters instantiates the Exporters

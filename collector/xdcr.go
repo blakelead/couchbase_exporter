@@ -18,7 +18,7 @@ type XDCRExporter struct {
 	context    Context
 	route      string
 	errorCount *p.GaugeVec
-	metrics    map[string]*p.Desc
+	metrics    map[string]*CustomDesc
 }
 
 // NewXDCRExporter creates the XDCRExporter and fill it with metrics metadata from the metrics file.
@@ -28,10 +28,10 @@ func NewXDCRExporter(c Context) (*XDCRExporter, error) {
 		return &XDCRExporter{}, err
 	}
 	// metrics is a map where the key is the metric ID and the value is a Prometheus Descriptor for that metric.
-	metrics := make(map[string]*p.Desc, len(xdcrMetrics.List))
+	metrics := make(map[string]*CustomDesc, len(xdcrMetrics.List))
 	for _, metric := range xdcrMetrics.List {
 		fqName := p.BuildFQName("cb", xdcrMetrics.Name, metric.Name)
-		metrics[metric.ID] = p.NewDesc(fqName, metric.Description, metric.Labels, nil)
+		metrics[metric.ID] = newCustomDesc(fqName, metric.Description, metric.Labels, metric.Type)
 	}
 	return &XDCRExporter{
 		context: c,
@@ -48,7 +48,7 @@ func NewXDCRExporter(c Context) (*XDCRExporter, error) {
 func (e *XDCRExporter) Describe(ch chan<- *p.Desc) {
 	e.errorCount.Describe(ch)
 	for _, metric := range e.metrics {
-		ch <- metric
+		ch <- metric.pDesc
 	}
 }
 
@@ -169,7 +169,8 @@ func (e *XDCRExporter) Collect(ch chan<- p.Metric) {
 			e.errorCount.WithLabelValues(uuid, remoteClusters[uuid], src, dest).Set(float64(errorsCount[uuid]))
 		}
 
-		ch <- p.MustNewConstMetric(e.metrics[metricID], p.GaugeValue, value, uuid, remoteClusters[uuid], src, dest)
+		valueType := getValueType(e.metrics[metricID].mType)
+		ch <- p.MustNewConstMetric(e.metrics[metricID].pDesc, valueType, value, uuid, remoteClusters[uuid], src, dest)
 	}
 	e.errorCount.Collect(ch)
 }

@@ -48,7 +48,7 @@ type ClusterExporter struct {
 	context      Context
 	route        string
 	totalScrapes p.Counter
-	metrics      map[string]*p.Desc
+	metrics      map[string]*CustomDesc
 }
 
 // NewClusterExporter creates the ClusterExporter and fill it with metrics metadata from the metrics file.
@@ -58,10 +58,10 @@ func NewClusterExporter(context Context) (*ClusterExporter, error) {
 		return &ClusterExporter{}, err
 	}
 	// metrics is a map where the key is the metric ID and the value is a Prometheus Descriptor for that metric.
-	metrics := make(map[string]*p.Desc, len(clusterMetrics.List))
+	metrics := make(map[string]*CustomDesc, len(clusterMetrics.List))
 	for _, metric := range clusterMetrics.List {
 		fqName := p.BuildFQName("cb", clusterMetrics.Name, metric.Name)
-		metrics[metric.ID] = p.NewDesc(fqName, metric.Description, metric.Labels, nil)
+		metrics[metric.ID] = newCustomDesc(fqName, metric.Description, metric.Labels, metric.Type)
 	}
 	return &ClusterExporter{
 		context: context,
@@ -78,7 +78,7 @@ func NewClusterExporter(context Context) (*ClusterExporter, error) {
 func (e *ClusterExporter) Describe(ch chan<- *p.Desc) {
 	ch <- e.totalScrapes.Desc()
 	for _, metric := range e.metrics {
-		ch <- metric
+		ch <- metric.pDesc
 	}
 }
 
@@ -109,15 +109,15 @@ func (e *ClusterExporter) Collect(ch chan<- p.Metric) {
 				if value.(bool) {
 					v = 1
 				}
-				ch <- p.MustNewConstMetric(metric, p.GaugeValue, v)
+				ch <- p.MustNewConstMetric(metric.pDesc, getValueType(metric.mType), v)
 			case string:
 				var v float64
 				if value.(string) != "none" {
 					v = 1
 				}
-				ch <- p.MustNewConstMetric(metric, p.GaugeValue, v)
+				ch <- p.MustNewConstMetric(metric.pDesc, getValueType(metric.mType), v)
 			case float64:
-				ch <- p.MustNewConstMetric(metric, p.GaugeValue, value.(float64))
+				ch <- p.MustNewConstMetric(metric.pDesc, getValueType(metric.mType), value.(float64))
 			}
 		}
 	}

@@ -65,7 +65,7 @@ type NodeExporter struct {
 	context Context
 	route   string
 	up      p.Gauge
-	metrics map[string]*p.Desc
+	metrics map[string]*CustomDesc
 }
 
 // NewNodeExporter creates the NodeExporter and fill it with metrics metadata from the metrics file.
@@ -75,10 +75,10 @@ func NewNodeExporter(context Context) (*NodeExporter, error) {
 		return &NodeExporter{}, err
 	}
 	// metrics is a map where the key is the metric ID and the value is a Prometheus Descriptor for that metric.
-	metrics := make(map[string]*p.Desc, len(nodeMetrics.List))
+	metrics := make(map[string]*CustomDesc, len(nodeMetrics.List))
 	for _, metric := range nodeMetrics.List {
 		fqName := p.BuildFQName("cb", nodeMetrics.Name, metric.Name)
-		metrics[metric.ID] = p.NewDesc(fqName, metric.Description, metric.Labels, nil)
+		metrics[metric.ID] = newCustomDesc(fqName, metric.Description, metric.Labels, metric.Type)
 	}
 	return &NodeExporter{
 		context: context,
@@ -95,7 +95,7 @@ func NewNodeExporter(context Context) (*NodeExporter, error) {
 func (e *NodeExporter) Describe(ch chan<- *p.Desc) {
 	ch <- e.up.Desc()
 	for _, metric := range e.metrics {
-		ch <- metric
+		ch <- metric.pDesc
 	}
 }
 
@@ -130,9 +130,9 @@ func (e *NodeExporter) Collect(ch chan<- p.Metric) {
 				} else {
 					v = statusValues[value.(string)]
 				}
-				ch <- p.MustNewConstMetric(metric, p.GaugeValue, v)
+				ch <- p.MustNewConstMetric(metric.pDesc, getValueType(metric.mType), v)
 			case float64:
-				ch <- p.MustNewConstMetric(metric, p.GaugeValue, value.(float64))
+				ch <- p.MustNewConstMetric(metric.pDesc, getValueType(metric.mType), value.(float64))
 			}
 		}
 	}
