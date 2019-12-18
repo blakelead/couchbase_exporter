@@ -17,7 +17,7 @@ after_success:
   - test -n "$TRAVIS_TAG" && curl -sL https://git.io/goreleaser | bash
   - mkdir -p dist && cp -r metrics dist
   - CGO_ENABLED="0" GOARCH="amd64" GOOS="linux" go build -a -installsuffix cgo -o dist/couchbase_exporter
-  - docker login -u "$DOCKER_HUB_ID" -p "$DOCKER_HUB_PASSWORD"
+  - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_ID" --password-stdin
   - export REPO=$DOCKER_HUB_ID/couchbase-exporter
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; elif [ "$TRAVIS_BRANCH" == "develop" ]; then echo "devel"; else echo $TRAVIS_TAG; fi`
   - echo $REPO:$TAG
