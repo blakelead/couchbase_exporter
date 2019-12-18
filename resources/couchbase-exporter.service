@@ -4,12 +4,10 @@ After=local-fs.target network-online.target network.target
 Wants=local-fs.target network-online.target network.target
 
 [Service]
-Type=notify
 ExecStart=/path/to/couchbase_exporter \
         -web.listen-address :9191     \
         -web.telemetry-path /metrics  \
         -db.uri http://localhost:8091
-WatchdogSec=30s
 Restart=on-failure
 
 [Install]
