@@ -2,6 +2,7 @@
     "name": "node",
     "route": "/nodes/self",
     "list": [
+        { "name": "service_up",                              "id": "service_up",                                    "description": "Couchbase service healthcheck",                                                   "labels": [] },
         { "name": "ram_total_bytes",                         "id": "StorageTotals.RAM.Total",                       "description": "Total memory available to the node",                                              "labels": [] },
         { "name": "ram_usage_bytes",                         "id": "StorageTotals.RAM.Used",                        "description": "Memory used by the node",                                                         "labels": [] },
         { "name": "ram_used_by_data_bytes",                  "id": "StorageTotals.RAM.UsedByData",                  "description": "Memory used by data in the node",                                                 "labels": [] },
@@ -9,6 +10,7 @@
         { "name": "ram_quota_used_bytes",                    "id": "StorageTotals.RAM.QuotaUsed",                   "description": "Memory quota used by the node",                                                   "labels": [] },
         { "name": "disk_total_bytes",                        "id": "StorageTotals.Hdd.Total",                       "description": "Total disk space available to the node",                                          "labels": [] },
         { "name": "disk_quota_total_bytes",                  "id": "StorageTotals.Hdd.QuotaTotal",                  "description": "Disk space quota for the node",                                                   "labels": [] },
+        { "name": "disk_used_by_data_bytes",                 "id": "StorageTotals.Hdd.UsedByData",                  "description": "Disk space used by the data in the node",                                         "labels": [] },
         { "name": "disk_used_bytes",                         "id": "StorageTotals.Hdd.Used",                        "description": "Disk space used by the node",                                                     "labels": [] },
         { "name": "disk_quota_used_bytes",                   "id": "StorageTotals.Hdd.UsedByData",                  "description": "Disk space quota used by the node",                                               "labels": [] },
         { "name": "disk_free_bytes",                         "id": "StorageTotals.Hdd.Free",                        "description": "Free disk space in the node",                                                     "labels": [] },
