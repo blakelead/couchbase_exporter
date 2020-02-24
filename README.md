@@ -6,6 +6,10 @@
 
 Expose metrics from Couchbase cluster for consumption by Prometheus.
 
+## News
+
+Couchbase has released an official exporter: [couchbase-exporter](https://github.com/couchbase/couchbase-exporter).
+
 ## Getting Started
 
 Run from command-line:
